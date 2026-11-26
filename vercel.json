@@ -1,7 +1,10 @@
 {
   "functions": {
-    "api/*.js": {
+    "api/read-furniture.js": {
       "maxDuration": 60
+    },
+    "api/render.js": {
+      "maxDuration": 180
     }
   }
 }

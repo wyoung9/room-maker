@@ -90,6 +90,30 @@
   .ai-note.err { color: var(--warn); background: #FDF4F3; }
   .ai-note .ev { display: block; margin-top: 2px; }
   .imp-row.check { border-color: #E0A200; background: #FFFBEF; }
+
+  /* AI 렌더 창 */
+  .rd-quota { margin-top: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; font-weight: 600; }
+  .rd-quota.warn { color: var(--warn); border-color: var(--warn); }
+  .rd-h { font-size: 15px; margin: 18px 0 8px; }
+  .rd-h small { font-weight: 400; color: var(--muted); }
+  .rd-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rd-chips label { display: inline-block; font-size: 14px; color: var(--text); }
+  .rd-chips input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .rd-chips span { display: inline-block; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; }
+  .rd-chips input:checked + span { background: var(--text); color: #fff; border-color: var(--text); }
+  .rd-chips input:focus-visible + span { outline: 2px solid var(--text); outline-offset: 2px; }
+  .rd-custom { margin-top: 10px; }
+  .rd-photo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .rd-photo .hint { margin: 0; font-size: 13px; flex: 1 1 220px; }
+  .rd-thumb { flex-basis: 100%; display: flex; align-items: center; gap: 12px; }
+  .rd-thumb img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+  .rd-msg { min-height: 1.4em; margin: 12px 0 0; }
+  .rd-msg.warn { color: var(--warn); }
+  .rd-paid { margin-top: 12px; }
+  .rd-result { margin-top: 16px; }
+  .rd-result img { width: 100%; height: auto; display: block; border-radius: 14px; border: 1px solid var(--line); background: var(--soft); }
+  .rd-result-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; }
+  .rd-result-bar .hint { margin: 0; font-size: 13px; flex: 1 1 240px; }
   .imp-src .where { display: block; margin-top: 4px; font-size: 11px; color: var(--muted); max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .imp-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }
   @media (max-width: 560px) {
@@ -127,7 +151,7 @@
       <a href="배치.html" aria-current="page">배치</a>
       <a href="렌더신청.html">AI 렌더</a>
     </nav>
-    <a href="렌더신청.html" class="btn primary top-cta">AI 렌더 신청</a>
+    <a href="렌더신청.html" class="btn primary top-cta">AI 렌더</a>
   </div>
 </header>
 
@@ -197,9 +221,9 @@
     </section>
 
     <section class="actions">
-      <h2>3. 저장하고 렌더 신청</h2>
-      <button id="savePng" class="btn primary" type="button">배치 그림 저장 (PNG)</button>
-      <a href="렌더신청.html" class="btn">AI 렌더 신청하기 →</a>
+      <h2>3. 저장하고 AI 렌더</h2>
+      <button id="rdOpen" class="btn primary" type="button">✦ AI 렌더 만들기</button>
+      <button id="savePng" class="btn" type="button">배치 그림 저장 (PNG)</button>
       <button id="clearAll" class="btn ghost small" type="button">가구 모두 지우기</button>
       <p class="hint" style="margin:0">작업 내용은 이 기기의 브라우저에 자동 저장돼요.</p>
     </section>
@@ -237,6 +261,57 @@
   <div class="imp-foot">
     <button id="impAdd" class="btn small" type="button" disabled>방에 넣기</button>
     <button id="impAddAuto" class="btn primary small" type="button" disabled>방에 넣고 자동 배치</button>
+  </div>
+</dialog>
+
+<!-- AI 렌더: 지금 배치한 도면(+방 사진)으로 AI가 분위기 이미지 1장을 만듦 -->
+<dialog id="renderDlg" class="imp-dlg" aria-labelledby="rdTitle">
+  <div class="imp-head">
+    <h2 id="rdTitle">✦ AI 렌더 만들기</h2>
+    <button id="rdClose" class="btn ghost small" type="button" aria-label="닫기">✕ 닫기</button>
+  </div>
+  <p class="notice">지금 배치한 도면으로 AI가 <b>완성된 방 분위기 이미지 1장</b>을 만들어 줘요. AI가 그린 <b>참고용 시안</b>이라 가구 위치·크기·색이 도면과 조금 다를 수 있고 실제 제품과도 달라요. 도면과 방 사진은 만들기 위해 서버를 거쳐 OpenAI(AI 회사)로 보내지고, 이 서버에는 저장하지 않아요.</p>
+
+  <div id="rdQuota" class="rd-quota" aria-live="polite">무료 렌더 남은 횟수를 확인하는 중…</div>
+
+  <h3 class="rd-h">분위기</h3>
+  <div class="rd-chips" role="radiogroup" aria-label="분위기">
+    <label><input type="radio" name="rdStyle" value="modern" checked><span>모던 미니멀</span></label>
+    <label><input type="radio" name="rdStyle" value="nordic"><span>북유럽 우드</span></label>
+    <label><input type="radio" name="rdStyle" value="warm"><span>따뜻한 빈티지</span></label>
+    <label><input type="radio" name="rdStyle" value="hotel"><span>화이트 호텔식</span></label>
+    <label><input type="radio" name="rdStyle" value="natural"><span>내추럴 베이지</span></label>
+    <label><input type="radio" name="rdStyle" value="custom"><span>직접 쓰기</span></label>
+  </div>
+  <div id="rdCustom" class="rd-custom" hidden>
+    <label>원하는 분위기 (2~40자)<input id="rdStyleText" type="text" maxlength="40" placeholder="예: 차분한 우드톤, 따뜻한 조명"></label>
+  </div>
+
+  <h3 class="rd-h">방 사진 <small>(선택)</small></h3>
+  <div class="rd-photo">
+    <label class="btn small">📷 방 사진 올리기<input id="rdFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>
+    <span id="rdPhotoInfo" class="hint">올리면 그 방의 벽·바닥·창문 느낌을 반영해요. 안 올려도 돼요.</span>
+    <div id="rdThumb" class="rd-thumb" hidden>
+      <img id="rdThumbImg" alt="올린 방 사진">
+      <button id="rdThumbDel" class="btn small danger" type="button">사진 빼기</button>
+    </div>
+  </div>
+
+  <p id="rdMsg" class="hint rd-msg" aria-live="polite"></p>
+  <div class="imp-foot">
+    <button id="rdGo" class="btn primary" type="button" disabled>✦ 렌더 만들기</button>
+  </div>
+
+  <div id="rdPaid" class="notice rd-paid" hidden>
+    무료 렌더를 모두 사용했어요. 유료 이용은 <b>준비 중</b>이에요. <a href="렌더신청.html">유료 이용 알림 받기 →</a>
+  </div>
+
+  <div id="rdResult" class="rd-result" hidden>
+    <img id="rdImg" alt="AI가 만든 방 분위기 이미지">
+    <div class="rd-result-bar">
+      <a id="rdSave" class="btn small" download="방만들기_AI렌더.jpg">이미지 저장</a>
+      <span class="hint">AI가 그린 참고용 시안이에요. 마음에 안 들면 분위기를 바꿔 다시 만들 수 있어요. (다시 만들면 무료 횟수가 1회 줄어요.)</span>
+    </div>
   </div>
 </dialog>
 
@@ -1091,7 +1166,7 @@
   document.addEventListener("keydown", function (evt) {
     var tag = (evt.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select") return;
-    if (document.getElementById("importDlg").open) return;      // 가구 불러오기 창이 열려 있으면 도면 단축키는 끔
+    if (document.getElementById("importDlg").open || document.getElementById("renderDlg").open) return;      // 가구 불러오기 창이 열려 있으면 도면 단축키는 끔
     var it = byId(selectedId); if (!it) return;
     var moves = { ArrowLeft: [-SNAP, 0], ArrowRight: [SNAP, 0], ArrowUp: [0, -SNAP], ArrowDown: [0, SNAP] };
     if (moves[evt.key]) { it.x += moves[evt.key][0]; it.y += moves[evt.key][1]; commit(); evt.preventDefault(); }
@@ -1130,6 +1205,142 @@
     img.onerror = function () { alert("그림을 만들지 못했어요. 크롬에서 다시 시도해 주세요."); };
     img.src = data;
   });
+
+  // ---------- AI 렌더 (지금 배치한 도면 + 방 사진(선택) → 분위기 이미지 1장) ----------
+  var RENDER_URL = "/api/render";
+  var rdDlg = document.getElementById("renderDlg");
+  var rdQuota = document.getElementById("rdQuota"), rdMsg = document.getElementById("rdMsg");
+  var rdGo = document.getElementById("rdGo"), rdPaid = document.getElementById("rdPaid");
+  var rdResult = document.getElementById("rdResult"), rdImg = document.getElementById("rdImg"), rdSave = document.getElementById("rdSave");
+  var rdPhoto = null, rdBusy = false, rdUsable = false;
+
+  function rdSay(text, warn) { rdMsg.textContent = text || ""; rdMsg.className = "hint rd-msg" + (warn ? " warn" : ""); }
+  function rdUpdateGo() { rdGo.disabled = rdBusy || !rdUsable; }
+  function rdApplyQuota(info) {                    // 무료 남은 횟수에 따라 화면을 바꿈
+    rdPaid.hidden = true; rdQuota.className = "rd-quota";
+    if (!info || !info.enabled) {
+      rdUsable = false; rdQuota.className = "rd-quota warn";
+      rdQuota.textContent = "AI 렌더를 지금은 쓸 수 없어요. (서버에 AI 키가 아직 설정되지 않았거나 잠시 꺼져 있어요.)";
+    } else if (info.remaining > 0) {
+      rdUsable = true;
+      rdQuota.textContent = "무료 렌더 " + info.remaining + "회 남았어요 (총 " + info.free + "회). 만들 때마다 1회씩 줄어요.";
+    } else {
+      rdUsable = false; rdQuota.className = "rd-quota warn"; rdPaid.hidden = false;
+      rdQuota.textContent = "무료 렌더 " + info.free + "회를 모두 사용했어요.";
+    }
+    rdUpdateGo();
+  }
+  async function rdRefreshQuota() {
+    rdUsable = false; rdUpdateGo();
+    rdQuota.className = "rd-quota"; rdQuota.textContent = "무료 렌더 남은 횟수를 확인하는 중…";
+    try {
+      var res = await fetch(RENDER_URL);
+      var info = await res.json().catch(function () { return null; });
+      if (res.status === 200) rdApplyQuota(info);
+      else if (res.status === 404) { rdApplyQuota(null); rdQuota.textContent = "이 화면에서는 AI 렌더를 쓸 수 없어요. (배포된 사이트나 「사이트_열기.bat」으로 연 화면에서 써 주세요.)"; }
+      else rdApplyQuota(null);
+    } catch (e) {
+      rdApplyQuota(null); rdQuota.textContent = "연결에 실패했어요. 인터넷을 확인하고 창을 다시 열어 주세요.";
+    }
+  }
+
+  // 지금 도면을 가로세로 긴 쪽 1280px 이하의 JPEG 로 (PNG 저장과 같은 그림, 올리는 양을 줄이려고 JPEG)
+  function planToJpeg(maxSide) {
+    return new Promise(function (resolve, reject) {
+      var out = document.createElementNS(NS, "svg"); out.setAttribute("xmlns", NS);
+      draw(out, true);
+      var vb = out.getAttribute("viewBox").split(" ").map(Number);
+      var scale = maxSide / Math.max(vb[2], vb[3]);
+      var pw = Math.max(1, Math.round(vb[2] * scale)), ph = Math.max(1, Math.round(vb[3] * scale));
+      out.setAttribute("width", pw); out.setAttribute("height", ph);
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var c = document.createElement("canvas"); c.width = pw; c.height = ph;
+          var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, pw, ph); x.drawImage(img, 0, 0, pw, ph);
+          resolve({ media_type: "image/jpeg", data: c.toDataURL("image/jpeg", 0.85).split(",")[1] });
+        } catch (e) { reject(e); }
+      };
+      img.onerror = function () { reject(new Error("plan_failed")); };
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(out));
+    });
+  }
+
+  async function rdMake() {
+    if (rdBusy || !rdUsable) return;
+    var room = state.room;
+    var inRoom = function (it) { return it.x < room.w && it.y < room.h && it.x + it.w > 0 && it.y + it.h > 0; };
+    var furniture = state.items.filter(function (it) { return it.type === "furniture" && inRoom(it); });
+    if (!furniture.length) { rdSay("방 안에 놓은 가구가 없어요. 가구를 방 안에 놓은 뒤에 만들어 주세요.", true); return; }
+    var skipped = state.items.filter(function (it) { return it.type === "furniture" && !inRoom(it); }).length;
+    var items = state.items.filter(function (it) { return it.type !== "furniture" || inRoom(it); }).slice(0, 30)
+      .map(function (it) { return { type: it.type, name: it.name, kind: it.kind || kindOf(it), w: it.w, h: it.h, x: it.x, y: it.y }; });
+    var style = (document.querySelector('input[name="rdStyle"]:checked') || {}).value || "modern";
+    var styleText = document.getElementById("rdStyleText").value.trim();
+    if (style === "custom" && !/^[\p{L}\p{N} ,.\-]{2,40}$/u.test(styleText)) { rdSay("분위기 글은 2~40자의 글자·숫자·쉼표만 쓸 수 있어요.", true); return; }
+
+    rdBusy = true; rdUpdateGo(); rdResult.hidden = true;
+    var started = Date.now();
+    var tick = setInterval(function () {
+      rdSay("만드는 중이에요… " + Math.round((Date.now() - started) / 1000) + "초 (보통 30초~2분 걸려요. 창을 닫지 마세요.)");
+    }, 1000);
+    rdSay("만드는 중이에요… (보통 30초~2분 걸려요. 창을 닫지 마세요.)");
+    var ctrl = new AbortController(), timer = setTimeout(function () { ctrl.abort(); }, 190000);
+    try {
+      var body = { layout: await planToJpeg(1280), room: { w: room.w, h: room.h }, items: items, style: style, styleText: styleText };
+      if (rdPhoto) body.photo = rdPhoto;
+      var res = await fetch(RENDER_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
+      var data = await res.json().catch(function () { return {}; });
+      if (res.status === 200 && data.image && data.image.data) {
+        var src = "data:" + (data.image.mime || "image/jpeg") + ";base64," + data.image.data;
+        rdImg.src = src; rdSave.href = src; rdResult.hidden = false;
+        rdApplyQuota({ enabled: true, free: data.free, remaining: data.remaining });
+        rdSay("완성! 아래 이미지를 확인하세요." + (skipped ? " (방 밖에 둔 가구 " + skipped + "개는 빼고 만들었어요.)" : ""));
+        rdImg.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      } else if (res.status === 402) {
+        rdApplyQuota({ enabled: true, free: data.free || 0, remaining: 0 }); rdSay(data.message || "무료 횟수를 모두 사용했어요.", true);
+      } else if (res.status === 413) {
+        rdSay("사진이 너무 커요. 더 작은 방 사진으로 해 주세요.", true);
+      } else {
+        rdSay(data.message || "렌더를 만들지 못했어요. 잠시 뒤에 다시 해 보세요.", true);
+        if (res.status === 503) rdRefreshQuota();
+      }
+    } catch (e) {
+      rdSay(e && e.name === "AbortError" ? "시간이 너무 오래 걸려서 멈췄어요. 잠시 뒤에 다시 해 보세요."
+                                        : "연결에 실패했어요. 인터넷을 확인하고 다시 눌러 주세요.", true);
+    } finally {
+      clearInterval(tick); clearTimeout(timer); rdBusy = false; rdUpdateGo();
+    }
+  }
+
+  document.getElementById("rdOpen").addEventListener("click", function () {
+    rdSay("");
+    if (rdDlg.showModal) rdDlg.showModal(); else rdDlg.setAttribute("open", "");
+    rdRefreshQuota();
+  });
+  document.getElementById("rdClose").addEventListener("click", function () { rdDlg.close(); });
+  rdGo.addEventListener("click", rdMake);
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="rdStyle"]'), function (r) {
+    r.addEventListener("change", function () {
+      var custom = document.querySelector('input[name="rdStyle"]:checked').value === "custom";
+      document.getElementById("rdCustom").hidden = !custom;
+      if (custom) document.getElementById("rdStyleText").focus();
+    });
+  });
+  function rdShowPhoto() {
+    var has = !!rdPhoto;
+    document.getElementById("rdThumb").hidden = !has;
+    document.getElementById("rdThumbImg").src = has ? "data:" + rdPhoto.media_type + ";base64," + rdPhoto.data : "";
+  }
+  document.getElementById("rdFile").addEventListener("change", async function (e) {
+    var f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { rdSay("방 사진은 JPG·PNG·WEBP 파일만 올릴 수 있어요.", true); return; }
+    if (f.size > 20 * 1024 * 1024) { rdSay("사진이 너무 커요(20MB 넘음). 더 작은 사진으로 해 주세요.", true); return; }
+    try { rdPhoto = await aiPrepare(f); rdShowPhoto(); rdSay("방 사진을 넣었어요. 렌더에 이 방의 느낌이 반영돼요."); }
+    catch (err) { rdPhoto = null; rdShowPhoto(); rdSay("이 사진은 열 수 없어요. 다른 사진으로 해 주세요.", true); }
+  });
+  document.getElementById("rdThumbDel").addEventListener("click", function () { rdPhoto = null; rdShowPhoto(); rdSay(""); });
 
   render();
 })();

@@ -54,7 +54,10 @@ const HIDDEN = [
 ];
 
 // AI 요청 길: 주소 → 서버 함수 파일 (배포 서버에서는 api/ 폴더가 자동으로 이 역할을 함)
-const API_ROUTES = { "/api/read-furniture": path.join(ROOT, "api", "read-furniture.js") };
+const API_ROUTES = {
+  "/api/read-furniture": path.join(ROOT, "api", "read-furniture.js"),
+  "/api/render": path.join(ROOT, "api", "render.js")
+};
 
 function send(res, code, text) {
   res.writeHead(code, { "Content-Type": "text/plain; charset=utf-8" });
