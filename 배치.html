@@ -82,6 +82,14 @@
   .imp-fields select { width: 100%; min-height: 46px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 12px; font: inherit; background: #fff; }
   .imp-fields .w { grid-column: 1; } .imp-fields .h { grid-column: 2; }
   .imp-fields .del { grid-column: 5; grid-row: 2; }
+  .imp-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 12px; }
+  .imp-tools .hint { margin: 0; font-size: 13px; flex: 1 1 220px; }
+  .imp-code { margin-top: 10px; }
+  .ai-btn { margin-top: 6px; width: 96px; padding: 0 6px; font-size: 12px; min-height: 34px; }
+  .ai-note { grid-column: 1 / -1; font-size: 13px; color: var(--muted); background: var(--soft); border-radius: 10px; padding: 8px 10px; }
+  .ai-note.err { color: var(--warn); background: #FDF4F3; }
+  .ai-note .ev { display: block; margin-top: 2px; }
+  .imp-row.check { border-color: #E0A200; background: #FFFBEF; }
   .imp-src .where { display: block; margin-top: 4px; font-size: 11px; color: var(--muted); max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .imp-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }
   @media (max-width: 560px) {
@@ -205,7 +213,7 @@
     <h2 id="impTitle">사진·링크로 가구 불러오기</h2>
     <button id="impClose" class="btn ghost small" type="button" aria-label="닫기">✕ 닫기</button>
   </div>
-  <p class="notice">지금은 사진·링크에서 치수를 자동으로 읽어 주지 못해요. (AI 자동 읽기는 다음 단계) 사진이나 상품 페이지를 보면서 <b>이름·종류·치수를 적어 주세요.</b> 사진은 이 기기 안에만 있고 어디에도 보내지 않아요.</p>
+  <p class="notice">사진을 올리고 <b>「✦ AI로 읽기」</b>를 누르면 AI가 사진에 적힌 치수를 읽어서 아래 표를 채워 줘요. <b>AI가 틀릴 수 있으니 사진과 비교해서 꼭 확인해 주세요.</b> 「AI로 읽기」를 누른 사진만 서버를 거쳐 OpenAI(AI 회사)로 보내지고, 이 서버에는 저장하지 않아요. 링크는 아직 AI가 읽지 못해서 직접 적어 주세요.</p>
 
   <div id="impDrop" class="imp-drop">
     <label class="btn small">📷 사진 올리기<input id="impFile" type="file" accept="image/*" multiple hidden></label>
@@ -214,6 +222,13 @@
   <div class="imp-link">
     <input id="impUrl" type="text" inputmode="url" placeholder="쇼핑몰 상품 주소 붙여넣기 (https://…)" aria-label="상품 주소">
     <button id="impUrlAdd" class="btn small" type="button">링크 추가</button>
+  </div>
+  <div class="imp-tools">
+    <button id="impAiAll" class="btn small" type="button" disabled>✦ 사진 모두 AI로 읽기</button>
+    <span class="hint">사진마다 AI가 가구 이름·종류·치수를 읽어서 표를 채워요.</span>
+  </div>
+  <div id="impCode" class="imp-code" hidden>
+    <label>이용 코드<input id="impCodeInput" type="text" autocomplete="off" placeholder="시범 참여자에게 알려 드린 코드"></label>
   </div>
   <p id="impMsg" class="hint" aria-live="polite"></p>
 
@@ -766,6 +781,9 @@
   var impDlg = document.getElementById("importDlg"), impBox = document.getElementById("impRows");
   var impMsg = document.getElementById("impMsg"), impDrop = document.getElementById("impDrop");
   var impAdd = document.getElementById("impAdd"), impAddAuto = document.getElementById("impAddAuto");
+  var impAiAll = document.getElementById("impAiAll");
+  var AI_URL = "/api/read-furniture";
+  var AI_CONF = { high: "확실", medium: "애매함 · 확인 필요", low: "불확실 · 꼭 확인" };
 
   function impSay(text, warn) { impMsg.textContent = text || ""; impMsg.className = "hint" + (warn ? " warn" : ""); }
   function impLabeled(cls, text, input) {
@@ -774,7 +792,9 @@
   }
   function impRowEl(r) {
     var row = document.createElement("div");
-    row.className = "imp-row" + (r.bad ? " bad" : "");
+    var ai = r.ai || {};
+    row.className = "imp-row" + (r.bad ? " bad" : "") + (ai.done && (ai.confidence !== "high" || ai.missing) ? " check" : "");
+    row.setAttribute("data-rid", r.id);
     var src = document.createElement("div"); src.className = "imp-src";
     var a = document.createElement("a");
     a.href = r.url; a.target = "_blank"; a.rel = "noopener noreferrer";
@@ -785,6 +805,14 @@
     }
     src.appendChild(a);
     var where = document.createElement("span"); where.className = "where"; where.textContent = r.label; src.appendChild(where);
+    if (r.type === "image" && r.file && !r.shared) {          // 사진 줄에만 'AI로 읽기' 버튼
+      var aiBtn = document.createElement("button");
+      aiBtn.type = "button"; aiBtn.className = "btn small ai-btn";
+      aiBtn.textContent = ai.busy ? "읽는 중…" : ai.done ? "↻ 다시 읽기" : "✦ AI로 읽기";
+      aiBtn.disabled = !!ai.busy;
+      aiBtn.addEventListener("click", function () { aiReadRow(r); });
+      src.appendChild(aiBtn);
+    }
     row.appendChild(src);
 
     var f = document.createElement("div"); f.className = "imp-fields";
@@ -800,14 +828,28 @@
     }
     var del = document.createElement("button"); del.type = "button"; del.className = "btn small danger del"; del.textContent = "삭제";
     del.addEventListener("click", function () {
-      if (r.type === "image") { try { URL.revokeObjectURL(r.url); } catch (e) {} }
-      impRows = impRows.filter(function (x) { return x !== r; }); renderImp();
+      impRows = impRows.filter(function (x) { return x !== r; });
+      impRelease(r.url); renderImp();
     });
     f.appendChild(impLabeled("nm", "이름", nm));
     f.appendChild(impLabeled("kd", "종류", kd));
     f.appendChild(impLabeled("w", "가로 (cm)", num("w")));
     f.appendChild(impLabeled("h", "세로 (cm)", num("h")));
     f.appendChild(del);
+    if (ai.busy || ai.error || ai.done) {                      // AI 결과·오류 안내 (AI가 쓴 글은 textContent 로만 넣음)
+      var note = document.createElement("div");
+      note.className = "ai-note" + (ai.error ? " err" : "");
+      if (ai.busy) note.textContent = "✦ AI가 사진을 읽는 중이에요… (10~30초 걸릴 수 있어요)";
+      else if (ai.error) note.textContent = ai.error;
+      else {
+        var head = "✦ AI가 읽음 · " + (AI_CONF[ai.confidence] || AI_CONF.low) +
+          (ai.height ? " · 높이 " + ai.height + "cm" : "") +
+          (ai.missing ? " · 못 읽은 칸은 직접 적어 주세요" : "") + " · 사진과 비교해서 확인해 주세요";
+        note.appendChild(document.createTextNode(head));
+        if (ai.evidence) { var ev = document.createElement("span"); ev.className = "ev"; ev.textContent = "근거: " + ai.evidence; note.appendChild(ev); }
+      }
+      f.appendChild(note);
+    }
     row.appendChild(f);
     return row;
   }
@@ -820,6 +862,7 @@
     }
     impRows.forEach(function (r) { impBox.appendChild(impRowEl(r)); });
     impAdd.disabled = impAddAuto.disabled = !impRows.length;
+    impAiAll.disabled = !impRows.some(function (r) { return r.type === "image" && r.file && !r.shared; });
   }
   function impAddFiles(files) {
     var added = 0, skipped = [];
@@ -828,7 +871,7 @@
       if (!/^image\//.test(file.type)) { skipped.push(nameText + " (사진 파일이 아니에요)"); return; }
       if (file.size > IMP_MAX_MB * 1024 * 1024) { skipped.push(nameText + " (" + IMP_MAX_MB + "MB가 넘어요)"); return; }
       if (impRows.length >= IMP_MAX_ROWS) { skipped.push(nameText + " (한 번에 " + IMP_MAX_ROWS + "개까지예요)"); return; }
-      impRows.push({ id: impSeq++, type: "image", url: URL.createObjectURL(file), label: nameText, name: "", kind: "", w: "", h: "" });
+      impRows.push({ id: impSeq++, type: "image", url: URL.createObjectURL(file), file: file, label: nameText, name: "", kind: "", w: "", h: "", ai: {} });
       added++;
     });
     renderImp();
@@ -856,15 +899,134 @@
     });
     if (bad) { renderImp(); impSay("가로·세로(cm)를 적지 않은 가구가 " + bad + "개 있어요. 빨간 테두리 줄을 채워 주세요. (5 이상)", true); return; }
     var n = impRows.length;
+    var urls = {};
     impRows.forEach(function (r) {
       addItem((r.name || "").trim() || "가구", Number(r.w), Number(r.h), "furniture", null, r.kind || "");
-      if (r.type === "image") { try { URL.revokeObjectURL(r.url); } catch (e) {} }
+      urls[r.url] = true;
     });
+    Object.keys(urls).forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} });   // 사진 미리보기 정리
     impRows = []; renderImp(); impSay("");
     impDlg.close();
     if (auto) autoBtn.click();
     else setAutoMsg("가구 " + n + "개를 방에 넣었어요. 「자동 배치」를 눌러 보세요.");
   }
+  // ---------- AI로 읽기 (사진 → 이름·종류·치수) ----------
+  function impRelease(url) {                      // 같은 사진을 쓰는 줄이 하나도 없을 때만 미리보기 정리
+    if (!impRows.some(function (x) { return x.url === url; })) { try { URL.revokeObjectURL(url); } catch (e) {} }
+  }
+  function impRefreshRow(r) {                     // 한 줄만 다시 그림 (다른 줄에 쓰던 글자·초점이 흐트러지지 않게)
+    var old = impBox.querySelector('[data-rid="' + r.id + '"]');
+    if (old) old.replaceWith(impRowEl(r));
+  }
+  // 사진을 줄여서(긴 쪽 1600px 이하) JPEG 글자(base64)로 바꿈: 올리는 양과 AI 비용을 줄이고 서버 크기 제한도 지킴
+  function aiPrepare(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        try {
+          var steps = [[1600, 0.88], [1280, 0.8], [1024, 0.72]], out = null;
+          for (var i = 0; i < steps.length && !out; i++) {
+            var scale = Math.min(1, steps[i][0] / Math.max(img.naturalWidth, img.naturalHeight));
+            var c = document.createElement("canvas");
+            c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+            c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+            var x = c.getContext("2d");
+            x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);      // 투명 배경 PNG 는 흰 바탕으로
+            x.drawImage(img, 0, 0, c.width, c.height);
+            var data = c.toDataURL("image/jpeg", steps[i][1]).split(",")[1];
+            if (data.length <= 1700000) out = data;
+          }
+          URL.revokeObjectURL(url);
+          if (out) resolve({ media_type: "image/jpeg", data: out }); else reject(new Error("too_big"));
+        } catch (e) { URL.revokeObjectURL(url); reject(e); }
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("bad_image")); };
+      img.src = url;
+    });
+  }
+  function aiCode() { try { return sessionStorage.getItem("roommaker.accessCode") || ""; } catch (e) { return ""; } }
+  function aiCall(image) {
+    return fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ images: [image], accessCode: aiCode() }) })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (body) { return { status: res.status, body: body || {} }; });
+      });
+  }
+  function aiErrorText(status, body) {
+    if (body.error === "ai_not_configured" || body.error === "ai_disabled") return "AI 읽기를 지금은 쓸 수 없어요. 직접 적어 주세요.";
+    if (status === 404) return "이 화면에서는 AI 읽기를 쓸 수 없어요. (배포된 사이트나 「사이트_열기.bat」으로 연 화면에서 써 주세요.)";
+    if (status === 413) return "사진이 너무 커요. 더 작은 사진으로 해 주세요.";
+    return body.message || "AI 읽기에 실패했어요. 잠시 뒤에 다시 해 보세요.";
+  }
+  // 결과를 표에 채움. 한 사진에서 가구가 여러 개 읽히면 줄을 더 만듦. 새로 만든 줄 수를 돌려줌.
+  function aiApply(r, body) {
+    var items = Array.isArray(body.items) ? body.items : [];
+    if (!items.length) {
+      r.ai = { error: "사진에서 가구 치수를 찾지 못했어요." + (body.notes ? " (" + body.notes + ")" : "") + " 치수가 적힌 부분이 보이는 사진으로 해 보거나 직접 적어 주세요." };
+      return 0;
+    }
+    impRows = impRows.filter(function (x) { return x.parent !== r.id; });     // 다시 읽는 경우: 이 사진에서 전에 만든 추가 줄은 지우고 새로 만듦
+    var at = impRows.indexOf(r), added = 0;
+    items.forEach(function (it, i) {
+      var target = r;
+      if (i > 0) {
+        if (impRows.length >= IMP_MAX_ROWS) return;
+        target = { id: impSeq++, type: "image", url: r.url, file: r.file, shared: true, parent: r.id, label: r.label, name: "", kind: "", w: "", h: "", ai: {} };
+        impRows.splice(at + 1 + added, 0, target); added++;
+      }
+      target.name = it.name || ""; target.kind = it.kind || "";
+      target.w = it.w == null ? "" : String(it.w); target.h = it.h == null ? "" : String(it.h);
+      target.ai = { done: true, confidence: it.confidence, evidence: it.evidence, height: it.height, missing: it.w == null || it.h == null };
+    });
+    return added;
+  }
+  async function aiReadRow(r) {
+    if (r.type !== "image" || !r.file || (r.ai && r.ai.busy)) return;
+    r.ai = { busy: true }; impRefreshRow(r);
+    var added = 0;
+    try {
+      var image = await aiPrepare(r.file);
+      var out = await aiCall(image);
+      if (out.status === 401) {
+        r.ai = { error: "이용 코드가 필요해요. 위 칸에 코드를 넣은 뒤 다시 눌러 주세요.", fatal: true };
+        document.getElementById("impCode").hidden = false; document.getElementById("impCodeInput").focus();
+      } else if (out.status !== 200) {
+        r.ai = { error: aiErrorText(out.status, out.body), fatal: out.status === 503 || out.status === 404 || out.status === 429 };
+      } else {
+        added = aiApply(r, out.body);
+      }
+    } catch (e) {
+      var m = e && e.message;
+      r.ai = { error: m === "bad_image" ? "이 사진은 열 수 없어요. JPG·PNG 사진으로 해 주세요."
+                    : m === "too_big" ? "사진이 너무 커요. 더 작은 사진으로 해 주세요."
+                    : "연결에 실패했어요. 인터넷을 확인하고 다시 눌러 주세요." };
+    }
+    if (added || r.ai.done) renderImp(); else impRefreshRow(r);   // 읽기에 성공하면 줄 수가 바뀔 수 있으니 전체를 다시 그림
+  }
+  async function aiReadAll() {
+    var todo = impRows.filter(function (r) { return r.type === "image" && r.file && !r.shared && !(r.ai && (r.ai.done || r.ai.busy)); });
+    if (!todo.length) { impSay("AI로 읽을 사진이 없어요. (이미 읽은 사진은 줄마다 「다시 읽기」를 누르세요.)", true); return; }
+    impAiAll.disabled = true;
+    impSay("사진 " + todo.length + "장을 AI가 읽는 중이에요…");
+    var next = 0, stop = false;
+    async function worker() {
+      while (!stop && next < todo.length) {
+        var r = todo[next++];
+        await aiReadRow(r);
+        if (r.ai && r.ai.fatal) stop = true;
+      }
+    }
+    await Promise.all([worker(), worker()]);                     // 동시에 2장씩만 (서버·AI가 바빠지지 않게)
+    var ok = todo.filter(function (r) { return r.ai && r.ai.done; }).length;
+    var bad = todo.filter(function (r) { return r.ai && r.ai.error; }).length;
+    impSay("AI 읽기 끝: " + ok + "장 성공" + (bad ? ", " + bad + "장은 안내를 확인해 주세요" : "") + ". 사진과 비교해서 치수를 확인한 뒤 방에 넣어 주세요.", bad > 0);
+    renderImp();
+  }
+  impAiAll.addEventListener("click", aiReadAll);
+  var impCodeInput = document.getElementById("impCodeInput");
+  try { impCodeInput.value = sessionStorage.getItem("roommaker.accessCode") || ""; } catch (e) {}
+  impCodeInput.addEventListener("input", function () { try { sessionStorage.setItem("roommaker.accessCode", impCodeInput.value.trim()); } catch (e) {} });
+
   document.getElementById("impOpen").addEventListener("click", function () {
     renderImp();
     if (impDlg.showModal) impDlg.showModal(); else impDlg.setAttribute("open", "");

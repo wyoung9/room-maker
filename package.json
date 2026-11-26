@@ -1,0 +1,17 @@
+{
+  "name": "room-maker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "방 만들기: 가구 배치 미리보기",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node 서버.js --open",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "openai": "7.64.0"
+  }
+}
