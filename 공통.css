@@ -1,0 +1,118 @@
+/* 방 만들기 — 공통 디자인 (흰 바탕 · 검정 글자 · 알약 버튼 · 넓은 여백)
+   색을 바꾸려면 아래 :root 의 값만 고치세요.
+   글꼴: 프리텐다드(Pretendard, SIL OFL 라이선스 · 상업적 사용 무료).
+   인터넷 연결이 안 되면 맑은 고딕 등으로 대신 보입니다.
+   예전 디자인(BANG)은 「이전디자인_백업」 폴더에 있습니다. */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+
+:root {
+  --bg: #FFFFFF;           /* 페이지 바탕 */
+  --surface: #FFFFFF;      /* 패널·카드 바탕 */
+  --text: #0B0B14;         /* 글자 (거의 검정) */
+  --muted: #6E6E78;        /* 보조 글자 */
+  --line: #E6E6EA;         /* 얇은 선·테두리 */
+  --accent: #0B0B14;       /* 주요 버튼 (검정 알약) */
+  --accent-text: #FFFFFF;
+  --soft: #F4F4F6;         /* 연한 회색 바탕 */
+  --warn: #D93025;         /* 경고·삭제 */
+  --radius: 20px;
+
+  /* 예전 파일과 호환되도록 남겨 둔 이름 (모두 차분한 색으로 바꿈) */
+  --yellow: #0B0B14;
+  --yellow-soft: #F4F4F6;
+  --olive: #6E6E78;
+  --olive-deep: #0B0B14;
+  --orange: #D93025;
+  --red: #D93025;
+  --cream: #F4F4F6;
+
+  --font-sans: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-serif: var(--font-sans);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+h1, h2, h3 { letter-spacing: -0.03em; }
+
+/* ---------- 위쪽 메뉴: 얇게, 오른쪽 끝에 검정 알약 버튼 ---------- */
+.top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 14px clamp(16px, 4vw, 40px);
+  background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 10;
+}
+.logo { font-weight: 800; text-decoration: none; font-size: 20px; letter-spacing: -0.04em; }
+.logo::after { content: "."; }
+.top-right { display: flex; align-items: center; gap: clamp(12px, 3vw, 28px); }
+.top nav { display: flex; gap: clamp(12px, 3vw, 28px); }
+.top nav a { text-decoration: none; font-size: 15px; font-weight: 500; padding: 6px 0; border-bottom: 1.5px solid transparent; }
+.top nav a:hover { border-bottom-color: var(--line); }
+.top nav a[aria-current="page"] { border-bottom-color: var(--text); font-weight: 700; }
+.top-cta { min-height: 44px !important; padding: 0 22px !important; font-size: 14px !important; }
+@media (max-width: 480px) { .top-cta { display: none !important; } }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+
+/* ---------- 버튼 (알약 모양) ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 0 30px; border-radius: 999px;
+  border: 1px solid var(--text); background: transparent; color: var(--text);
+  font: inherit; font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn:hover { background: var(--text); color: #fff; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn.primary:hover { background: #2A2A36; }
+.btn.yellow { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--text); background: var(--soft); }
+.btn.small { min-height: 40px; padding: 0 18px; font-size: 14px; }
+.btn.danger { color: var(--warn); border-color: var(--warn); }
+.btn.danger:hover { background: var(--warn); color: #fff; }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:disabled:hover { background: transparent; color: var(--text); }
+[hidden] { display: none !important; }   /* 숨긴 것은 버튼 모양보다 우선해서 숨김 */
+
+/* ---------- 카드·안내 ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 24px;
+}
+.label { font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.hint { color: var(--muted); font-size: 14px; margin: 6px 0; }
+.notice {
+  background: var(--soft); border-radius: 14px; padding: 14px 18px; font-size: 15px;
+}
+.message {
+  margin-top: 12px; padding: 14px 18px; border-radius: 14px;
+  background: #FDECEA; border: 1px solid #F5C2BD; font-size: 15px;
+}
+
+/* ---------- 입력칸 ---------- */
+input[type="number"], input[type="text"] {
+  width: 100%; min-height: 46px; padding: 6px 14px;
+  border: 1px solid var(--line); border-radius: 12px; font: inherit; background: #fff;
+}
+input[type="number"]:focus, input[type="text"]:focus { outline: none; border-color: var(--text); box-shadow: 0 0 0 3px rgba(11, 11, 20, 0.08); }
+label { display: block; font-size: 13px; color: var(--muted); }
+
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+
+.footer {
+  color: var(--muted); font-size: 13px; padding: 28px clamp(16px, 4vw, 40px);
+  border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}

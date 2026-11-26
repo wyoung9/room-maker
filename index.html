@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>방 만들기</title>
+<meta name="description" content="이사 전에 가구 배치와 방 분위기를 미리 보고, 사기 전에 방에 들어가는지 확인하세요.">
+<link rel="stylesheet" href="공통.css">
+<style>
+  section { scroll-margin-top: 80px; }
+
+  /* ---------- 1. 첫 화면: 큰 문장 + 물결·점선 밑줄 ---------- */
+  .hero { min-height: calc(100vh - 73px); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 72px 0 96px; }
+  .hero .label { margin-bottom: 28px; }
+  .hero h1 { font-size: clamp(36px, 7vw, 76px); line-height: 1.22; font-weight: 700; margin: 0; letter-spacing: -0.045em; }
+  .u { position: relative; display: inline-block; padding-bottom: 0.12em; }
+  .u::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.08em; height: 0.22em; background-repeat: repeat-x; background-size: auto 100%; opacity: 0.45; }
+  .u.wave::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8'><path d='M0 4 Q6 0 12 4 T24 4' fill='none' stroke='%230B0B14' stroke-width='1.6'/></svg>"); }
+  .u.dash::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8'><path d='M1 4 H10' stroke='%230B0B14' stroke-width='1.6' stroke-linecap='round'/></svg>"); }
+  .hero p.lead { font-size: clamp(16px, 2vw, 19px); color: var(--muted); margin: 32px auto 40px; max-width: 560px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  #pilot { margin-top: 28px; font-size: 14px; color: var(--muted); max-width: 520px; }
+
+  /* ---------- 공통: 잡지 같은 2단 구역 ---------- */
+  .block { padding: clamp(72px, 10vw, 128px) 0; border-top: 1px solid var(--line); }
+  .split { display: grid; grid-template-columns: 1.25fr 1fr; gap: clamp(32px, 6vw, 96px); align-items: start; }
+  .big { font-size: clamp(26px, 3.6vw, 42px); line-height: 1.32; font-weight: 600; margin: 16px 0 36px; letter-spacing: -0.035em; }
+  .side-text p { color: var(--text); font-size: 16px; margin: 0 0 18px; max-width: 420px; }
+  .side-text p.muted { color: var(--muted); }
+
+  /* ---------- 2. 고민 3가지 ---------- */
+  .needs { display: grid; grid-template-columns: 1fr 1.6fr; gap: clamp(32px, 6vw, 96px); }
+  .needs h2 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 500; line-height: 1.4; margin: 0 0 12px; }
+  .needs .tag { display: inline-block; font-size: 12px; font-weight: 600; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--muted); }
+  .needs ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 44px; }
+  .needs li { display: grid; grid-template-columns: 40px 1fr; gap: 20px; align-items: start; }
+  .needs li svg { width: 36px; height: 36px; }
+  .needs li p { margin: 0; font-size: clamp(19px, 2.2vw, 24px); font-weight: 600; line-height: 1.45; letter-spacing: -0.03em; }
+  .needs li small { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; font-weight: 400; letter-spacing: 0; }
+
+  /* ---------- 3. 01·02·03 번호 구역 ---------- */
+  .service { display: grid; grid-template-columns: 1fr 1.25fr; gap: clamp(24px, 6vw, 96px); padding: clamp(48px, 7vw, 88px) 0; border-top: 1px solid var(--line); }
+  .service:first-of-type { border-top: 0; }
+  .service .num { font-size: 13px; color: var(--muted); }
+  .service h3 { font-size: clamp(32px, 4.4vw, 52px); font-weight: 600; margin: 10px 0 0; line-height: 1.15; }
+  .service p { font-size: clamp(16px, 1.8vw, 19px); margin: 0 0 28px; max-width: 460px; }
+  .service .pill { display: inline-block; font-size: 12px; font-weight: 600; background: var(--soft); border-radius: 999px; padding: 3px 10px; margin-left: 8px; vertical-align: middle; letter-spacing: 0; }
+
+  /* ---------- 4. 배치도 예시 ---------- */
+  .case { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
+  .case h2 { font-size: clamp(26px, 3.4vw, 38px); line-height: 1.3; font-weight: 600; margin: 14px 0 12px; }
+  .case .tags { color: var(--muted); font-size: 13px; margin: 0 0 32px; }
+  .case .intro { color: var(--muted); font-size: 16px; margin: 0; max-width: 460px; }
+  .mini-steps { list-style: none; padding: 0; margin: 28px 0 36px; border-top: 1px solid var(--line); }
+  .mini-steps li { display: grid; grid-template-columns: 44px 1fr; gap: 8px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .mini-steps .num { font-size: 13px; color: var(--muted); padding-top: 3px; }
+  .mini-steps b { font-size: 19px; font-weight: 600; letter-spacing: -0.03em; }
+  .mini-steps p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  .mini-steps .pill { display: inline-block; font-size: 12px; font-weight: 600; background: var(--soft); border-radius: 999px; padding: 2px 10px; margin-left: 6px; vertical-align: 2px; letter-spacing: 0; }
+  .sample { margin: 0; background: var(--soft); border-radius: 28px; padding: clamp(20px, 3vw, 40px); }
+  .sample svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
+  .sample .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 14px; }
+  .sample .legend i { display: inline-block; width: 12px; height: 9px; margin-right: 5px; vertical-align: middle; border-radius: 2px; }
+  .sample figcaption { font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+  /* ---------- 5. 검정 구역 + 가구 모양 흰 도형 ---------- */
+  .dark { background: var(--text); color: #fff; position: relative; overflow: hidden; }
+  .dark .inner { position: relative; z-index: 1; text-align: center; padding: clamp(96px, 12vw, 160px) 0 clamp(220px, 26vw, 340px); }
+  .dark .label { color: #A0A0AA; }
+  .dark h2 { font-size: clamp(30px, 5vw, 56px); line-height: 1.25; font-weight: 700; margin: 18px 0 20px; }
+  .dark p { color: #B8B8C2; max-width: 520px; margin: 0 auto 40px; }
+  .dark .btn { border-color: #fff; color: #fff; }
+  .dark .btn:hover { background: #fff; color: var(--text); }
+  .dark .btn.light { background: #fff; color: var(--text); }
+  .dark .btn.light:hover { background: #E6E6EA; }
+  .shapes { position: absolute; left: 0; right: 0; bottom: 0; height: clamp(200px, 26vw, 330px); pointer-events: none; }
+  .shapes svg { width: 100%; height: 100%; display: block; }
+
+  /* ---------- 6. 자주 묻는 질문 ---------- */
+  .faq-list { border-top: 1px solid var(--line); }
+  .faq-list details { border-bottom: 1px solid var(--line); }
+  .faq-list summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 0; font-size: 18px; font-weight: 600; }
+  .faq-list summary::-webkit-details-marker { display: none; }
+  .faq-list summary::after { content: "+"; font-size: 26px; font-weight: 300; line-height: 1; transition: transform 0.2s; }
+  .faq-list details[open] summary::after { transform: rotate(45deg); }
+  .faq-list details p { margin: 0 0 22px; color: var(--muted); max-width: 560px; }
+
+  @media (max-width: 820px) {
+    .split, .needs, .service, .case { grid-template-columns: 1fr; }
+    .hero { min-height: auto; padding: 72px 0 80px; }
+    .needs ul { gap: 32px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <a href="index.html" class="logo">방 만들기</a>
+  <div class="top-right">
+    <nav>
+      <a href="배치.html">배치</a>
+      <a href="렌더신청.html">AI 렌더</a>
+    </nav>
+    <a href="배치.html" class="btn primary top-cta">무료로 배치하기</a>
+  </div>
+</header>
+
+<main>
+  <!-- 1. 첫 화면 -->
+  <section class="wrap hero">
+    <span class="label">이사 전 가구 배치 미리보기</span>
+    <h1><span class="u wave">침대</span> 놓고 <span class="u dash">책상</span>까지<br>놓을 <span class="u wave">자리</span>가 있을까?</h1>
+    <p class="lead">이사 전에 가구 배치를 직접 해 보고, 사기 전에 방에 들어가는지 확인하세요. 완성된 분위기는 AI 렌더로 미리 볼 수 있어요.</p>
+    <div class="cta">
+      <a href="배치.html" class="btn primary">무료로 배치 시작하기</a>
+      <a href="렌더신청.html" class="btn">AI 렌더 알아보기</a>
+    </div>
+    <p id="pilot" hidden></p>
+  </section>
+
+  <!-- 2. 방 만들기는: 소개 + 방 크기 입력 + 가구 배치 + 배치도 예시를 한 구역에 -->
+  <section class="block">
+    <div class="wrap case">
+      <div>
+        <span class="label">방 만들기는</span>
+        <h2>방 크기를 넣고,<br>가구를 끌어다 놓아 보세요</h2>
+        <p class="intro">이사 전에 가구가 들어가는지 먼저 놓아 볼 수 있는 배치 도구예요. 횟수 제한 없이 무료이고, 회원가입 없이 바로 쓸 수 있어요.</p>
+        <ol class="mini-steps">
+          <li>
+            <span class="num">01</span>
+            <div><b>방 크기 입력 <span class="pill">무료</span></b><p>가로·세로 길이(cm)만 넣으면 방이 그려져요. 면적과 평수도 바로 보여요.</p></div>
+          </li>
+          <li>
+            <span class="num">02</span>
+            <div><b>가구 배치 <span class="pill">무제한</span></b><p>가구를 끌어다 놓아 보세요. 겹치거나 방 밖으로 나가면 색으로 알려 드려요.</p></div>
+          </li>
+        </ol>
+        <a href="배치.html" class="btn primary">무료로 배치 시작하기</a>
+      </div>
+      <!-- 좌표 단위는 cm (방 300×400) -->
+      <figure class="sample">
+        <svg viewBox="-30 -40 375 470" role="img" aria-label="300×400cm 방에 책상, 의자, 침대, 옷장을 놓은 배치도 예시">
+          <g font-family="Pretendard Variable, Pretendard, Malgun Gothic, sans-serif" text-anchor="middle">
+            <g stroke="#9A9AA4" stroke-width="1.5">
+              <line x1="0" y1="-22" x2="300" y2="-22"/><line x1="0" y1="-28" x2="0" y2="-16"/><line x1="300" y1="-28" x2="300" y2="-16"/>
+              <line x1="322" y1="0" x2="322" y2="400"/><line x1="316" y1="0" x2="328" y2="0"/><line x1="316" y1="400" x2="328" y2="400"/>
+            </g>
+            <text x="150" y="-28" font-size="13" fill="#6E6E78">300 cm</text>
+            <text x="338" y="200" font-size="13" fill="#6E6E78" transform="rotate(90 338 200)">400 cm</text>
+            <rect x="0" y="0" width="300" height="400" fill="#FFFFFF"/>
+            <g stroke="#EDEDF0" stroke-width="1">
+              <path d="M50 0V400M100 0V400M150 0V400M200 0V400M250 0V400M0 50H300M0 100H300M0 150H300M0 200H300M0 250H300M0 300H300M0 350H300"/>
+            </g>
+            <path d="M290 400 L200 400 A90 90 0 0 1 290 310 Z" fill="rgba(11,11,20,0.04)" stroke="#0B0B14" stroke-width="1.5" stroke-dasharray="6 5"/>
+            <path d="M200 400 H0 V0 H300 V400 H290" fill="none" stroke="#0B0B14" stroke-width="9"/>
+            <line x1="290" y1="400" x2="290" y2="310" stroke="#0B0B14" stroke-width="3"/>
+            <rect x="20" y="-4.5" width="120" height="9" fill="#FFFFFF" stroke="#0B0B14" stroke-width="1.5"/>
+            <line x1="20" y1="0" x2="140" y2="0" stroke="#0B0B14" stroke-width="1.5"/>
+            <rect x="20" y="10" width="120" height="60" rx="6" fill="#F7D26A" stroke="#0B0B14" stroke-width="1.5"/>
+            <text x="80" y="38" font-size="13" font-weight="700" fill="#0B0B14">책상</text>
+            <text x="80" y="54" font-size="11" fill="#55555E">120×60</text>
+            <circle cx="80" cy="95" r="17" fill="#D9D4CA" stroke="#0B0B14" stroke-width="1.5"/>
+            <rect x="190" y="10" width="100" height="200" rx="8" fill="#C7CFAE" stroke="#0B0B14" stroke-width="1.5"/>
+            <rect x="198" y="20" width="38" height="22" rx="6" fill="#FFFFFF" stroke="#0B0B14" stroke-width="1"/>
+            <rect x="244" y="20" width="38" height="22" rx="6" fill="#FFFFFF" stroke="#0B0B14" stroke-width="1"/>
+            <line x1="190" y1="52" x2="290" y2="52" stroke="#0B0B14" stroke-width="1"/>
+            <text x="240" y="128" font-size="13" font-weight="700" fill="#0B0B14">침대</text>
+            <text x="240" y="144" font-size="11" fill="#55555E">100×200</text>
+            <rect x="5" y="230" width="60" height="100" rx="6" fill="#F4B49A" stroke="#0B0B14" stroke-width="1.5"/>
+            <text x="35" y="278" font-size="13" font-weight="700" fill="#0B0B14">옷장</text>
+            <text x="35" y="294" font-size="11" fill="#55555E">100×60</text>
+            <text x="252" y="370" font-size="11" font-weight="600" fill="#0B0B14">문 열리는</text>
+            <text x="252" y="384" font-size="11" font-weight="600" fill="#0B0B14">자리</text>
+            <text x="245" y="422" font-size="11" fill="#6E6E78">문 90 cm</text>
+          </g>
+        </svg>
+        <div class="legend">
+          <span><i style="background:#C7CFAE;border:1px solid #0B0B14"></i>가구</span>
+          <span><i style="background:#fff;border:1px solid #0B0B14"></i>창문</span>
+          <span><i style="background:rgba(11,11,20,0.06);border:1px dashed #0B0B14"></i>문이 열리는 자리</span>
+        </div>
+        <figcaption>예시: 300×400cm 방 · 격자 1칸 = 50cm · 가구 크기는 흔한 예시 규격</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 5. AI 렌더 (유료 서비스라 따로) -->
+  <section class="block" style="padding-top:0;padding-bottom:0">
+    <div class="wrap">
+      <div class="service">
+        <div><span class="num">03</span><h3>AI 렌더</h3></div>
+        <div>
+          <p>저장한 배치도와 방 사진을 보내 주시면 AI로 만든 분위기 이미지를 보내 드려요. 렌더 이미지는 실제 제품의 색·질감과 다를 수 있는 참고용 시안이에요.</p>
+          <a href="렌더신청.html" class="btn">렌더 알아보기</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 고민 3가지 (가정) -->
+  <section class="block">
+    <div class="wrap needs">
+      <div>
+        <h2>이사를 앞둔 분들은<br>이렇게 느낀다고 생각해요</h2>
+        <span class="tag">가정 · 인터뷰로 확인하기 전</span>
+      </div>
+      <ul>
+        <li>
+          <svg viewBox="0 0 36 36" fill="none" stroke="#0B0B14" stroke-width="1.6" aria-hidden="true"><rect x="4" y="8" width="28" height="20" rx="3"/><path d="M4 18h28M14 8v10"/></svg>
+          <p>가구를 어디에 둘지, 들어갈지 감이 안 와요.<small>고객의 말 (가정)</small></p>
+        </li>
+        <li>
+          <svg viewBox="0 0 36 36" fill="none" stroke="#0B0B14" stroke-width="1.6" aria-hidden="true"><rect x="3" y="13" width="30" height="10" rx="2"/><path d="M9 13v5M15 13v3M21 13v5M27 13v3"/></svg>
+          <p>치수 재는 게 번거로워요.<small>고객의 말 (가정)</small></p>
+        </li>
+        <li>
+          <svg viewBox="0 0 36 36" fill="none" stroke="#0B0B14" stroke-width="1.6" aria-hidden="true"><rect x="4" y="6" width="28" height="22" rx="3"/><circle cx="13" cy="14" r="2.5"/><path d="M32 23l-8-7-14 12"/></svg>
+          <p>완성된 분위기가 상상이 안 돼서, 사고 나서 후회할까 봐 걱정돼요.<small>고객의 말 (가정)</small></p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6. 검정 구역 -->
+  <section class="dark">
+    <div class="wrap inner">
+      <span class="label">무료 시범 운영 중</span>
+      <h2>곧 이사하시나요?<br>먼저 놓아 보고 결정하세요.</h2>
+      <p>배치는 무료로 바로 해 볼 수 있어요. 완성된 분위기가 궁금하면 AI 렌더를 신청하세요. 시범이 끝나면 어떠셨는지 후기를 여쭤볼게요.</p>
+      <div class="cta">
+        <a href="배치.html" class="btn light">무료로 배치 시작하기</a>
+        <a href="렌더신청.html" class="btn">AI 렌더 신청하기</a>
+      </div>
+    </div>
+    <!-- 가구 모양 흰 도형: 침대 · 의자 · 옷장 · 소파 -->
+    <div class="shapes" aria-hidden="true">
+      <svg viewBox="0 0 1200 330" preserveAspectRatio="xMidYMax slice">
+        <g fill="#FFFFFF">
+          <g transform="translate(70 120) rotate(-14)"><rect width="230" height="330" rx="34"/><rect x="26" y="26" width="80" height="54" rx="16" fill="#0B0B14"/><rect x="124" y="26" width="80" height="54" rx="16" fill="#0B0B14"/></g>
+          <circle cx="420" cy="290" r="78"/>
+          <g transform="translate(560 170) rotate(9)"><rect width="190" height="230" rx="18"/><line x1="95" y1="0" x2="95" y2="230" stroke="#0B0B14" stroke-width="6"/></g>
+          <g transform="translate(860 150) rotate(-7)"><rect width="300" height="120" rx="40"/><rect x="0" y="80" width="300" height="140" rx="30"/></g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. 자주 묻는 질문 -->
+  <section class="block" style="border-top:0">
+    <div class="wrap split">
+      <div>
+        <span class="label">자주 묻는 질문</span>
+        <p class="big" style="margin-bottom:0">궁금한 점을<br>모아 봤어요</p>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>배치는 정말 무료인가요?</summary>
+          <p>네. 가구 배치는 횟수 제한 없이 무료로 쓸 수 있어요.</p>
+        </details>
+        <details>
+          <summary>AI 렌더는 얼마인가요?</summary>
+          <p id="faqPrice">AI 렌더 페이지에서 확인할 수 있어요.</p>
+        </details>
+        <details>
+          <summary>가구 치수는 정확한가요?</summary>
+          <p>기본 가구 치수는 흔한 예시 값이에요. 사려는 제품의 실제 치수로 고쳐서 확인해 주세요.</p>
+        </details>
+        <details>
+          <summary>회원가입이 필요한가요?</summary>
+          <p>배치는 가입 없이 바로 쓸 수 있어요. 작업 내용은 지금 쓰는 기기의 브라우저에 저장돼요.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer"><span>방 만들기</span><span>시범 운영 중</span></footer>
+
+<script src="설정.js"></script>
+<script>
+  (function () {
+    var CFG = window.ROOM_CONFIG || {};
+    var pilot = document.getElementById("pilot");
+    if (CFG.pilotNotice) { pilot.textContent = CFG.pilotNotice; pilot.hidden = false; }
+    var free = document.getElementById("faqPrice");
+    if (typeof CFG.freeRenders === "number" && CFG.freeRenders > 0) {
+      free.textContent = "처음 " + CFG.freeRenders + "회는 무료이고, 그다음부터 유료예요. 가격은 AI 렌더 페이지에서 확인할 수 있어요.";
+    }
+  })();
+</script>
+</body>
+</html>
