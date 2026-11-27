@@ -257,6 +257,13 @@
           var tx = el("text", { x: r.x + r.w / 2, y: r.y + r.h / 2 + f * 0.3, "text-anchor": "middle", "font-size": f, "font-weight": "700", fill: "#1f1d1b", "font-family": FONT, "pointer-events": "none" }, g);
           tx.textContent = dispName(it);
         }
+        if (!calib.on) {                                   // 모서리의 빨간 ✕ 버튼: 누르면 바로 지움
+          var br = 8 * u, bg = el("g", { "data-del": it.id, style: "cursor:pointer" }, g);
+          el("circle", { cx: r.x + r.w, cy: r.y, r: br, fill: "#C42A1E", stroke: "#fff", "stroke-width": 1.5 * u }, bg);
+          var bx = el("text", { x: r.x + r.w, y: r.y + br * 0.38, "text-anchor": "middle", "font-size": br * 1.1, fill: "#fff", "font-weight": "700", "font-family": FONT, "pointer-events": "none" }, bg);
+          bx.textContent = "✕";
+          el("title", {}, bg).textContent = t("p.remove", { name: dispName(it) });
+        }
       });
     }
     // 축척 맞추기 점 두 개 + 선
@@ -431,6 +438,13 @@
         if (calib.pts.length === 2) { calibAsk.hidden = false; calibCm.focus(); }
       }
       evt.preventDefault(); return;
+    }
+    var del = evt.target.closest ? evt.target.closest("[data-del]") : null;      // ✕ 버튼을 눌렀으면 그 가구를 지움
+    if (del) {
+      var delId = Number(del.getAttribute("data-del"));
+      state.items = state.items.filter(function (o) { return o.id !== delId; });
+      if (selectedId === delId) selectedId = null;
+      evt.preventDefault(); commit(); return;
     }
     var g = evt.target.closest ? evt.target.closest("g[data-id]") : null;
     if (!g) { selectedId = null; render(); return; }

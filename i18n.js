@@ -478,6 +478,20 @@
   K("d.photoOk", "방 사진을 넣었어요. 렌더에 이 방의 느낌이 반영돼요.", "Room photo added. The render will reflect this room's feel.", "部屋の写真を入れました。レンダーにこの部屋の雰囲気が反映されます。", "已添加房间照片。渲染会反映这个房间的感觉。");
   K("d.photoBad", "이 사진은 열 수 없어요. 다른 사진으로 해 주세요.", "This photo can't be opened. Please use a different one.", "この写真は開けません。別の写真にしてください。", "无法打开这张照片。请换一张。");
 
+  /* ---- 렌더 후 가구 찾아보기 (검색 링크) ---- */
+  K("d.recTitle", "이 방에 어울리는 가구 찾아보기", "Find furniture for this room", "この部屋に合う家具を探す", "为这个房间找家具");
+  K("d.recHint",
+    "렌더 분위기와 내가 놓은 가구를 바탕으로 만든 검색어예요. 누르면 쇼핑몰의 검색 결과로 이동해요. 어떤 상품이 나오는지, 가격·재고는 판매처에서 확인하세요. 직접 첨부한 가구는 이미 정해진 가구라 뺐어요.",
+    "These search terms are built from the render's mood and the furniture you placed. Each link opens the shop's search results — check the products, prices and stock on the shop itself. Furniture you attached yourself is left out, since it's already decided.",
+    "レンダーの雰囲気と、置いた家具をもとに作った検索ワードです。押すとショップの検索結果に移動します。どんな商品が出るか、価格・在庫は販売元でご確認ください。ご自分で添付した家具はすでに決まっているので除いています。",
+    "这些搜索词是根据渲染氛围和您摆放的家具生成的。点击后会跳转到商城的搜索结果页。具体有哪些商品、价格和库存请在商家页面确认。您自己上传的家具已经确定，所以不包含在内。");
+  K("d.recKw", "검색어: {q}", "Search: {q}", "検索ワード：{q}", "搜索词：{q}");
+  K("d.recSize", "배치한 크기 {w}×{h}cm", "Placed size {w}×{h} cm", "配置したサイズ {w}×{h}cm", "摆放尺寸 {w}×{h}cm");
+  K("d.recMore", "렌더 이미지에 보이는 소품(조명·러그·커튼 등)까지 찾아 주는 「추가 서치」는 준비 중이에요. (유료로 제공할 예정이에요)", "“Extra search” for the small items you see in the render (lamps, rugs, curtains, etc.) is being prepared. (It will be offered as a paid option.)", "レンダー画像に見える小物（照明・ラグ・カーテンなど）まで探す「追加検索」は準備中です。（有料での提供を予定しています）", "为渲染图中看到的小物件（灯具、地毯、窗帘等）查找的「追加搜索」正在准备中。（计划作为付费功能提供）");
+  K("d.shopNaver", "네이버쇼핑", "Naver Shopping", "ネイバーショッピング", "Naver 购物");
+  K("d.shopCoupang", "쿠팡", "Coupang", "クーパン", "Coupang");
+  K("d.shopGoogle", "구글 쇼핑", "Google Shopping", "Google ショッピング", "Google 购物");
+
   /* ===================== 집 전체 도면 (집도면.html) ===================== */
   K("title.house", "방 만들기 · 집 전체 도면", "Room Maker · Whole-home plan", "部屋づくり · 家全体の間取り", "布置房间 · 整套房子户型图");
   K("h.h1", "집 전체 도면 위에<br>가구를 놓아 보세요", "Place furniture on<br>your whole-home plan", "家全体の間取り図の上に<br>家具を置いてみましょう", "在整套房子的户型图上<br>摆放家具");

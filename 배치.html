@@ -125,6 +125,15 @@
   .rd-result img { width: 100%; height: auto; display: block; border-radius: 14px; border: 1px solid var(--line); background: var(--soft); }
   .rd-result-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; }
   .rd-result-bar .hint { margin: 0; font-size: 13px; flex: 1 1 240px; }
+  .rd-rec { margin-top: 8px; }
+  .rec-list { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 8px; }
+  .rec-list li { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: grid; gap: 4px; }
+  .rec-list .rn { font-weight: 700; }
+  .rec-list .rn .dot { margin-right: 6px; }
+  .rec-list .rk, .rec-list .rs { font-size: 13px; color: var(--muted); word-break: break-all; }
+  .rec-list .rl { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .rec-list .rl a { font-size: 13px; padding: 5px 12px; border: 1px solid var(--text); border-radius: 999px; text-decoration: none; color: var(--text); }
+  .rec-list .rl a:hover { background: var(--text); color: #fff; }
   .imp-src .where { display: block; margin-top: 4px; font-size: 11px; color: var(--muted); max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .imp-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }
   @media (max-width: 560px) {
@@ -339,6 +348,13 @@
       <span class="hint" data-i18n="d.resultHint">AI가 그린 참고용 시안이에요. 마음에 안 들면 분위기를 바꿔 다시 만들 수 있어요. (다시 만들면 무료 횟수가 1회 줄어요.)</span>
     </div>
   </div>
+
+  <div id="rdRec" class="rd-rec" hidden>
+    <h3 class="rd-h" data-i18n="d.recTitle">이 방에 어울리는 가구 찾아보기</h3>
+    <p class="hint" data-i18n="d.recHint">렌더 분위기와 내가 놓은 가구를 바탕으로 만든 검색어예요.</p>
+    <ul id="rdRecList" class="rec-list"></ul>
+    <p class="hint" data-i18n="d.recMore">렌더 이미지에 보이는 소품까지 찾아 주는 「추가 서치」는 준비 중이에요.</p>
+  </div>
 </dialog>
 
 <script src="설정.js"></script>
@@ -500,6 +516,14 @@
         var lab = el("text", { x: it.x + it.w / 2, y: it.y + it.h + fs * 0.9, "font-size": fs * 0.8, fill: c.stroke, "text-anchor": "middle",
           "font-family": FONT, "pointer-events": "none" }, g);
         lab.textContent = dispName(it);
+      }
+      if (!forExport) {                          // 모서리의 빨간 ✕ 버튼: 누르면 바로 지움 (저장하는 PNG 에는 안 그림)
+        var br = Math.max(8, fs * 0.6);
+        var bg = el("g", { "data-del": it.id, style: "cursor:pointer" }, g);
+        el("circle", { cx: it.x + it.w, cy: it.y, r: br, fill: "#C42A1E", stroke: "#fff", "stroke-width": 1.5 }, bg);
+        var bx = el("text", { x: it.x + it.w, y: it.y + br * 0.38, "text-anchor": "middle", "font-size": br * 1.1, fill: "#fff", "font-weight": "700", "font-family": FONT, "pointer-events": "none" }, bg);
+        bx.textContent = "✕";
+        el("title", {}, bg).textContent = t("p.remove", { name: dispName(it) });
       }
     });
   }
@@ -1120,6 +1144,8 @@
     var urls = {};
     impRows.forEach(function (r) {
       addItem((r.name || "").trim() || "가구", Number(r.w), Number(r.h), "furniture", null, r.kind || "");
+      state.items[state.items.length - 1].fromPhoto = true;      // 직접 첨부한(이미 정해진) 가구 → 추천에서 뺌
+      persist();
       urls[r.url] = true;
     });
     Object.keys(urls).forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} });   // 사진 미리보기 정리
@@ -1287,6 +1313,13 @@
     return pt.matrixTransform(svg.getScreenCTM().inverse());
   }
   svg.addEventListener("pointerdown", function (evt) {
+    var del = evt.target.closest ? evt.target.closest("[data-del]") : null;      // ✕ 버튼을 눌렀으면 그 가구를 지움
+    if (del) {
+      var delId = Number(del.getAttribute("data-del"));
+      state.items = state.items.filter(function (o) { return o.id !== delId; });
+      if (selectedId === delId) selectedId = null;
+      evt.preventDefault(); commit(); return;
+    }
     var g = evt.target.closest ? evt.target.closest("g[data-id]") : null;
     if (!g) { selectedId = null; render(); return; }
     var it = byId(Number(g.getAttribute("data-id")));
@@ -1427,6 +1460,43 @@
     });
   }
 
+  // ---------- 렌더 후 가구 찾아보기: 분위기 + 가구 이름으로 쇼핑몰 검색 링크를 만듦 ----------
+  // 한국 쇼핑몰 검색에 쓰므로 검색어는 한국어로 고정 (설정.js 의 한국어 가구 이름 기준)
+  var STYLE_KW = { modern: "모던 미니멀 화이트", nordic: "북유럽 원목", warm: "빈티지 우드", hotel: "호텔식 화이트", natural: "내추럴 베이지 우드" };
+  var rdRec = document.getElementById("rdRec"), rdRecList = document.getElementById("rdRecList"), rdRecState = null;
+  function recommendFor(furniture, style, styleText) {
+    var kw = style === "custom" ? styleText : (STYLE_KW[style] || ""), seen = {}, out = [];
+    furniture.forEach(function (it) {
+      if (it.fromPhoto || seen[it.name] || out.length >= 10) return;       // 직접 첨부한 가구는 빼고, 같은 이름은 한 번만
+      seen[it.name] = true;
+      out.push({ name: it.name, color: it.color, w: it.w, h: it.h, query: (kw + " " + it.name).trim() });
+    });
+    return out;
+  }
+  function shopLinks(q) {
+    var e = encodeURIComponent(q);
+    return [["d.shopNaver", "https://search.shopping.naver.com/search/all?query=" + e],
+            ["d.shopCoupang", "https://www.coupang.com/np/search?q=" + e],
+            ["d.shopGoogle", "https://www.google.com/search?tbm=shop&q=" + e]];
+  }
+  function paintRec() {
+    rdRec.hidden = !(rdRecState && rdRecState.items.length);
+    rdRecList.textContent = "";
+    if (rdRec.hidden) return;
+    rdRecState.items.forEach(function (r) {
+      var li = document.createElement("li");
+      var rn = document.createElement("div"); rn.className = "rn";
+      var dot = document.createElement("span"); dot.className = "dot"; dot.style.background = r.color || COLORS.furniture.fill;
+      rn.appendChild(dot); rn.appendChild(document.createTextNode(I18N.name(r.name)));
+      var rs = document.createElement("div"); rs.className = "rs"; rs.textContent = t("d.recSize", { w: r.w, h: r.h });
+      var rk = document.createElement("div"); rk.className = "rk"; rk.textContent = t("d.recKw", { q: r.query });
+      var rl = document.createElement("div"); rl.className = "rl";
+      shopLinks(r.query).forEach(function (l) {
+        var a = document.createElement("a"); a.href = l[1]; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = t(l[0]); rl.appendChild(a);
+      });
+      li.appendChild(rn); li.appendChild(rs); li.appendChild(rk); li.appendChild(rl); rdRecList.appendChild(li);
+    });
+  }
   function serverKind(k) { return k === "side" ? "storage" : k === "table" ? "misc" : k; }   // 서버가 아는 종류로
   async function rdMake() {
     if (rdBusy || !rdUsable) return;
@@ -1441,7 +1511,8 @@
     var styleText = document.getElementById("rdStyleText").value.trim();
     if (style === "custom" && !/^[\p{L}\p{N} ,.\-]{2,40}$/u.test(styleText)) { rdSay(["d.badStyle"], true); return; }
 
-    rdBusy = true; rdUpdateGo(); rdResult.hidden = true;
+    rdBusy = true; rdUpdateGo(); rdResult.hidden = true; rdRecState = null; paintRec();
+    var recItems = recommendFor(furniture, style, styleText);
     var started = Date.now();
     var tick = setInterval(function () {
       rdSay(["d.makingS", { s: Math.round((Date.now() - started) / 1000) }]);
@@ -1458,6 +1529,7 @@
         rdImg.src = src; rdSave.href = src; rdResult.hidden = false;
         rdApplyQuota({ enabled: true, free: data.free, remaining: data.remaining });
         rdSay(function () { return t("d.done") + (skipped ? t("d.skipped", { n: skipped }) : ""); });
+        rdRecState = { items: recItems }; paintRec();          // 렌더가 끝나면 가구 찾아보기 링크를 보여 줌
         rdImg.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else if (res.status === 402) {
         rdApplyQuota({ enabled: true, free: data.free || 0, remaining: 0 }); rdSay(["e.free_limit"], true);
@@ -1508,7 +1580,7 @@
     buildPresets();
     render();                                   // 도면 속 가구 이름 + 면적 안내 + 선택한 가구 이름칸
     renderImp();                                // 가구 불러오기 표
-    paintAuto(); paintImp(); paintRd(); paintQuota();
+    paintAuto(); paintImp(); paintRd(); paintQuota(); paintRec();
     rdSave.setAttribute("download", t("p.filerender"));
   }
   I18N.onChange(relang);
