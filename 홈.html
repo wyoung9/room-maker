@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B14">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="방 만들기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title data-i18n="hm.title">방 만들기 · 홈</title>
+<link rel="stylesheet" href="공통.css">
+<style>
+  /* 앱 홈 화면: 휴대폰 기준 한 줄 폭, 넓은 화면에서는 가운데에 좁게 */
+  .home-main { max-width: 520px; margin: 0 auto; padding: 8px 16px calc(96px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 22px; }
+  .hero-card { background: var(--text); color: #fff; border-radius: 28px; padding: 28px 22px 24px; position: relative; overflow: hidden; }
+  .hero-card .label { color: #A0A0AA; }
+  .hero-card h1 { font-size: clamp(28px, 8vw, 36px); line-height: 1.22; font-weight: 700; margin: 10px 0 10px; letter-spacing: -0.04em; color: #fff; }
+  .hero-card p { margin: 0 0 20px; color: #C4C4CE; font-size: 15px; max-width: 360px; }
+  .hero-card .btn { width: 100%; min-height: 54px; font-size: 17px; background: #fff; color: var(--text); border-color: #fff; }
+  .hero-card .btn:hover { background: #E6E6EA; }
+  .hero-card .deco { position: absolute; right: -18px; top: -10px; width: 120px; opacity: 0.9; pointer-events: none; transform: rotate(8deg); }
+
+  h2.sec { font-size: 17px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sec-hint { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { font: inherit; font-size: 15px; font-weight: 600; padding: 12px 18px; min-height: 46px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--text); cursor: pointer; }
+  .chips button:active { background: var(--soft); transform: scale(0.97); }
+
+  .resume-list { display: grid; gap: 10px; }
+  .resume { display: grid; grid-template-columns: 72px 1fr auto; gap: 14px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 20px; background: #fff; }
+  .resume .thumb { width: 72px; height: 72px; border-radius: 12px; background: var(--soft); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .resume .thumb svg, .resume .thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .resume b { display: block; font-size: 15px; letter-spacing: -0.02em; }
+  .resume small { color: var(--muted); font-size: 13px; }
+  .resume .btn { min-height: 44px; padding: 0 16px; font-size: 14px; }
+
+  .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .menu a { display: flex; flex-direction: column; gap: 6px; padding: 16px; min-height: 124px; border: 1px solid var(--line); border-radius: 20px; background: #fff; text-decoration: none; color: var(--text); }
+  .menu a:active { background: var(--soft); transform: scale(0.98); }
+  .menu .ic { width: 38px; height: 38px; border-radius: 12px; background: var(--soft); display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+  .menu .ic svg { width: 22px; height: 22px; }
+  .menu b { font-size: 16px; letter-spacing: -0.02em; }
+  .menu small { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+
+  .foot-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .foot-links button, .foot-links a { font: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--text); text-decoration: none; cursor: pointer; min-height: 40px; display: inline-flex; align-items: center; }
+  .ver { color: var(--muted); font-size: 12px; margin: 0; }
+
+  /* 아래 탭 바 */
+  #hometab { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: rgba(255,255,255,0.97); backdrop-filter: blur(10px); border-top: 1px solid var(--line); }
+  #hometab a { flex: 1; min-height: 50px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--muted); text-decoration: none; }
+  #hometab a svg { width: 24px; height: 24px; }
+  #hometab a.on { color: var(--text); background: var(--soft); }
+  @media (min-width: 761px) { #hometab { display: none; } .home-main { padding-bottom: 48px; } }
+
+  /* 시작 화면(스플래시) */
+  #splash { position: fixed; inset: 0; z-index: 200; background: var(--text); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; transition: opacity 0.45s; }
+  #splash.out { opacity: 0; pointer-events: none; }
+  #splash img { width: 96px; height: 96px; border-radius: 24px; animation: pop 0.6s ease-out; }
+  #splash b { font-size: 26px; letter-spacing: -0.04em; }
+  #splash span { font-size: 14px; color: #A0A0AA; }
+  @keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* 처음 안내(온보딩) */
+  #onb { position: fixed; inset: 0; z-index: 150; background: #fff; display: flex; flex-direction: column; padding: calc(16px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); }
+  #onb[hidden] { display: none; }
+  #onb .skip { align-self: flex-end; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: 0; padding: 10px 6px; cursor: pointer; }
+  #onb .slides { flex: 1; position: relative; overflow: hidden; }
+  #onb .slide { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; padding: 0 8px; opacity: 0; transform: translateX(30px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+  #onb .slide.on { opacity: 1; transform: none; pointer-events: auto; }
+  #onb .slide svg { width: min(260px, 70vw); height: auto; }
+  #onb .slide h2 { font-size: 26px; line-height: 1.25; margin: 6px 0 0; letter-spacing: -0.04em; }
+  #onb .slide p { margin: 0; color: var(--muted); max-width: 320px; font-size: 16px; }
+  #onb .dots { display: flex; justify-content: center; gap: 8px; margin: 10px 0 16px; }
+  #onb .dots i { width: 8px; height: 8px; border-radius: 50%; background: #D5D5DB; }
+  #onb .dots i.on { background: var(--text); width: 22px; border-radius: 4px; }
+  #onb .btn { width: 100%; min-height: 54px; font-size: 17px; }
+</style>
+</head>
+<body class="app home">
+
+<!-- 시작 화면: 앱으로 열었을 때(또는 주소에 ?splash=1) 처음 한 번 잠깐 보여 줌 -->
+<div id="splash" hidden>
+  <img src="/icons/icon-192.png" alt="">
+  <b data-i18n="brand">방 만들기</b>
+  <span data-i18n="hm.tag">이사 전에, 먼저 놓아 보세요</span>
+</div>
+
+<!-- 처음 안내: 처음 한 번만 -->
+<div id="onb" role="dialog" aria-modal="true" aria-label="안내" hidden>
+  <button class="skip" id="onbSkip" type="button" data-i18n="hm.skip">건너뛰기</button>
+  <div class="slides">
+    <div class="slide on">
+      <svg viewBox="0 0 260 200" aria-hidden="true"><rect x="40" y="30" width="180" height="140" rx="6" fill="#FBF8F1" stroke="#0B0B14" stroke-width="6"/><path d="M40 100h40M130 30v40" stroke="#E6E6EA" stroke-width="2"/><text x="130" y="22" font-size="13" text-anchor="middle" fill="#6E6E78">300 cm</text><text x="236" y="104" font-size="13" fill="#6E6E78" transform="rotate(90 236 100)" text-anchor="middle">400 cm</text></svg>
+      <h2 data-i18n="hm.ob1.t">방 크기를 넣고</h2>
+      <p data-i18n="hm.ob1.d">가로·세로(cm)만 넣으면 방이 그려져요.</p>
+    </div>
+    <div class="slide">
+      <svg viewBox="0 0 260 200" aria-hidden="true"><rect x="40" y="30" width="180" height="140" rx="6" fill="#FBF8F1" stroke="#0B0B14" stroke-width="6"/><rect x="52" y="42" width="56" height="86" rx="6" fill="#7CA7EB" stroke="#141414" stroke-width="3"/><rect x="124" y="42" width="84" height="34" rx="5" fill="#FFD230" stroke="#141414" stroke-width="3"/><circle cx="166" cy="96" r="13" fill="#F0E6DA" stroke="#141414" stroke-width="3"/><rect x="144" y="128" width="64" height="30" rx="5" fill="#FFA175" stroke="#141414" stroke-width="3"/><path d="M52 158a30 30 0 0 1 30-30" fill="none" stroke="#8A5524" stroke-width="2" stroke-dasharray="5 4"/></svg>
+      <h2 data-i18n="hm.ob2.t">가구를 끌어다 놓아요</h2>
+      <p data-i18n="hm.ob2.d">겹치면 빨간 테두리로 알려 주고, 「자동 배치」는 필수 가구까지 알아서 넣어 줘요.</p>
+    </div>
+    <div class="slide">
+      <svg viewBox="0 0 260 200" aria-hidden="true"><rect x="30" y="34" width="200" height="132" rx="16" fill="#F4F4F6"/><circle cx="80" cy="84" r="16" fill="#FFD230"/><path d="M230 140l-62-52-80 70" fill="none" stroke="#7CA7EB" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M196 40l4 12 12 4-12 4-4 12-4-12-12-4 12-4z" fill="#0B0B14"/></svg>
+      <h2 data-i18n="hm.ob3.t">AI 렌더로 분위기까지</h2>
+      <p data-i18n="hm.ob3.d">완성된 방의 분위기 이미지를 만들고, 어울리는 가구를 찾아봐요.</p>
+    </div>
+  </div>
+  <div class="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+  <button class="btn primary" id="onbNext" type="button" data-i18n="hm.next">다음</button>
+</div>
+
+<header class="top">
+  <a href="홈.html" class="logo" data-i18n="brand">방 만들기</a>
+  <div class="top-right">
+    <nav>
+      <a href="홈.html" aria-current="page" data-i18n="hm.tabHome">홈</a>
+      <a href="배치.html" data-i18n="nav.place">배치</a>
+      <a href="집도면.html" data-i18n="nav.house">집 전체</a>
+      <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
+    </nav>
+    <a href="배치.html" class="btn primary top-cta" data-i18n="cta.place">무료로 배치하기</a>
+  </div>
+</header>
+
+<main class="home-main">
+  <section class="hero-card">
+    <svg class="deco" viewBox="0 0 120 120" aria-hidden="true"><rect x="10" y="10" width="100" height="100" rx="8" fill="#FBF8F1" stroke="#fff" stroke-width="5"/><rect x="18" y="18" width="36" height="56" rx="5" fill="#7CA7EB" stroke="#141414" stroke-width="2.5"/><rect x="62" y="18" width="40" height="22" rx="4" fill="#FFD230" stroke="#141414" stroke-width="2.5"/><rect x="62" y="70" width="30" height="30" rx="4" fill="#FFA175" stroke="#141414" stroke-width="2.5"/></svg>
+    <span class="label" data-i18n="hero.label">이사 전 가구 배치 미리보기</span>
+    <h1 data-i18n-html="hm.h1">이사 전에,<br>먼저 놓아 보세요</h1>
+    <p data-i18n="hm.lead">방 크기를 넣고 가구를 끌어다 놓아 보세요. 침대와 책상이 들어갈지 이사 전에 확인할 수 있어요.</p>
+    <button id="newRoom" class="btn" type="button" data-i18n="hm.new">✦ 새 방 만들기</button>
+  </section>
+
+  <section id="resumeSec" hidden>
+    <h2 class="sec" data-i18n="hm.resume">이어서 하기</h2>
+    <div id="resumeList" class="resume-list"></div>
+  </section>
+
+  <section>
+    <h2 class="sec" data-i18n="hm.start">방 종류로 바로 시작</h2>
+    <p class="sec-hint" data-i18n="hm.startHint">고르면 방 크기를 넣는 화면으로 가요. 「자동 배치」를 누르면 그 방에 필요한 가구가 들어가요.</p>
+    <div class="chips" id="roomChips">
+      <button type="button" data-type="bedroom" data-i18n="rt.bedroom">침실</button>
+      <button type="button" data-type="living" data-i18n="rt.living">거실</button>
+      <button type="button" data-type="studio" data-i18n="rt.studio">원룸</button>
+      <button type="button" data-type="study" data-i18n="rt.study">서재</button>
+      <button type="button" data-type="kitchen" data-i18n="rt.kitchen">주방</button>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec" data-i18n="hm.menu">메뉴</h2>
+    <div class="menu">
+      <a href="배치.html">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h6M14 4v6"/></svg></span>
+        <b data-i18n="hm.m1">방 배치</b><small data-i18n="hm.m1d">방 크기를 넣고 가구를 끌어다 놓아요</small>
+      </a>
+      <a href="집도면.html">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-6h6v6"/></svg></span>
+        <b data-i18n="hm.m2">집 전체 도면</b><small data-i18n="hm.m2d">도면 사진 위에 실제 크기로 놓아요</small>
+      </a>
+      <a href="렌더신청.html">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z"/></svg></span>
+        <b data-i18n="hm.m3">AI 렌더 안내</b><small data-i18n="hm.m3d">분위기 이미지와 무료 횟수 안내</small>
+      </a>
+      <a href="내렌더.html">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="1.6"/><path d="M21 16l-5-4-9 7"/></svg></span>
+        <b data-i18n="hm.m4">내 렌더</b><small data-i18n="hm.m4d">만든 렌더를 다시 보고 저장해요</small>
+      </a>
+      <a href="배치.html#import" style="grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; gap: 14px;">
+        <span class="ic" style="margin: 0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+        <span><b data-i18n="hm.m5">사진으로 가구 치수 읽기</b><br><small data-i18n="hm.m5d">가구 사진을 올리면 AI가 적힌 치수를 읽어 줘요</small></span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <div class="foot-links" id="footLinks">
+      <span id="installHost" style="display: contents"></span>
+      <button type="button" id="helpBtn" data-i18n="hm.help">사용법 다시 보기</button>
+      <a href="index.html" data-i18n="hm.about">서비스 소개</a>
+    </div>
+    <p class="ver" style="margin-top: 12px" data-i18n="footer.pilot">시범 운영 중</p>
+  </section>
+</main>
+
+<nav id="hometab" aria-label="메뉴" data-i18n-attr="aria-label:hm.menu">
+  <a href="홈.html" class="on">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-6h6v6"/></svg>
+    <span data-i18n="hm.tabHome">홈</span>
+  </a>
+  <a href="배치.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h6M14 4v6"/></svg>
+    <span data-i18n="nav.place">배치</span>
+  </a>
+  <a href="집도면.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg>
+    <span data-i18n="nav.house">집 전체</span>
+  </a>
+  <a href="렌더신청.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>
+    <span data-i18n="nav.render">AI 렌더</span>
+  </a>
+</nav>
+
+<script src="설정.js"></script>
+<script src="i18n.js"></script>
+<script src="pwa.js"></script>
+<script src="auth.js"></script>
+<script>
+(function () {
+  "use strict";
+  var t = I18N.t, CFG = window.ROOM_CONFIG || {};
+  var LAYOUT_KEY = "roommaker.layout.v1", HOUSE_KEY = "roommaker.house.v1", ONB_KEY = "roommaker.onboarded";
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function parse(k) { try { return JSON.parse(get(k)); } catch (e) { return null; } }
+  function furnitureCount(s) { return s && Array.isArray(s.items) ? s.items.filter(function (i) { return i.type === "furniture"; }).length : 0; }
+  var NS = "http://www.w3.org/2000/svg";
+
+  // ---------- 시작 화면 (앱으로 열었거나 ?splash=1 일 때, 이번 접속에서 처음 한 번만) ----------
+  var standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  var splash = document.getElementById("splash"), seen = false;
+  try { seen = sessionStorage.getItem("roommaker.splash") === "1"; } catch (e) {}
+  if ((standalone || /[?&]splash=1/.test(location.search)) && !seen) {
+    splash.hidden = false;
+    try { sessionStorage.setItem("roommaker.splash", "1"); } catch (e) {}
+    setTimeout(function () { splash.classList.add("out"); setTimeout(function () { splash.hidden = true; }, 500); }, 1100);
+  }
+
+  // ---------- 처음 안내 ----------
+  var onb = document.getElementById("onb"), slides = onb.querySelectorAll(".slide"), dots = onb.querySelectorAll(".dots i"), idx = 0;
+  var nextBtn = document.getElementById("onbNext");
+  function showSlide(i) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    Array.prototype.forEach.call(slides, function (s, k) { s.classList.toggle("on", k === idx); });
+    Array.prototype.forEach.call(dots, function (d, k) { d.classList.toggle("on", k === idx); });
+    nextBtn.setAttribute("data-i18n", idx === slides.length - 1 ? "hm.go" : "hm.next");
+    nextBtn.textContent = t(idx === slides.length - 1 ? "hm.go" : "hm.next");
+  }
+  function closeOnb() { set(ONB_KEY, "1"); onb.hidden = true; }
+  nextBtn.addEventListener("click", function () { if (idx === slides.length - 1) closeOnb(); else showSlide(idx + 1); });
+  document.getElementById("onbSkip").addEventListener("click", closeOnb);
+  var tx = null;
+  onb.addEventListener("touchstart", function (e) { tx = e.touches[0].clientX; }, { passive: true });
+  onb.addEventListener("touchend", function (e) {                    // 좌우로 밀어서 넘기기
+    if (tx === null) return; var dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 50) showSlide(idx + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+  function openOnb() { showSlide(0); onb.hidden = false; }
+  document.getElementById("helpBtn").addEventListener("click", openOnb);
+  if (!get(ONB_KEY)) { showSlide(0); onb.hidden = false; }
+
+  // ---------- 새 방 / 방 종류로 시작 ----------
+  function startRoom(type) {
+    var cur = parse(LAYOUT_KEY);
+    if (furnitureCount(cur) > 0 && !confirm(t("hm.confirmNew"))) return;      // 작업 중인 방이 있으면 확인
+    var room = CFG.defaultRoom ? { w: CFG.defaultRoom.w, h: CFG.defaultRoom.h } : { w: 300, h: 400 };
+    set(LAYOUT_KEY, JSON.stringify({ room: room, items: [], nextId: 1, roomType: type || (cur && cur.roomType) || "bedroom" }));
+    location.href = "배치.html#room";                                         // 방 크기 입력 시트가 열린 채로 시작
+  }
+  document.getElementById("newRoom").addEventListener("click", function () { startRoom(); });
+  Array.prototype.forEach.call(document.querySelectorAll("#roomChips button"), function (b) {
+    b.addEventListener("click", function () { startRoom(b.getAttribute("data-type")); });
+  });
+
+  // ---------- 이어서 하기 (저장된 방·집 도면) ----------
+  function roomThumb(s) {
+    var svg = document.createElementNS(NS, "svg"), W = s.room.w, H = s.room.h, m = Math.max(W, H) * 0.06;
+    svg.setAttribute("viewBox", (-m) + " " + (-m) + " " + (W + 2 * m) + " " + (H + 2 * m));
+    function el(tag, a) { var n = document.createElementNS(NS, tag); for (var k in a) n.setAttribute(k, a[k]); svg.appendChild(n); return n; }
+    el("rect", { x: 0, y: 0, width: W, height: H, fill: "#FBF8F1", stroke: "#141414", "stroke-width": Math.max(W, H) * 0.025 });
+    (s.items || []).forEach(function (it) {
+      if (it.type !== "furniture") return;
+      el("rect", { x: it.x, y: it.y, width: it.w, height: it.h, rx: 3, fill: it.color || "#7CA7EB", stroke: "#141414", "stroke-width": Math.max(W, H) * 0.012 });
+    });
+    return svg;
+  }
+  function paintResume() {
+    var list = document.getElementById("resumeList"); list.textContent = "";
+    var layout = parse(LAYOUT_KEY), house = parse(HOUSE_KEY), n = 0;
+    function card(thumb, title, sub, href) {
+      var a = document.createElement("div"); a.className = "resume";
+      var th = document.createElement("div"); th.className = "thumb"; th.appendChild(thumb); a.appendChild(th);
+      var tx = document.createElement("div"); var b = document.createElement("b"); b.textContent = title; var sm = document.createElement("small"); sm.textContent = sub;
+      tx.appendChild(b); tx.appendChild(sm); a.appendChild(tx);
+      var go = document.createElement("a"); go.className = "btn primary"; go.href = href; go.textContent = t("hm.continue"); a.appendChild(go);
+      list.appendChild(a); n++;
+    }
+    if (layout && layout.room && furnitureCount(layout) > 0) {
+      card(roomThumb(layout), t("hm.resumeRoom", { w: layout.room.w, h: layout.room.h }), t("hm.resumeCount", { n: furnitureCount(layout) }), "배치.html");
+    }
+    if (house && typeof house.img === "string" && /^data:image\//.test(house.img)) {
+      var img = document.createElement("img"); img.src = house.img; img.alt = "";
+      card(img, t("hm.resumeHouse"), t("hm.resumeCount", { n: furnitureCount(house) }), "집도면.html");
+    }
+    document.getElementById("resumeSec").hidden = n === 0;
+  }
+  paintResume();
+  I18N.onChange(function () { paintResume(); showSlide(idx); });
+
+  // ---------- 앱 설치 / 사용법 줄: 설치 버튼은 pwa.js 가 바닥글이 없으면 만들지 못하므로 여기에 자리를 둠 ----------
+  window.addEventListener("pageshow", paintResume);
+})();
+</script>
+</body>
+</html>

@@ -3,10 +3,10 @@
    ● AI 기능(/api/...)은 인터넷이 꼭 필요해서 저장하지 않아요.
    ● 인터넷이 될 때는 항상 최신 파일을 먼저 받아 와서, 사이트를 고치면 앱도 같이 바뀌어요.
    ● 캐시를 비우고 싶으면 아래 CACHE 이름의 숫자를 올리세요. */
-const CACHE = "roommaker-v2";
+const CACHE = "roommaker-v4";
 const CORE = [
-  "/", "/index.html", "/%EB%B0%B0%EC%B9%98.html", "/%EC%A7%91%EB%8F%84%EB%A9%B4.html", "/%EB%A0%8C%EB%8D%94%EC%8B%A0%EC%B2%AD.html",
-  "/%EA%B3%B5%ED%86%B5.css", "/%EC%84%A4%EC%A0%95.js", "/i18n.js", "/pwa.js", "/auth.js", "/%EB%A1%9C%EA%B7%B8%EC%9D%B8.html", "/manifest.webmanifest",
+  "/", "/index.html", "/%ED%99%88.html", "/%EB%B0%B0%EC%B9%98.html", "/%EC%A7%91%EB%8F%84%EB%A9%B4.html", "/%EB%A0%8C%EB%8D%94%EC%8B%A0%EC%B2%AD.html",
+  "/%EA%B3%B5%ED%86%B5.css", "/%EC%84%A4%EC%A0%95.js", "/i18n.js", "/pwa.js", "/auth.js", "/renders.js", "/%EB%82%B4%EB%A0%8C%EB%8D%94.html", "/%EB%A1%9C%EA%B7%B8%EC%9D%B8.html", "/manifest.webmanifest",
   "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"
 ];
 

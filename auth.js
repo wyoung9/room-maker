@@ -27,15 +27,26 @@
   I18N.onChange(paint);
 })();
 
-/* 바닥글 맨 끝에 작은 「서비스 소개서」 링크 (소개서.html). 각 페이지 파일은 고치지 않고 여기서 넣어요. */
+/* 위쪽 로고 바로 아래에 작은 「서비스 소개서」 링크 (소개서.html). 각 페이지 파일은 고치지 않고 여기서 넣어요. */
 (function () {
   "use strict";
-  var footer = document.querySelector(".footer");
-  if (!footer || !window.I18N || footer.querySelector(".intro-link")) return;
+  var logo = document.querySelector(".top > .logo");
+  if (!logo || !window.I18N || document.querySelector(".intro-link")) return;
   var link = document.createElement("a");
   link.className = "intro-link"; link.href = "/%EC%86%8C%EA%B0%9C%EC%84%9C.html";           // 소개서.html
-  link.style.cssText = "font-size:12px;color:inherit;opacity:.85;text-decoration:underline;white-space:nowrap";
+  link.style.cssText = "font-size:13px;font-weight:500;color:#6E6E78;text-decoration:none;border-bottom:1px solid #D4D4DA;white-space:nowrap;line-height:1.4";
+  link.addEventListener("mouseenter", function () { link.style.color = "#0B0B14"; link.style.borderBottomColor = "#0B0B14"; });
+  link.addEventListener("mouseleave", function () { link.style.color = "#6E6E78"; link.style.borderBottomColor = "#D4D4DA"; });
   function paint() { link.textContent = I18N.t("intro.link"); }
   paint(); I18N.onChange(paint);
-  footer.appendChild(link);
+  // 로고와 링크를 한 묶음으로 만들어, 위쪽 메뉴가 양끝으로 벌어져도 링크가 로고 옆에 붙어 있게 함
+  if (!document.getElementById("rm-intro-style")) {                                  // 로고 아래에 작게 놓고, 로고 글자는 꺾이지 않게 고정
+    var st = document.createElement("style"); st.id = "rm-intro-style";
+    st.textContent = ".logo-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:1px;flex:0 0 auto}.logo-wrap .logo{white-space:nowrap}.logo-wrap .intro-link{font-size:12px!important}";
+    document.head.appendChild(st);
+  }
+  var wrap = document.createElement("div");
+  wrap.className = "logo-wrap";
+  logo.parentNode.insertBefore(wrap, logo);
+  wrap.appendChild(logo); wrap.appendChild(link);
 })();

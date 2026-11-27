@@ -89,7 +89,7 @@ html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3, html[lang="zh"] h1, 
   .top-cta { display: none !important; }
   .logo { white-space: nowrap; font-size: 18px; }
   .lang { order: 2; margin-left: auto; }
-  .top nav { order: 3; flex: 1 0 100%; gap: 18px; }
+  .top nav { order: 3; flex: 1 0 100%; gap: 6px 18px; flex-wrap: wrap; }
   .top nav a { font-size: 14px; white-space: nowrap; padding: 4px 0; }
 }
 
@@ -165,4 +165,12 @@ html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent;
 @media (max-width: 560px) {
   .acct { order: 1; margin-left: auto; }
   .lang { margin-left: 0; }
+}
+
+/* ---------- 앱 바: 앱으로 쓰는 화면(body.app)은 휴대폰 폭에서 위쪽을 '‹ 방 만들기 … 로그인 · 언어' 한 줄로 ---------- */
+.app-link { display: none; }
+@media (max-width: 760px) {
+  .app-link { display: inline-flex; }
+  body.app .top nav, body.app .top-cta { display: none; }
+  body.app:not(.home) .logo::before { content: "‹"; font-size: 28px; font-weight: 400; line-height: 1; margin-right: 8px; vertical-align: -2px; }
 }

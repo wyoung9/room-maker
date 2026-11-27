@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B14">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="방 만들기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title data-i18n="title.mine">방 만들기 · 내 렌더</title>
+<link rel="stylesheet" href="공통.css">
+<style>
+  .mine { padding: clamp(40px, 7vw, 80px) 0 clamp(48px, 7vw, 88px); }
+  .mine h1 { font-size: clamp(28px, 4.4vw, 44px); margin: 0 0 8px; font-weight: 700; }
+  .mine .lead { color: var(--muted); margin: 0 0 18px; max-width: 640px; }
+  .mine .notice { font-size: 14px; max-width: 760px; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 28px 0 14px; }
+  .bar .count { font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .rcard { border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--surface); display: flex; flex-direction: column; }
+  .rcard .thumb { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--soft); border: 0; padding: 0; cursor: zoom-in; }
+  .rcard .body { padding: 14px 16px 16px; display: grid; gap: 6px; }
+  .rcard .when { font-size: 13px; color: var(--muted); }
+  .rcard .title { font-weight: 700; }
+  .rcard .meta { font-size: 13px; color: var(--muted); word-break: break-all; }
+  .rcard .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .rcard .recs { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .rcard .recs li { border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 4px; }
+  .rcard .recs .rn { font-weight: 600; font-size: 14px; }
+  .rcard .recs .rk { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .rcard .recs .rl { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rcard .recs .rl a { font-size: 12.5px; padding: 4px 10px; border: 1px solid var(--text); border-radius: 999px; text-decoration: none; color: var(--text); }
+  .rcard .recs .rl a:hover { background: var(--text); color: #fff; }
+  .empty { border: 1.5px dashed var(--line); border-radius: 20px; padding: 56px 20px; text-align: center; color: var(--muted); display: grid; gap: 18px; justify-items: center; }
+  .viewer { border: 0; padding: 0; background: transparent; max-width: min(1100px, calc(100vw - 24px)); }
+  .viewer::backdrop { background: rgba(11, 11, 20, 0.7); }
+  .viewer img { display: block; width: 100%; height: auto; max-height: calc(100vh - 100px); object-fit: contain; border-radius: 16px; background: #fff; }
+  .viewer .vbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 8px; }
+</style>
+</head>
+<body class="app">
+<header class="top">
+  <a href="index.html" class="logo" data-i18n="brand">방 만들기</a>
+  <div class="top-right">
+    <nav>
+      <a href="배치.html" data-i18n="nav.place">배치</a>
+      <a href="집도면.html" data-i18n="nav.house">집 전체</a>
+      <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
+      <a href="내렌더.html" aria-current="page" data-i18n="nav.mine">내 렌더</a>
+    </nav>
+    <a href="배치.html" class="btn primary top-cta" data-i18n="cta.place">무료로 배치하기</a>
+  </div>
+</header>
+
+<main class="wrap mine">
+  <h1 data-i18n="mn.h1">내 렌더</h1>
+  <p class="lead" data-i18n="mn.lead">AI 렌더로 만든 이미지가 이 기기에 저장돼요. 언제든 다시 보고 내려받을 수 있어요.</p>
+  <p class="notice" id="note"></p>
+
+  <div class="bar" id="bar" hidden>
+    <span class="count" id="count"></span>
+    <button id="clearAll" class="btn ghost small danger" type="button" data-i18n="mn.deleteAll">모두 삭제</button>
+  </div>
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty" hidden>
+    <p id="emptyMsg" style="margin:0"></p>
+    <a href="배치.html" class="btn primary" data-i18n="au.go">배치하러 가기</a>
+  </div>
+</main>
+
+<dialog id="viewer" class="viewer" aria-label="render">
+  <div class="vbar">
+    <a id="vDl" class="btn small primary" data-i18n="d.save">이미지 저장</a>
+    <button id="vClose" class="btn small" type="button" data-i18n="i.close">✕ 닫기</button>
+  </div>
+  <img id="vImg" alt="">
+</dialog>
+
+<footer class="footer"><span data-i18n="brand">방 만들기</span><span data-i18n="footer.pilot">시범 운영 중</span></footer>
+
+<script src="설정.js"></script>
+<script src="i18n.js"></script>
+<script src="pwa.js"></script>
+<script src="auth.js"></script>
+<script src="renders.js"></script>
+<script>
+(function () {
+  "use strict";
+  var t = I18N.t;
+  var LOCALE = { ko: "ko-KR", en: "en-US", ja: "ja-JP", zh: "zh-CN" };
+  var grid = document.getElementById("grid"), bar = document.getElementById("bar"), count = document.getElementById("count");
+  var empty = document.getElementById("empty"), emptyMsg = document.getElementById("emptyMsg"), note = document.getElementById("note");
+  var viewer = document.getElementById("viewer"), vImg = document.getElementById("vImg"), vDl = document.getElementById("vDl");
+  var items = [], urls = [], failed = false;
+
+  function shopLinks(q) {
+    var e = encodeURIComponent(q);
+    return [["d.shopNaver", "https://search.shopping.naver.com/search/all?query=" + e],
+            ["d.shopCoupang", "https://www.coupang.com/np/search?q=" + e],
+            ["d.shopGoogle", "https://www.google.com/search?tbm=shop&q=" + e]];
+  }
+  function styleLabel(it) { return it.style === "custom" ? (it.styleText || t("d.s.custom")) : (I18N.has("d.s." + it.style) ? t("d.s." + it.style) : it.style); }
+  function fileName(it) {
+    var d = new Date(it.createdAt), p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return t("mn.file", { d: d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes()) });
+  }
+  function revoke() { urls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); urls = []; }
+  function mk(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
+
+  function paint() {
+    revoke(); grid.textContent = "";
+    note.textContent = failed ? t("mn.unsupported") : t("mn.note", { max: RenderStore.max });
+    note.className = "notice";
+    bar.hidden = !items.length;
+    count.textContent = t("mn.count", { n: items.length });
+    empty.hidden = !!items.length || failed;
+    emptyMsg.textContent = t("mn.empty");
+    items.forEach(function (it) {
+      var url = URL.createObjectURL(it.blob); urls.push(url);
+      var card = mk("article", "rcard");
+      var th = mk("button", "thumb"); th.type = "button"; th.setAttribute("aria-label", t("mn.view"));
+      var img = mk("img"); img.src = url; img.alt = t("d.resultAlt"); img.style.cssText = "display:block;width:100%;height:100%;object-fit:cover";
+      th.appendChild(img); th.style.aspectRatio = "3 / 2";
+      th.addEventListener("click", function () { vImg.src = url; vImg.alt = t("d.resultAlt"); vDl.href = url; vDl.setAttribute("download", fileName(it)); if (viewer.showModal) viewer.showModal(); else viewer.setAttribute("open", ""); });
+      var body = mk("div", "body");
+      body.appendChild(mk("div", "when", new Date(it.createdAt).toLocaleString(LOCALE[I18N.lang] || "ko-KR")));
+      body.appendChild(mk("div", "title", styleLabel(it)));
+      var meta = [];
+      if (it.room && it.room.w) meta.push(t("mn.size", { w: it.room.w, h: it.room.h }));
+      if (it.names && it.names.length) meta.push(t("mn.items", { list: it.names.map(function (n) { return I18N.name(n); }).join(", ") }));
+      if (meta.length) body.appendChild(mk("div", "meta", meta.join(" · ")));
+      var acts = mk("div", "acts");
+      var dl = mk("a", "btn small", t("d.save")); dl.href = url; dl.setAttribute("download", fileName(it));
+      acts.appendChild(dl);
+      var recWrap = null;
+      if (it.recs && it.recs.length) {
+        var rb = mk("button", "btn small", t("mn.furn")); rb.type = "button";
+        rb.addEventListener("click", function () { if (recWrap) recWrap.hidden = !recWrap.hidden; });
+        acts.appendChild(rb);
+      }
+      var del = mk("button", "btn small danger", t("p.del")); del.type = "button";
+      del.addEventListener("click", async function () {
+        if (!confirm(t("mn.confirmDel"))) return;
+        try { await RenderStore.remove(it.id); items = items.filter(function (x) { return x.id !== it.id; }); paint(); } catch (e) { alert(t("mn.unsupported")); }
+      });
+      acts.appendChild(del);
+      body.appendChild(acts);
+      if (it.recs && it.recs.length) {                             // 렌더를 만들 때 정한 가구 검색 링크를 다시 보여 줌
+        recWrap = mk("ul", "recs"); recWrap.hidden = true;
+        it.recs.forEach(function (r) {
+          var li = mk("li");
+          li.appendChild(mk("div", "rn", I18N.name(r.name) + "  " + r.w + "×" + r.h + "cm"));
+          li.appendChild(mk("div", "rk", t("d.recKw", { q: r.query })));
+          var rl = mk("div", "rl");
+          shopLinks(r.query).forEach(function (l) { var a = mk("a", "", t(l[0])); a.href = l[1]; a.target = "_blank"; a.rel = "noopener noreferrer"; rl.appendChild(a); });
+          li.appendChild(rl); recWrap.appendChild(li);
+        });
+        body.appendChild(recWrap);
+      }
+      card.appendChild(th); card.appendChild(body); grid.appendChild(card);
+    });
+  }
+
+  async function load() {
+    try { items = await RenderStore.list(); failed = false; } catch (e) { items = []; failed = true; }
+    paint();
+  }
+  document.getElementById("clearAll").addEventListener("click", async function () {
+    if (!items.length || !confirm(t("mn.confirmAll", { n: items.length }))) return;
+    try { await RenderStore.clear(); items = []; paint(); } catch (e) { alert(t("mn.unsupported")); }
+  });
+  document.getElementById("vClose").addEventListener("click", function () { viewer.close(); });
+  viewer.addEventListener("click", function (e) { if (e.target === viewer) viewer.close(); });     // 바깥을 눌러도 닫힘
+  I18N.onChange(paint);
+  load();
+})();
+</script>
+</body>
+</html>

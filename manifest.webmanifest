@@ -4,7 +4,7 @@
   "short_name": "방 만들기",
   "description": "이사 전에 가구 배치를 먼저 해 보고, 가구가 들어가는지 확인하세요.",
   "lang": "ko",
-  "start_url": "/%EB%B0%B0%EC%B9%98.html?source=pwa",
+  "start_url": "/%ED%99%88.html?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",

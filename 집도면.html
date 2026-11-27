@@ -63,9 +63,63 @@
     .work { grid-template-columns: 1fr; }
     .stage { position: static; }
   }
+
+  /* ===== 휴대폰 앱 화면 (폭 760px 이하): 도면이 화면을 채우고, 패널은 아래에서 올라오는 시트 ===== */
+  #appnav, #sheetBackdrop, #calibBar { display: none; }
+  .more-wrap { display: contents; }
+  @media (max-width: 760px) {
+    :root { --nav-h: 62px; --dock-h: 0px; }
+    body { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+    body.has-sel { --dock-h: 150px; }
+    .footer, .intro, .stage .hint { display: none; }
+    .tool { padding: 6px 8px 0; gap: 6px; }
+    .work { gap: 6px; }
+    .side { gap: 0; }
+    .stage { position: relative; top: auto; padding: 8px; border-radius: 16px; }
+    .stage-empty { padding: 56px 16px; }
+    .legend { font-size: 11px; padding: 0 2px 6px; margin-bottom: 4px; }
+    #plan { max-height: calc(100vh - 68px - 56px - var(--nav-h) - env(safe-area-inset-bottom) - var(--dock-h));
+            max-height: calc(100dvh - 68px - 56px - var(--nav-h) - env(safe-area-inset-bottom) - var(--dock-h)); min-height: 200px; margin: 0 auto; }
+    #calibBar:not([hidden]) { display: flex; align-items: center; gap: 10px; position: absolute; z-index: 5; top: 44px; left: 12px; right: 12px;
+      background: var(--text); color: #fff; border-radius: 14px; padding: 8px 8px 8px 14px; font-size: 13px; line-height: 1.4; box-shadow: 0 8px 24px rgba(11,11,20,0.25); }
+    #calibBar span { flex: 1; }
+    #calibBar button { flex: 0 0 auto; border: 1px solid rgba(255,255,255,0.5); background: transparent; color: #fff; font: inherit; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 6px 14px; min-height: 36px; cursor: pointer; }
+
+    #appnav { display: flex; align-items: stretch; gap: 4px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: rgba(255,255,255,0.97); backdrop-filter: blur(10px); border-top: 1px solid var(--line); }
+    #appnav button { flex: 1; min-width: 0; min-height: 50px; border: 0; background: transparent; border-radius: 14px; font: inherit; font-size: 11px; font-weight: 600;
+      color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; }
+    #appnav button svg { width: 24px; height: 24px; }
+    #appnav button.on { color: var(--text); background: var(--soft); }
+    #appnav button.main { flex: 0 0 84px; background: var(--text); color: #fff; }
+    #appnav button.main.on { background: #2A2A36; }
+    #appnav button:active { transform: scale(0.96); }
+
+    #sheetBackdrop:not([hidden]) { display: block; position: fixed; inset: 0; z-index: 34; background: rgba(11,11,20,0.35); }
+    .sheet { display: none; }
+    body[data-sheet="photo"] .sheet-photo, body[data-sheet="scale"] .sheet-scale, body[data-sheet="add"] .sheet-add, body[data-sheet="more"] .sheet-more {
+      display: block; position: fixed; left: 0; right: 0; z-index: 35; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      max-height: 66vh; max-height: 66dvh; overflow-y: auto; overscroll-behavior: contain;
+      background: #fff; border: 0; border-radius: 22px 22px 0 0; padding: 26px 16px 18px; box-shadow: 0 -12px 40px rgba(11,11,20,0.2); }
+    .sheet::before { content: ""; position: absolute; top: 9px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: #D5D5DB; }
+    .sheet-more > section { border: 0; border-radius: 0; padding: 0 0 14px; background: transparent; }
+    .sheet-more > section + section { border-top: 1px solid var(--line); padding-top: 14px; }
+    .sheet .btn, .sheet input, .sheet select { min-height: 46px; }
+    .sheet .btn.small { min-height: 44px; }
+    .sheet-more .actions .btn { width: 100%; }
+    #installHost .install-btn { width: 100%; min-height: 46px; margin-top: 12px; }
+
+    #selPanel:not([hidden]) { position: fixed; left: 8px; right: 8px; z-index: 36; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);
+      display: grid; grid-template-columns: 1fr 72px 72px; gap: 8px; padding: 12px; box-shadow: 0 8px 30px rgba(11,11,20,0.2); }
+    #selPanel h2 { display: none; }
+    #selPanel .row { display: contents; }
+    #selPanel .btnrow { grid-column: 1 / -1; margin-top: 0; }
+    #selPanel input { min-height: 44px; padding: 6px 8px; }
+    #selPanel .btn { min-height: 44px; }
+  }
 </style>
 </head>
-<body>
+<body class="app">
 <header class="top">
   <a href="index.html" class="logo" data-i18n="brand">방 만들기</a>
   <div class="top-right">
@@ -73,6 +127,7 @@
       <a href="배치.html" data-i18n="nav.place">배치</a>
       <a href="집도면.html" aria-current="page" data-i18n="nav.house">집 전체</a>
       <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
+      <a href="내렌더.html" data-i18n="nav.mine">내 렌더</a>
     </nav>
     <a href="배치.html" class="btn primary top-cta" data-i18n="cta.place">무료로 배치하기</a>
   </div>
@@ -86,14 +141,14 @@
 
   <div class="work">
     <div class="side">
-      <section>
+      <section class="sheet sheet-photo">
         <h2 data-i18n="h.s1">1. 도면 사진 올리기</h2>
         <label class="btn small" style="display:inline-flex"><span id="upLabel" data-i18n="h.upload">📷 도면 사진 올리기</span><input id="imgFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>
         <p class="hint" data-i18n="h.s1hint">집 전체가 보이는 도면 사진(JPG·PNG·WEBP)을 올려 주세요.</p>
         <p id="imgMsg" class="hint" aria-live="polite"></p>
       </section>
 
-      <section>
+      <section class="sheet sheet-scale">
         <h2 data-i18n="h.s2">2. 축척 맞추기</h2>
         <button id="calibBtn" class="btn small" type="button" disabled data-i18n="h.calibBtn">📏 두 점 찍어서 길이 재기</button>
         <p id="scaleMsg" class="hint" aria-live="polite"></p>
@@ -106,7 +161,7 @@
         </div>
       </section>
 
-      <section>
+      <section class="sheet sheet-add">
         <h2 data-i18n="h.s3">3. 가구 놓기</h2>
         <p id="addHint" class="hint" style="margin-top:0"></p>
         <div id="presetList"></div>
@@ -125,6 +180,7 @@
     <section class="stage">
       <div id="stageEmpty" class="stage-empty" data-i18n="h.empty">도면 사진을 올리면 여기에 보여요.</div>
       <div id="stageBody" hidden>
+        <div id="calibBar" hidden><span id="calibBarText"></span><button id="calibBarCancel" type="button" data-i18n="h.calibCancel">취소</button></div>
         <div class="legend"><span><span class="key"></span><span data-i18n="a.lg1">빨간 테두리: 다른 가구와 겹침</span></span></div>
         <svg id="plan" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="집 전체 도면 위 가구 배치" data-i18n-attr="aria-label:h.svg"></svg>
         <p class="hint" data-i18n="h.note">도면 속 벽은 인식하지 못해요. 겹침(빨간 테두리)만 알려 드리고, 문이 열리는 자리와 통로는 직접 확인해 주세요. 가구를 끌어서 옮기고, 컴퓨터에서는 방향키(5cm씩)와 Delete 키도 쓸 수 있어요.</p>
@@ -146,6 +202,8 @@
       </div>
     </section>
 
+    <div class="more-wrap sheet sheet-more">
+
     <section id="listPanel">
       <h2 id="listTitle">놓인 가구</h2>
       <ul id="itemList" class="ilist"></ul>
@@ -158,8 +216,31 @@
       <button id="rmImg" class="btn ghost small" type="button" disabled data-i18n="h.rmImg">도면 사진 지우기</button>
       <p class="hint" style="margin:0" data-i18n="h.saved">작업 내용(가구 위치·축척·도면 사진)은 이 기기의 브라우저에 자동 저장돼요. 사진이 너무 커서 저장되지 않으면 다음에 다시 올려 주세요.</p>
     </section>
+    <div id="installHost"></div>
+    </div>
   </aside>
 </main>
+
+<!-- 휴대폰 앱 화면: 아래 탭 + 시트 배경 (넓은 화면에서는 숨김) -->
+<div id="sheetBackdrop" hidden></div>
+<nav id="appnav" aria-label="도구" data-i18n-attr="aria-label:m.navLabel">
+  <button type="button" data-sheet="photo" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="1.6"/><path d="M21 16l-5-4-9 7"/></svg>
+    <span data-i18n="m.photo">도면</span>
+  </button>
+  <button type="button" data-sheet="scale" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg>
+    <span data-i18n="m.scale">축척</span>
+  </button>
+  <button type="button" data-sheet="add" class="main" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    <span data-i18n="m.add">가구</span>
+  </button>
+  <button type="button" data-sheet="more" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+    <span data-i18n="m.more">더보기</span>
+  </button>
+</nav>
 
 <footer class="footer"><span data-i18n="brand">방 만들기</span><span data-i18n="footer.pilot">시범 운영 중</span></footer>
 
@@ -226,6 +307,8 @@
     scaleMsg.className = "hint" + (scaleWarn ? " warn" : "");
     document.getElementById("calibBtn").textContent = t(state.ppc ? "h.calibRe" : "h.calibBtn");
     document.getElementById("addHint").textContent = t(state.ppc ? "h.s3hint" : "h.needScale");
+    document.getElementById("calibBar").hidden = !(calib.on && calib.pts.length < 2);      // 휴대폰: 점 찍는 동안 도면 위에 안내
+    document.getElementById("calibBarText").textContent = scaleMsg.textContent;
   }
 
   // ---------- 그리기 ----------
@@ -303,7 +386,7 @@
       var pick = document.createElement("button"); pick.type = "button"; pick.className = "pick";
       var dot = document.createElement("span"); dot.className = "dot"; dot.style.background = it.color || DEFAULT_COLOR;
       pick.appendChild(dot); pick.appendChild(document.createTextNode(dispName(it) + "  " + it.w + "×" + it.h));
-      pick.addEventListener("click", function () { selectedId = it.id; render(); });
+      pick.addEventListener("click", function () { selectedId = it.id; setSheet(""); render(); });
       var x = document.createElement("button"); x.type = "button"; x.className = "x"; x.textContent = "✕";
       x.setAttribute("aria-label", t("p.remove", { name: dispName(it) }));
       x.addEventListener("click", function () {
@@ -325,6 +408,7 @@
     paintScale();
     var it = byId(selectedId);
     selPanel.hidden = !it;
+    document.body.classList.toggle("has-sel", !!it);                        // 휴대폰: 편집 바가 뜨면 도면을 그만큼 줄임
     if (it) {
       if (document.activeElement !== sName) sName.value = dispName(it);
       if (document.activeElement !== sW) sW.value = it.w;
@@ -339,6 +423,7 @@
     calib = { on: false, pts: [] }; scaleWarn = null; document.getElementById("calibAsk").hidden = true;
     makeImgEl(); commit();
     imgSay(["h.imgOk"]);
+    setSheet("scale");                                    // 사진을 올리면 다음 단계(축척) 시트로
   }
   document.getElementById("imgFile").addEventListener("change", function (e) {
     var f = e.target.files[0]; e.target.value = "";
@@ -449,7 +534,7 @@
     if (calib.on) {                                       // 축척 맞추기 중: 클릭한 곳에 점을 찍음 (최대 2개)
       if (calib.pts.length < 2) {
         calib.pts.push({ x: Math.round(p.x), y: Math.round(p.y) }); scaleWarn = null; render();
-        if (calib.pts.length === 2) { calibAsk.hidden = false; calibCm.focus(); }
+        if (calib.pts.length === 2) { calibAsk.hidden = false; setSheet("scale"); calibCm.focus(); }       // 두 점을 찍으면 길이 입력 시트를 올림
       }
       evt.preventDefault(); return;
     }
@@ -510,6 +595,30 @@
     }
     if (imgEl.complete) go(); else imgEl.onload = go;
   });
+
+  // ---------- 휴대폰 앱 화면: 아래 탭을 누르면 시트가 올라옴 ----------
+  var appnav = document.getElementById("appnav"), sheetBackdrop = document.getElementById("sheetBackdrop");
+  function setSheet(name) {
+    document.body.setAttribute("data-sheet", name || "");
+    sheetBackdrop.hidden = !name;
+    Array.prototype.forEach.call(appnav.querySelectorAll("[data-sheet]"), function (b) {
+      var on = b.getAttribute("data-sheet") === name;
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  Array.prototype.forEach.call(appnav.querySelectorAll("[data-sheet]"), function (b) {
+    b.addEventListener("click", function () {
+      var name = b.getAttribute("data-sheet");
+      setSheet(document.body.getAttribute("data-sheet") === name ? "" : name);       // 같은 탭을 또 누르면 닫음
+    });
+  });
+  sheetBackdrop.addEventListener("click", function () { setSheet(""); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") setSheet(""); });
+  document.getElementById("calibBtn").addEventListener("click", function () { if (state.img) setSheet(""); });   // 점을 찍으려면 시트를 닫아 도면을 보이게
+  ["calibApply", "calibCancel", "savePng", "rmImg", "cAdd"].forEach(function (id) { document.getElementById(id).addEventListener("click", function () { setSheet(""); }); });
+  document.getElementById("calibBarCancel").addEventListener("click", function () { document.getElementById("calibCancel").click(); });
+  presetList.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".fbtn")) setSheet(""); });   // 가구를 놓으면 시트를 닫아 도면에서 바로 보이게
+  if (!state.img && window.matchMedia && matchMedia("(max-width: 760px)").matches) setSheet("photo");               // 처음 열면 도면 올리기부터
 
   // ---------- 언어가 바뀌면 코드가 만든 글자도 다시 그림 ----------
   I18N.onChange(function () { buildPresets(); paintImg(); render(); });
