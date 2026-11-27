@@ -46,8 +46,15 @@ window.ROOM_CONFIG = {
     { group: "침대",      name: "퀸 침대",       w: 150, h: 200, color: "#A3B07C" },  // 진한 올리브
     { group: "책상·의자", name: "책상",          w: 120, h: 60,  color: "#F7D26A" },  // 머스터드
     { group: "책상·의자", name: "의자",          w: 50,  h: 50,  color: "#D9D4CA" },  // 회색
+    { group: "침대",      name: "협탁",          w: 40,  h: 40,  color: "#9ED3C4" },  // 민트 (침대 옆에 놓임)
     { group: "수납",      name: "옷장",          w: 100, h: 60,  color: "#F4B49A" },  // 연한 주황
+    { group: "수납",      name: "서랍장",        w: 80,  h: 45,  color: "#C9B6E4" },  // 연보라
+    { group: "수납",      name: "책장",          w: 80,  h: 30,  color: "#BFD7EA" },  // 연한 파랑
+    { group: "수납",      name: "TV장",          w: 150, h: 40,  color: "#E6CFA3" },  // 베이지
     { group: "거실·주방", name: "2인 소파",      w: 150, h: 80,  color: "#E79A8F" },  // 연한 빨강
+    { group: "거실·주방", name: "3인 소파",      w: 200, h: 90,  color: "#D98E84" },  // 진한 빨강
+    { group: "거실·주방", name: "거실 테이블",   w: 100, h: 50,  color: "#F2C4DE" },  // 분홍 (소파 앞에 놓임)
+    { group: "거실·주방", name: "식탁",          w: 120, h: 70,  color: "#B8E0A0" },  // 연두
     { group: "거실·주방", name: "냉장고",        w: 60,  h: 65,  color: "#A9C8E0" }   // 하늘색
   ],
 
@@ -59,6 +66,17 @@ window.ROOM_CONFIG = {
     { name: "문",   w: 90,  h: 10, type: "door" },
     { name: "창문", w: 120, h: 10, type: "window" }
   ],
+
+  // ⑧-2 방 종류별 필수 가구 (「자동 배치」를 가구 없이 눌렀을 때 자동으로 넣어 줌)
+  //   name = 위 furniture 의 이름, minArea = 방 면적이 이 값(㎡) 이상일 때만 넣음
+  //   bed: true 는 방 크기에 맞는 침대 하나, sofa: true 는 방 크기에 맞는 소파 하나
+  roomTypes: {
+    bedroom: [ { bed: true }, { name: "옷장" }, { name: "협탁", minArea: 8 }, { name: "책상", minArea: 12 }, { name: "의자", minArea: 12 } ],
+    living:  [ { sofa: true }, { name: "TV장" }, { name: "거실 테이블", minArea: 9 }, { name: "책장", minArea: 16 } ],
+    studio:  [ { bed: true, compact: true }, { name: "책상" }, { name: "의자" }, { name: "옷장" }, { name: "냉장고" }, { name: "협탁", minArea: 14 } ],
+    study:   [ { name: "책상" }, { name: "의자" }, { name: "책장" }, { name: "서랍장", minArea: 9 } ],
+    kitchen: [ { name: "냉장고" }, { name: "식탁" }, { name: "의자" } ]
+  },
 
   // ⑨ 처음 열었을 때의 방 크기(cm)
   defaultRoom: { w: 300, h: 400 }

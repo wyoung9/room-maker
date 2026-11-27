@@ -285,10 +285,10 @@
   K("a.alt", "다른 배치 보기", "See another layout", "別の配置を見る", "查看其他布局");
   K("a.undo", "↺ 자동 배치 전으로", "↺ Back to before auto layout", "↺ 自動配置の前に戻す", "↺ 恢复到自动布置前");
   K("a.hint",
-    "가구를 넣고 누르면 벽에 붙이고, 문 앞과 통로는 비워서 알아서 놓아 줘요.",
-    "Add furniture and press this: pieces go against the walls, and the area by the door and walkways are kept clear.",
-    "家具を入れて押すと、壁に付けてドア前や通路を空けながら自動で置きます。",
-    "添加家具后点击，家具会靠墙摆放，并留出门前和通道的空间。");
+    "가구를 넣고 누르면 벽에 붙이고, 문 앞과 통로는 비워서 알아서 놓아 줘요. 가구가 하나도 없으면 방 종류에 맞는 필수 가구를 먼저 넣어 줘요.",
+    "Add furniture and press this: pieces go against the walls, and the area by the door and walkways are kept clear. If the room is empty, the essential furniture for the room type is added first.",
+    "家具を入れて押すと、壁に付けてドア前や通路を空けながら自動で置きます。家具が1つもない場合は、部屋の種類に合った必需品の家具を先に入れます。",
+    "添加家具后点击，家具会靠墙摆放，并留出门前和通道的空间。如果房间里一件家具都没有，会先加入该房间类型的必备家具。");
   K("a.none", "먼저 왼쪽에서 가구를 추가해 주세요.", "Please add some furniture on the left first.", "まず左側で家具を追加してください。", "请先在左侧添加家具。");
   K("a.done", "가구 {n}개를 자동으로 배치했어요.", "Placed {n} pieces of furniture automatically.", "家具{n}個を自動で配置しました。", "已自动布置 {n} 件家具。");
   K("a.failed", " 자리가 부족한 가구: {list} (방 밖에 두었어요)", " Not enough room for: {list} (left outside the room)", " 場所が足りない家具：{list}（部屋の外に置きました）", " 空间不足的家具：{list}（已放在房间外）");
@@ -304,6 +304,26 @@
     "Drag furniture to move it (in 5 cm steps). Click to select. On a computer, use the arrow keys to move 5 cm at a time and Delete to remove.",
     "家具をドラッグして動かします（5cm単位）。クリックで選択されます。パソコンでは矢印キーで5cmずつ移動、Deleteキーで削除できます。",
     "拖动家具即可移动（以 5cm 为单位）。点击即可选中。在电脑上可用方向键每次移动 5cm，按 Delete 键删除。");
+
+  K("l.roomType", "방 종류", "Room type", "部屋の種類", "房间类型");
+  K("rt.bedroom", "침실", "Bedroom", "寝室", "卧室");
+  K("rt.living", "거실", "Living room", "リビング", "客厅");
+  K("rt.studio", "원룸", "Studio", "ワンルーム", "单间");
+  K("rt.study", "서재", "Study", "書斎", "书房");
+  K("rt.kitchen", "주방", "Kitchen", "キッチン", "厨房");
+  K("a.filled", "「{room}」에 필요한 가구 {n}개를 추가했어요: {list}.", "Added {n} essential piece(s) for “{room}”: {list}.", "「{room}」に必要な家具を{n}個追加しました：{list}。", "已为「{room}」添加 {n} 件必备家具：{list}。");
+  K("a.fillHint", " 빼고 싶은 가구는 아래 「놓인 가구」의 ✕로 지울 수 있어요.", " To remove a piece, press its ✕ in “Furniture in the room” below.", " 外したい家具は、下の「置いてある家具」の ✕ で削除できます。", " 想去掉的家具，可在下方「房间里的家具」中点击 ✕ 删除。");
+  K("p.list", "놓인 가구 ({n})", "Furniture in the room ({n})", "置いてある家具（{n}）", "房间里的家具（{n}）");
+  K("p.listEmpty", "아직 놓은 가구가 없어요.", "No furniture placed yet.", "まだ家具がありません。", "还没有摆放家具。");
+  K("p.remove", "{name} 지우기", "Remove {name}", "{name}を削除", "删除{name}");
+  K("n.협탁", "협탁", "Nightstand", "ナイトテーブル", "床头柜");
+  K("n.서랍장", "서랍장", "Dresser", "チェスト", "抽屉柜");
+  K("n.책장", "책장", "Bookcase", "本棚", "书架");
+  K("n.TV장", "TV장", "TV stand", "テレビ台", "电视柜");
+  K("n.3인 소파", "3인 소파", "3-seat sofa", "3人掛けソファ", "三人沙发");
+  K("n.거실 테이블", "거실 테이블", "Coffee table", "センターテーブル", "茶几");
+  K("n.식탁", "식탁", "Dining table", "ダイニングテーブル", "餐桌");
+  K("nav.house", "집 전체", "Whole home", "家全体", "整套房子");
 
   K("p.sel", "선택한 가구", "Selected furniture", "選択中の家具", "所选家具");
   K("p.rot", "↻ 90° 회전", "↻ Rotate 90°", "↻ 90°回転", "↻ 旋转 90°");
@@ -457,6 +477,47 @@
   K("d.photoBig", "사진이 너무 커요(20MB 넘음). 더 작은 사진으로 해 주세요.", "The photo is too large (over 20MB). Please use a smaller one.", "写真が大きすぎます（20MB超）。もっと小さい写真にしてください。", "照片太大了（超过 20MB）。请换一张更小的照片。");
   K("d.photoOk", "방 사진을 넣었어요. 렌더에 이 방의 느낌이 반영돼요.", "Room photo added. The render will reflect this room's feel.", "部屋の写真を入れました。レンダーにこの部屋の雰囲気が反映されます。", "已添加房间照片。渲染会反映这个房间的感觉。");
   K("d.photoBad", "이 사진은 열 수 없어요. 다른 사진으로 해 주세요.", "This photo can't be opened. Please use a different one.", "この写真は開けません。別の写真にしてください。", "无法打开这张照片。请换一张。");
+
+  /* ===================== 집 전체 도면 (집도면.html) ===================== */
+  K("title.house", "방 만들기 · 집 전체 도면", "Room Maker · Whole-home plan", "部屋づくり · 家全体の間取り", "布置房间 · 整套房子户型图");
+  K("h.h1", "집 전체 도면 위에<br>가구를 놓아 보세요", "Place furniture on<br>your whole-home plan", "家全体の間取り図の上に<br>家具を置いてみましょう", "在整套房子的户型图上<br>摆放家具");
+  K("h.lead",
+    "집 도면 사진을 올리고, 길이를 아는 곳 두 점을 찍어 축척을 맞추면 사진 위에 가구를 실제 크기로 놓아 볼 수 있어요. 도면 사진은 이 기기 안에서만 쓰이고 서버로 보내지 않아요.",
+    "Upload a photo of your home's floor plan, click two points whose real distance you know to set the scale, and you can place furniture on the photo at its real size. The plan photo stays on this device and is never sent to a server.",
+    "家の間取り図の写真をアップロードし、実際の長さがわかる2点をクリックして縮尺を合わせると、写真の上に家具を実寸で置いて試せます。図面の写真はこの端末の中だけで使われ、サーバーには送信されません。",
+    "上传户型图照片，点击两个已知实际长度的点来校准比例尺，就可以在照片上按实际大小摆放家具。户型图照片只在此设备内使用，不会发送到服务器。");
+  K("h.s1", "1. 도면 사진 올리기", "1. Upload the plan photo", "1. 図面の写真をアップロード", "1. 上传户型图照片");
+  K("h.upload", "📷 도면 사진 올리기", "📷 Upload plan photo", "📷 図面の写真をアップロード", "📷 上传户型图照片");
+  K("h.s1hint", "집 전체가 보이는 도면 사진(JPG·PNG·WEBP)을 올려 주세요.", "Upload a photo of the whole-home plan (JPG, PNG or WEBP).", "家全体が見える図面の写真（JPG・PNG・WEBP）をアップロードしてください。", "请上传能看到整套房子的户型图照片（JPG·PNG·WEBP）。");
+  K("h.imgOk", "도면 사진을 넣었어요. 이제 2단계에서 축척을 맞춰 주세요.", "Plan photo added. Now set the scale in step 2.", "図面の写真を入れました。次に2のステップで縮尺を合わせてください。", "已添加户型图照片。接下来请在第 2 步校准比例尺。");
+  K("h.imgBad", "이 사진은 열 수 없어요. JPG·PNG·WEBP 사진으로 해 주세요.", "This photo can't be opened. Please use a JPG, PNG or WEBP photo.", "この写真は開けません。JPG・PNG・WEBPの写真にしてください。", "无法打开这张照片。请使用 JPG·PNG·WEBP 照片。");
+  K("h.imgBig", "사진이 너무 커요(20MB 넘음). 더 작은 사진으로 해 주세요.", "The photo is too large (over 20MB). Please use a smaller one.", "写真が大きすぎます（20MB超）。もっと小さい写真にしてください。", "照片太大了（超过 20MB）。请换一张更小的照片。");
+  K("h.confirmNewImg", "새 도면 사진을 올리면 지금 놓은 가구와 축척이 지워져요. 계속할까요?", "Uploading a new plan photo will clear the furniture and scale you set. Continue?", "新しい図面の写真をアップロードすると、今置いた家具と縮尺が消えます。続けますか？", "上传新的户型图照片会清除当前摆放的家具和比例尺。要继续吗？");
+  K("h.confirmRmImg", "도면 사진과 놓은 가구를 모두 지울까요? 되돌릴 수 없어요.", "Remove the plan photo and all placed furniture? This can't be undone.", "図面の写真と置いた家具をすべて消しますか？元に戻せません。", "要删除户型图照片和所有已摆放的家具吗？此操作无法撤销。");
+  K("h.s2", "2. 축척 맞추기", "2. Set the scale", "2. 縮尺を合わせる", "2. 校准比例尺");
+  K("h.calibBtn", "📏 두 점 찍어서 길이 재기", "📏 Click two points to measure", "📏 2点をクリックして長さを測る", "📏 点击两点来量长度");
+  K("h.calibRe", "📏 축척 다시 맞추기", "📏 Set the scale again", "📏 縮尺を合わせ直す", "📏 重新校准比例尺");
+  K("h.calibHint0", "도면에서 실제 길이를 아는 곳(예: 문 폭 90cm, 방 한 변)의 양 끝을 차례로 눌러 주세요.", "On the plan, click the two ends of something whose real length you know (e.g. a 90 cm door, one side of a room).", "図面で実際の長さがわかる場所（例：幅90cmのドア、部屋の一辺）の両端を順番にクリックしてください。", "请在户型图上依次点击一处已知实际长度的位置的两端（例如 90cm 的门宽、房间的一条边）。");
+  K("h.calibHint1", "첫 번째 점을 찍었어요. 두 번째 점을 눌러 주세요.", "First point placed. Click the second point.", "1つ目の点を打ちました。2つ目の点をクリックしてください。", "已标出第一个点。请点击第二个点。");
+  K("h.calibHint2", "두 점을 찍었어요. 아래 칸에 두 점 사이의 실제 길이를 적고 「적용」을 눌러 주세요.", "Both points are set. Enter their real distance below and press “Apply.”", "2点を打ちました。下の欄に2点間の実際の長さを入力して「適用」を押してください。", "两个点都标好了。请在下方填入两点间的实际长度，然后点击「应用」。");
+  K("h.calibAsk", "두 점 사이의 실제 길이 (cm)", "Real distance between the two points (cm)", "2点間の実際の長さ (cm)", "两点之间的实际长度 (cm)");
+  K("h.calibApply", "적용", "Apply", "適用", "应用");
+  K("h.calibCancel", "취소", "Cancel", "キャンセル", "取消");
+  K("h.scaleOk", "축척이 맞춰졌어요 (도면에서 1m ≈ {px}px). 이제 가구를 실제 크기로 놓을 수 있어요.", "Scale set (1 m ≈ {px}px on the plan). You can now place furniture at its real size.", "縮尺が合いました（図面で1m ≈ {px}px）。これで家具を実寸で置けます。", "比例尺已校准（图上 1m ≈ {px}px）。现在可以按实际大小摆放家具了。");
+  K("h.scaleNo", "아직 축척을 맞추지 않았어요. 축척을 맞춰야 가구를 실제 크기로 놓을 수 있어요.", "The scale isn't set yet. You need to set it to place furniture at its real size.", "まだ縮尺を合わせていません。縮尺を合わせると家具を実寸で置けます。", "尚未校准比例尺。校准后才能按实际大小摆放家具。");
+  K("h.calibBad", "길이는 10~10000cm 사이 숫자로 적어 주세요.", "Please enter a length between 10 and 10000 cm.", "長さは10〜10000cmの数字で入力してください。", "请填写 10~10000cm 之间的数字。");
+  K("h.calibShort", "두 점이 너무 가까워요. 더 멀리 떨어진 두 점을 찍어 주세요.", "The two points are too close. Please pick two points farther apart.", "2点が近すぎます。もっと離れた2点を選んでください。", "两个点离得太近了。请选择距离更远的两点。");
+  K("h.s3", "3. 가구 놓기", "3. Place furniture", "3. 家具を置く", "3. 摆放家具");
+  K("h.s3hint", "누르면 도면 가운데에 놓여요. 끌어서 원하는 방으로 옮기세요. (치수는 예시 값)", "Click to drop it in the middle of the plan, then drag it to the room you want. (Sizes are examples)", "押すと図面の真ん中に置かれます。ドラッグして好きな部屋へ動かしてください。（寸法は例の値）", "点击后会放在户型图中央，再拖到想要的房间。（尺寸为示例值）");
+  K("h.needScale", "먼저 사진을 올리고 축척을 맞춰 주세요.", "Please upload a photo and set the scale first.", "先に写真をアップロードして縮尺を合わせてください。", "请先上传照片并校准比例尺。");
+  K("h.empty", "도면 사진을 올리면 여기에 보여요.", "Your plan photo will appear here once you upload it.", "図面の写真をアップロードすると、ここに表示されます。", "上传户型图照片后会显示在这里。");
+  K("h.svg", "집 전체 도면 위 가구 배치", "Furniture layout on the whole-home plan", "家全体の間取り図の上の家具配置", "整套房子户型图上的家具布局");
+  K("h.note", "도면 속 벽은 인식하지 못해요. 겹침(빨간 테두리)만 알려 드리고, 문이 열리는 자리와 통로는 직접 확인해 주세요. 가구를 끌어서 옮기고, 컴퓨터에서는 방향키(5cm씩)와 Delete 키도 쓸 수 있어요.", "Walls in the plan aren't detected. We only flag overlaps (red outline), so please check door swing areas and walkways yourself. Drag furniture to move it; on a computer you can also use the arrow keys (5 cm steps) and Delete.", "図面の壁は認識できません。重なり（赤い枠）だけをお知らせしますので、ドアが開く場所と通路はご自身で確認してください。家具はドラッグで動かせ、パソコンでは矢印キー（5cmずつ）とDeleteキーも使えます。", "无法识别户型图中的墙体。只会提示重叠（红框），开门的空间和通道请自行确认。拖动家具即可移动；在电脑上也可以用方向键（每次 5cm）和 Delete 键。");
+  K("h.save", "저장", "Save", "保存", "保存");
+  K("h.png", "도면 + 가구 그림 저장 (PNG)", "Save plan + furniture image (PNG)", "図面＋家具の画像を保存（PNG）", "保存户型图+家具图片（PNG）");
+  K("h.rmImg", "도면 사진 지우기", "Remove plan photo", "図面の写真を消す", "删除户型图照片");
+  K("h.saved", "작업 내용(가구 위치·축척·도면 사진)은 이 기기의 브라우저에 자동 저장돼요. 사진이 너무 커서 저장되지 않으면 다음에 다시 올려 주세요.", "Your work (furniture positions, scale and plan photo) is saved automatically in this device's browser. If the photo is too large to save, please upload it again next time.", "作業内容（家具の位置・縮尺・図面の写真）はこの端末のブラウザに自動保存されます。写真が大きすぎて保存されない場合は、次回もう一度アップロードしてください。", "作业内容（家具位置、比例尺、户型图照片）会自动保存在此设备的浏览器中。如果照片太大无法保存，下次请重新上传。");
+  K("h.fileName", "방만들기_집전체도면.png", "RoomMaker_whole_home.png", "部屋づくり_家全体.png", "布置房间_整套房子.png");
 
   /* ===================== 동작 ===================== */
   function valid(l) { for (var i = 0; i < LANGS.length; i++) if (LANGS[i][0] === l) return true; return false; }

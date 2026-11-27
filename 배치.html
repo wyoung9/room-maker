@@ -91,6 +91,17 @@
   .ai-note .ev { display: block; margin-top: 2px; }
   .imp-row.check { border-color: #E0A200; background: #FFFBEF; }
 
+  #roomType { width: 100%; min-height: 46px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 12px; font: inherit; background: #fff; color: var(--text); }
+  /* 놓인 가구 목록 (✕로 지우기) */
+  #listPanel h2 { font-size: 16px; margin: 0 0 8px; }
+  .ilist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 280px; overflow: auto; }
+  .ilist li { display: flex; align-items: stretch; gap: 4px; }
+  .ilist li.empty { color: var(--muted); font-size: 14px; }
+  .ilist .pick { flex: 1; min-width: 0; text-align: left; font: inherit; font-size: 14px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ilist li.on .pick { border-color: var(--text); background: var(--soft); }
+  .ilist .x { width: 36px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font: inherit; color: var(--warn); }
+  .ilist .x:hover { background: var(--warn); color: #fff; border-color: var(--warn); }
+
   /* AI 렌더 창 */
   .rd-quota { margin-top: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; font-weight: 600; }
   .rd-quota.warn { color: var(--warn); border-color: var(--warn); }
@@ -149,6 +160,7 @@
   <div class="top-right">
     <nav>
       <a href="배치.html" aria-current="page" data-i18n="nav.place">배치</a>
+      <a href="집도면.html" data-i18n="nav.house">집 전체</a>
       <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
     </nav>
     <a href="렌더신청.html" class="btn primary top-cta" data-i18n="nav.render">AI 렌더</a>
@@ -165,6 +177,15 @@
         <label><span data-i18n="l.w">가로 (cm)</span><input id="roomW" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
         <label><span data-i18n="l.h">세로 (cm)</span><input id="roomH" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
       </div>
+      <label style="margin-top:8px"><span data-i18n="l.roomType">방 종류</span>
+        <select id="roomType">
+          <option value="bedroom" data-i18n="rt.bedroom">침실</option>
+          <option value="living" data-i18n="rt.living">거실</option>
+          <option value="studio" data-i18n="rt.studio">원룸</option>
+          <option value="study" data-i18n="rt.study">서재</option>
+          <option value="kitchen" data-i18n="rt.kitchen">주방</option>
+        </select>
+      </label>
       <p id="areaInfo" class="info"></p>
     </section>
 
@@ -218,6 +239,11 @@
         <button id="sRot" class="btn small" type="button" data-i18n="p.rot">↻ 90° 회전</button>
         <button id="sDel" class="btn small danger" type="button" data-i18n="p.del">삭제</button>
       </div>
+    </section>
+
+    <section id="listPanel">
+      <h2 id="listTitle">놓인 가구</h2>
+      <ul id="itemList" class="ilist"></ul>
     </section>
 
     <section class="actions">
@@ -350,6 +376,7 @@
     if (saved && saved.room && Array.isArray(saved.items)) state = saved;
   } catch (e) {}
   var selectedId = null;
+  if (!state.roomType) state.roomType = "bedroom";   // 방 종류 (필수 가구를 정할 때 씀)
 
   function persist() { save(STORE_KEY, JSON.stringify(state)); }
   function snap(v) { return Math.round(v / SNAP) * SNAP; }
@@ -485,6 +512,7 @@
 
   function render() {
     draw(svg, false);
+    renderList();
     var m2 = state.room.w * state.room.h / 10000;
     var pyeong = m2 / 3.305785;
     var used = 0;
@@ -514,9 +542,41 @@
   }
   roomW.addEventListener("change", onRoom);
   roomH.addEventListener("change", onRoom);
+  var roomType = document.getElementById("roomType");
+  roomType.value = state.roomType;
+  roomType.addEventListener("change", function () { state.roomType = roomType.value; persist(); });
+
+  // 놓인 가구 목록: 이름을 누르면 선택, ✕를 누르면 지움 (자동으로 넣은 가구도 여기서 뺄 수 있어요)
+  var itemListEl = document.getElementById("itemList"), listTitle = document.getElementById("listTitle"), listSig = "";
+  function renderList() {
+    var sig = I18N.lang + "|" + selectedId + "|" + state.items.map(function (it) { return it.id + ":" + it.name + ":" + it.w + "x" + it.h; }).join(",");
+    if (sig === listSig) return;                 // 바뀐 게 없으면 다시 그리지 않음 (끌어서 옮기는 동안 깜박이지 않게)
+    listSig = sig;
+    listTitle.textContent = t("p.list", { n: state.items.length });
+    itemListEl.textContent = "";
+    if (!state.items.length) {
+      var e = document.createElement("li"); e.className = "empty"; e.textContent = t("p.listEmpty"); itemListEl.appendChild(e); return;
+    }
+    state.items.forEach(function (it) {
+      var li = document.createElement("li"); if (it.id === selectedId) li.className = "on";
+      var pick = document.createElement("button"); pick.type = "button"; pick.className = "pick";
+      var dot = document.createElement("span"); dot.className = "dot";
+      dot.style.background = it.type === "furniture" ? (it.color || COLORS.furniture.fill) : (COLORS[it.type] || COLORS.furniture).fill;
+      pick.appendChild(dot); pick.appendChild(document.createTextNode(dispName(it) + "  " + it.w + "×" + it.h));
+      pick.addEventListener("click", function () { selectedId = it.id; render(); });
+      var x = document.createElement("button"); x.type = "button"; x.className = "x"; x.textContent = "✕";
+      x.setAttribute("aria-label", t("p.remove", { name: dispName(it) }));
+      x.addEventListener("click", function () {
+        state.items = state.items.filter(function (o) { return o.id !== it.id; });
+        if (selectedId === it.id) selectedId = null;
+        commit();
+      });
+      li.appendChild(pick); li.appendChild(x); itemListEl.appendChild(li);
+    });
+  }
 
   // ---------- 가구 추가 ----------
-  var KIND_COLORS = { bed: "#C7CFAE", desk: "#F7D26A", chair: "#D9D4CA", storage: "#F4B49A", sofa: "#E79A8F", fridge: "#A9C8E0" };
+  var KIND_COLORS = { bed: "#C7CFAE", side: "#9ED3C4", desk: "#F7D26A", chair: "#D9D4CA", storage: "#F4B49A", sofa: "#E79A8F", table: "#F2C4DE", fridge: "#A9C8E0" };
   function addItem(name, w, h, type, color, kind) {
     var it = { id: state.nextId++, name: name, w: snap(w), h: snap(h), type: type || "furniture" };
     if (it.type === "furniture") {
@@ -615,15 +675,17 @@
   };
   var autoSeed = 0, autoBackup = null;
   // 놓는 순서 (자취방에서 중요한 것부터): 침대 → 책상 → 옷장·서랍 → 냉장고 → 소파 → 기타 → 의자
-  var KIND_ORDER = { bed: 0, desk: 1, storage: 2, fridge: 3, sofa: 4, misc: 5, chair: 6 };
+  var KIND_ORDER = { bed: 0, side: 0.5, desk: 1, storage: 2, fridge: 3, sofa: 4, table: 4.5, misc: 5, chair: 6 };   // side = 협탁(침대 옆), table = 거실 테이블(소파 앞)
 
   function kindOf(it) {                          // 고른 종류가 있으면 그것, 없으면 이름으로 짐작
     if (it.kind && KIND_ORDER.hasOwnProperty(it.kind)) return it.kind;
     var n = it.name || "";              // 한국어 외에 영어·일본어·중국어 이름도 알아봄
+    if (/협탁|사이드\s*테이블|nightstand|bedside|ナイトテーブル|サイドテーブル|床头柜/i.test(n)) return "side";
+    if (/거실\s*테이블|커피\s*테이블|coffee\s*table|センターテーブル|茶几/i.test(n)) return "table";
     if (/침대|베드|bed|ベッド|床(?!头)/i.test(n)) return "bed";
-    if (/책상|데스크|desk|테이블|table|机|テーブル|桌/i.test(n)) return "desk";
+    if (/책상|데스크|desk|테이블|식탁|table|dining|机|テーブル|桌/i.test(n)) return "desk";
     if (/의자|체어|chair|스툴|stool|椅|イス|スツール/i.test(n)) return "chair";
-    if (/옷장|장롱|수납|서랍|책장|선반|행거|붙박이|wardrobe|closet|dresser|drawer|shelf|shelves|bookcase|cabinet|ワードローブ|クローゼット|チェスト|引き出し|棚|衣柜|柜|抽屉|书架/i.test(n)) return "storage";
+    if (/tv장|티비|텔레비전|テレビ|电视|옷장|장롱|수납|서랍|책장|선반|행거|붙박이|wardrobe|closet|dresser|drawer|shelf|shelves|bookcase|cabinet|ワードローブ|クローゼット|チェスト|引き出し|棚|衣柜|柜|抽屉|书架/i.test(n)) return "storage";
     if (/소파|쇼파|sofa|couch|ソファ|沙发/i.test(n)) return "sofa";
     if (/냉장고|세탁기|건조기|fridge|refrigerator|washer|washing machine|dryer|冷蔵庫|洗濯機|冰箱|洗衣机/i.test(n)) return "fridge";
     return "misc";
@@ -697,18 +759,23 @@
     return Math.min(c.y, H - (c.y + c.h));
   }
   var LONG_SIDE_TO_WALL = { desk: true, storage: true, sofa: true };
+  var ANCHORED = { chair: true, side: true, table: true };   // 다른 가구(책상·침대·소파)를 먼저 놓은 뒤에 자리를 정하는 가구
   function longSideOnWall(c) { return (c.wall === "top" || c.wall === "bottom") ? c.w >= c.h : c.h >= c.w; }
   function alongWall(c) { return (c.wall === "top" || c.wall === "bottom") ? [c.x, c.x + c.w] : [c.y, c.y + c.h]; }
 
   function scoreSpot(kind, c, ctx, rand) {       // 점수가 낮을수록 좋은 자리
     var s = 0, cx = c.x + c.w / 2, cy = c.y + c.h / 2;
-    var cornerWeight = { bed: 3, storage: 2, fridge: 2, sofa: 1, desk: 0.6, misc: 0.6, chair: 0.3 }[kind];
+    var cornerWeight = { bed: 3, side: 0.3, storage: 2, fridge: 2, sofa: 1, table: 0.6, desk: 0.6, misc: 0.6, chair: 0.3 }[kind];
     s += cornerDist(c) / 100 * cornerWeight;                 // 모서리 가까이
     ctx.doors.forEach(function (d) {
       var p = wallPoint(d), dist = Math.sqrt((cx - p.x) * (cx - p.x) + (cy - p.y) * (cy - p.y));
       if (kind === "bed") s += (c.wall === d.wall ? 4 : 0) + Math.max(0, 300 - dist) / 100;   // 침대는 문에서 멀리
       if (kind === "sofa" && c.wall === d.wall) s += 2;
     });
+    if (kind === "sofa") {                                   // 소파는 TV와 같은 벽을 피하고, 마주 보는 벽을 좋아함
+      var OPP = { top: "bottom", bottom: "top", left: "right", right: "left" };
+      ctx.placed.forEach(function (p) { if (p.isTv) s += (p.wall === c.wall ? 4 : 0) + (OPP[p.wall] === c.wall ? -1.5 : 0); });
+    }
     if (kind === "desk" && ctx.windows.length) {             // 책상은 창문 쪽
       var best = Infinity;
       ctx.windows.forEach(function (wn) {
@@ -745,17 +812,41 @@
     for (var j = 0; j < placed.length; j++) if (overlaps(c, placed[j])) return true;
     return false;
   }
-  function chairSpot(it, ctx, blocks) {          // 의자: 책상 앞 가운데
+  // 앵커(책상·소파) 바로 앞에 놓는 자리. 의자 = 책상 앞(간격 0), 거실 테이블 = 소파 앞(간격 40cm)
+  function frontSpot(it, ctx, blocks, anchorKind, gap) {
     var best = null;
     ctx.placed.forEach(function (d) {
-      if (d.kind !== "desk" || best) return;
+      if (d.kind !== anchorKind || best) return;
       var w = it.w, h = it.h, c;
-      if (d.wall === "top") c = { x: d.x + d.w / 2 - w / 2, y: d.y + d.h, w: w, h: h, wall: "top" };
-      else if (d.wall === "bottom") c = { x: d.x + d.w / 2 - w / 2, y: d.y - h, w: w, h: h, wall: "bottom" };
-      else if (d.wall === "left") c = { x: d.x + d.w, y: d.y + d.h / 2 - h / 2, w: w, h: h, wall: "left" };
-      else c = { x: d.x - w, y: d.y + d.h / 2 - h / 2, w: w, h: h, wall: "right" };
+      if (d.wall === "top") c = { x: d.x + d.w / 2 - w / 2, y: d.y + d.h + gap, w: w, h: h, wall: "top" };
+      else if (d.wall === "bottom") c = { x: d.x + d.w / 2 - w / 2, y: d.y - h - gap, w: w, h: h, wall: "bottom" };
+      else if (d.wall === "left") c = { x: d.x + d.w + gap, y: d.y + d.h / 2 - h / 2, w: w, h: h, wall: "left" };
+      else c = { x: d.x - w - gap, y: d.y + d.h / 2 - h / 2, w: w, h: h, wall: "right" };
       c.x = snap(c.x); c.y = snap(c.y);
       if (!isBlocked(c, blocks, ctx.placed)) best = c;
+    });
+    return best;
+  }
+  // 협탁: 침대 바로 옆(같은 벽, 침대 양쪽 끝 중 문에서 먼 쪽 먼저)
+  function sideSpot(it, ctx, blocks) {
+    var W = state.room.w, H = state.room.h, best = null;
+    ctx.placed.forEach(function (d) {
+      if (d.kind !== "bed") return;
+      var w = it.w, h = it.h, cands;
+      if (d.wall === "top" || d.wall === "bottom") {
+        var y = d.wall === "top" ? 0 : H - h;
+        cands = [{ x: d.x - w, y: y, w: w, h: h, wall: d.wall }, { x: d.x + d.w, y: y, w: w, h: h, wall: d.wall }];
+      } else {
+        var x = d.wall === "left" ? 0 : W - w;
+        cands = [{ x: x, y: d.y - h, w: w, h: h, wall: d.wall }, { x: x, y: d.y + d.h, w: w, h: h, wall: d.wall }];
+      }
+      cands.forEach(function (c) {
+        if (isBlocked(c, blocks, ctx.placed)) return;
+        var cx = c.x + c.w / 2, cy = c.y + c.h / 2, near = 0;
+        ctx.doors.forEach(function (dr) { var p = wallPoint(dr); near += Math.sqrt((cx - p.x) * (cx - p.x) + (cy - p.y) * (cy - p.y)); });
+        c.score = -near;                                    // 문에서 멀수록 좋음
+        if (!best || c.score < best.score) best = c;
+      });
     });
     return best;
   }
@@ -776,14 +867,16 @@
       return ka !== kb ? ka - kb : (b.w * b.h - a.w * a.h);
     });
     if (rand) for (var i = 0; i < furn.length - 1; i++) {     // 순서도 조금 섞기
-      if (kindOf(furn[i]) !== "chair" && kindOf(furn[i + 1]) !== "chair" && rand() < 0.35) {
+      if (!ANCHORED[kindOf(furn[i])] && !ANCHORED[kindOf(furn[i + 1])] && rand() < 0.35) {
         var t = furn[i]; furn[i] = furn[i + 1]; furn[i + 1] = t;
       }
     }
     var result = {}, failed = [], tight = false;
     furn.forEach(function (it) {
       var kind = kindOf(it), best = null;
-      if (kind === "chair") best = chairSpot(it, ctx, swing);
+      if (kind === "chair") best = frontSpot(it, ctx, swing, "desk", 0);
+      else if (kind === "table") best = frontSpot(it, ctx, swing, "sofa", 40);
+      else if (kind === "side") best = sideSpot(it, ctx, swing);
       if (!best) {
         // 1차: 문 앞 통로까지 비우고 찾기 → 안 되면 2차: 문 열리는 자리만 비우고 찾기
         [corridor, swing].some(function (blocks, pass) {
@@ -799,7 +892,8 @@
       }
       if (best) {
         best.kind = kind;
-        best.front = (kind === "chair" || kind === "misc") ? null : frontZone(best, AUTO.FRONT);
+        best.front = (ANCHORED[kind] || kind === "misc") ? null : frontZone(best, AUTO.FRONT);
+        best.isTv = /tv장|티비|テレビ|电视|\btv\b/i.test(it.name || "");
         ctx.placed.push(best);
         result[it.id] = best;
       } else {
@@ -838,8 +932,10 @@
     commit();
     var placedN = furn.length - r.failed.length;
     var failedItems = r.failed, tight = r.tight;
+    var fill = lastFill;
     setAutoMsg(function () {
-      var text = t("a.done", { n: placedN });
+      var text = fill ? t("a.filled", { room: t("rt." + fill.room), n: fill.items.length, list: fill.items.map(dispName).join(", ") }) + t("a.fillHint") + " " : "";
+      text += t("a.done", { n: placedN });
       if (failedItems.length) text += t("a.failed", { list: failedItems.map(dispName).join(", ") });
       if (tight) text += t("a.tight");
       return text;
@@ -847,15 +943,46 @@
     altBtn.disabled = false;
     undoAuto.hidden = !autoBackup;
   }
+  // 방 종류에 맞는 필수 가구 목록 (설정.js 의 roomTypes 규칙 + 방 면적)
+  function essentialPresets() {
+    var rules = (CFG.roomTypes || {})[state.roomType] || [];
+    var area = state.room.w * state.room.h / 10000, out = [];
+    function preset(name) { var l = CFG.furniture || []; for (var i = 0; i < l.length; i++) if (l[i].name === name) return l[i]; return null; }
+    rules.forEach(function (r) {
+      if (r.minArea && area < r.minArea) return;
+      var name = r.name;
+      if (r.bed) name = r.compact ? (area < 12 ? "싱글 침대" : area < 20 ? "슈퍼싱글 침대" : "퀸 침대")   // compact = 원룸: 한 단계 작게
+                              : (area < 7 ? "싱글 침대" : area < 11 ? "슈퍼싱글 침대" : "퀸 침대");
+      if (r.sofa) name = area < 14 ? "2인 소파" : "3인 소파";
+      var f = preset(name); if (f) out.push(f);
+    });
+    return out;
+  }
+  function fillEssentials() {                    // 가구가 하나도 없을 때만 부름. 넣은 가구 목록을 돌려줌
+    var added = [];
+    essentialPresets().forEach(function (f) {
+      var it = { id: state.nextId++, name: f.name, w: snap(f.w), h: snap(f.h), type: "furniture", color: f.color };
+      it.x = snap(Math.max(0, (state.room.w - it.w) / 2)); it.y = snap(Math.max(0, (state.room.h - it.h) / 2));
+      state.items.push(it); added.push(it);
+    });
+    return added;
+  }
+  var lastFill = null;
   autoBtn.addEventListener("click", function () {
-    autoBackup = state.items.map(function (it) { return { id: it.id, x: it.x, y: it.y, w: it.w, h: it.h }; });
+    var hasFurniture = state.items.some(function (it) { return it.type === "furniture"; });
+    var added = hasFurniture ? [] : fillEssentials();     // 아무것도 없으면 필수 가구를 먼저 넣고, 있으면 그대로 재배치
+    var addedIds = added.map(function (it) { return it.id; });
+    lastFill = added.length ? { room: state.roomType, items: added } : null;
+    autoBackup = { pos: state.items.filter(function (it) { return addedIds.indexOf(it.id) < 0; })
+                     .map(function (it) { return { id: it.id, x: it.x, y: it.y, w: it.w, h: it.h }; }), added: addedIds };
     autoSeed = 0;
     applyLayout(0);
   });
-  altBtn.addEventListener("click", function () { autoSeed++; applyLayout(autoSeed); });
+  altBtn.addEventListener("click", function () { lastFill = null; autoSeed++; applyLayout(autoSeed); });
   undoAuto.addEventListener("click", function () {
     if (!autoBackup) return;
-    autoBackup.forEach(function (b) { var it = byId(b.id); if (it) { it.x = b.x; it.y = b.y; it.w = b.w; it.h = b.h; } });
+    autoBackup.pos.forEach(function (b) { var it = byId(b.id); if (it) { it.x = b.x; it.y = b.y; it.w = b.w; it.h = b.h; } });
+    state.items = state.items.filter(function (it) { return autoBackup.added.indexOf(it.id) < 0; });   // 자동으로 넣은 필수 가구는 지움
     autoBackup = null; undoAuto.hidden = true;
     selectedId = null; commit();
     setAutoMsg(["a.undone"]);
@@ -1300,6 +1427,7 @@
     });
   }
 
+  function serverKind(k) { return k === "side" ? "storage" : k === "table" ? "misc" : k; }   // 서버가 아는 종류로
   async function rdMake() {
     if (rdBusy || !rdUsable) return;
     var room = state.room;
@@ -1308,7 +1436,7 @@
     if (!furniture.length) { rdSay(["d.noFurn"], true); return; }
     var skipped = state.items.filter(function (it) { return it.type === "furniture" && !inRoom(it); }).length;
     var items = state.items.filter(function (it) { return it.type !== "furniture" || inRoom(it); }).slice(0, 30)
-      .map(function (it) { return { type: it.type, name: dispName(it), kind: it.kind || kindOf(it), w: it.w, h: it.h, x: it.x, y: it.y }; });
+      .map(function (it) { return { type: it.type, name: dispName(it), kind: serverKind(it.kind || kindOf(it)), w: it.w, h: it.h, x: it.x, y: it.y }; });
     var style = (document.querySelector('input[name="rdStyle"]:checked') || {}).value || "modern";
     var styleText = document.getElementById("rdStyleText").value.trim();
     if (style === "custom" && !/^[\p{L}\p{N} ,.\-]{2,40}$/u.test(styleText)) { rdSay(["d.badStyle"], true); return; }

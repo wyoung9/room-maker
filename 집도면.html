@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="title.house">방 만들기 · 집 전체 도면</title>
+<link rel="stylesheet" href="공통.css">
+<style>
+  .tool { display: flex; flex-direction: column; gap: 16px; padding: 16px; max-width: 1280px; margin: 0 auto; }
+  .intro { padding: clamp(24px, 5vw, 48px) 4px 4px; }
+  .intro h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.25; margin: 0 0 10px; font-weight: 700; }
+  .intro p { margin: 0; color: var(--muted); max-width: 720px; }
+  .work { display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
+  .side { align-self: start; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .side > section, .panel section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+  .side h2, .panel h2 { font-size: 16px; margin: 0 0 8px; }
+  .side .hint { font-size: 13px; margin: 8px 0 0; }
+  .hint.warn { color: var(--warn); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btnrow { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btnrow .btn { flex: 1; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; border: 1px solid #141414; margin-right: 6px; vertical-align: -1px; }
+  .group + .group { margin-top: 10px; }
+  .group h3 { font-size: 12px; font-weight: 700; color: var(--muted); margin: 0 0 4px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .fbtn { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px 8px; min-height: 38px; text-align: left; cursor: pointer;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; font: inherit; color: var(--text); }
+  .fbtn:hover:not(:disabled) { border-color: var(--text); background: var(--soft); }
+  .fbtn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .fbtn .nm { font-size: 13px; font-weight: 600; line-height: 1.3; }
+  .fbtn .sz { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .custom { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .custom .full { grid-column: 1 / -1; }
+  details summary { cursor: pointer; font-size: 14px; color: var(--muted); margin-top: 8px; }
+  #calibAsk { margin-top: 10px; }
+
+  .stage { position: sticky; top: 76px; align-self: start; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; min-width: 0; }
+  .stage-empty { color: var(--muted); text-align: center; padding: 80px 16px; border: 1.5px dashed var(--line); border-radius: 14px; }
+  #plan { width: 100%; height: auto; max-height: calc(100vh - 150px); display: block; touch-action: none; user-select: none; -webkit-user-select: none; border-radius: 10px; }
+  #plan.calib { cursor: crosshair; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); padding: 0 4px 10px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .legend .key { display: inline-block; width: 14px; height: 10px; margin-right: 6px; border: 2px solid #C42A1E; vertical-align: -1px; }
+  .stage .hint { font-size: 13px; margin: 8px 4px 0; }
+
+  .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; align-items: start; }
+  .actions { display: flex; flex-direction: column; gap: 8px; }
+  .ilist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 280px; overflow: auto; }
+  .ilist li { display: flex; align-items: stretch; gap: 4px; }
+  .ilist li.empty { color: var(--muted); font-size: 14px; }
+  .ilist .pick { flex: 1; min-width: 0; text-align: left; font: inherit; font-size: 14px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ilist li.on .pick { border-color: var(--text); background: var(--soft); }
+  .ilist .x { width: 36px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font: inherit; color: var(--warn); }
+  .ilist .x:hover { background: var(--warn); color: #fff; border-color: var(--warn); }
+  @media (max-width: 860px) {
+    .work { grid-template-columns: 1fr; }
+    .stage { position: static; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <a href="index.html" class="logo" data-i18n="brand">방 만들기</a>
+  <div class="top-right">
+    <nav>
+      <a href="배치.html" data-i18n="nav.place">배치</a>
+      <a href="집도면.html" aria-current="page" data-i18n="nav.house">집 전체</a>
+      <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
+    </nav>
+    <a href="배치.html" class="btn primary top-cta" data-i18n="cta.place">무료로 배치하기</a>
+  </div>
+</header>
+
+<main class="tool">
+  <section class="intro">
+    <h1 data-i18n-html="h.h1">집 전체 도면 위에<br>가구를 놓아 보세요</h1>
+    <p data-i18n="h.lead">집 도면 사진을 올리고, 길이를 아는 곳 두 점을 찍어 축척을 맞추면 사진 위에 가구를 실제 크기로 놓아 볼 수 있어요. 도면 사진은 이 기기 안에서만 쓰이고 서버로 보내지 않아요.</p>
+  </section>
+
+  <div class="work">
+    <div class="side">
+      <section>
+        <h2 data-i18n="h.s1">1. 도면 사진 올리기</h2>
+        <label class="btn small" style="display:inline-flex"><span id="upLabel" data-i18n="h.upload">📷 도면 사진 올리기</span><input id="imgFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>
+        <p class="hint" data-i18n="h.s1hint">집 전체가 보이는 도면 사진(JPG·PNG·WEBP)을 올려 주세요.</p>
+        <p id="imgMsg" class="hint" aria-live="polite"></p>
+      </section>
+
+      <section>
+        <h2 data-i18n="h.s2">2. 축척 맞추기</h2>
+        <button id="calibBtn" class="btn small" type="button" disabled data-i18n="h.calibBtn">📏 두 점 찍어서 길이 재기</button>
+        <p id="scaleMsg" class="hint" aria-live="polite"></p>
+        <div id="calibAsk" hidden>
+          <label><span data-i18n="h.calibAsk">두 점 사이의 실제 길이 (cm)</span><input id="calibCm" type="number" min="10" max="10000" step="1" inputmode="numeric"></label>
+          <div class="btnrow">
+            <button id="calibApply" class="btn primary small" type="button" data-i18n="h.calibApply">적용</button>
+            <button id="calibCancel" class="btn ghost small" type="button" data-i18n="h.calibCancel">취소</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 data-i18n="h.s3">3. 가구 놓기</h2>
+        <p id="addHint" class="hint" style="margin-top:0"></p>
+        <div id="presetList"></div>
+        <details>
+          <summary data-i18n="l.manual">직접 입력하기</summary>
+          <div class="custom">
+            <label class="full"><span data-i18n="l.name">이름</span><input id="cName" type="text" maxlength="20" placeholder="예: 서랍장" data-i18n-attr="placeholder:l.nameph"></label>
+            <label><span data-i18n="l.w">가로 (cm)</span><input id="cW" type="number" min="5" step="5" value="80" inputmode="numeric"></label>
+            <label><span data-i18n="l.h">세로 (cm)</span><input id="cH" type="number" min="5" step="5" value="40" inputmode="numeric"></label>
+            <button id="cAdd" class="btn small full" type="button" data-i18n="l.add">추가</button>
+          </div>
+        </details>
+      </section>
+    </div>
+
+    <section class="stage">
+      <div id="stageEmpty" class="stage-empty" data-i18n="h.empty">도면 사진을 올리면 여기에 보여요.</div>
+      <div id="stageBody" hidden>
+        <div class="legend"><span><span class="key"></span><span data-i18n="a.lg1">빨간 테두리: 다른 가구와 겹침</span></span></div>
+        <svg id="plan" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="집 전체 도면 위 가구 배치" data-i18n-attr="aria-label:h.svg"></svg>
+        <p class="hint" data-i18n="h.note">도면 속 벽은 인식하지 못해요. 겹침(빨간 테두리)만 알려 드리고, 문이 열리는 자리와 통로는 직접 확인해 주세요. 가구를 끌어서 옮기고, 컴퓨터에서는 방향키(5cm씩)와 Delete 키도 쓸 수 있어요.</p>
+      </div>
+    </section>
+  </div>
+
+  <aside class="panel">
+    <section id="selPanel" hidden>
+      <h2 data-i18n="p.sel">선택한 가구</h2>
+      <label><span data-i18n="l.name">이름</span><input id="sName" type="text" maxlength="20"></label>
+      <div class="row" style="margin-top:8px">
+        <label><span data-i18n="l.w">가로 (cm)</span><input id="sW" type="number" min="5" step="5" inputmode="numeric"></label>
+        <label><span data-i18n="l.h">세로 (cm)</span><input id="sH" type="number" min="5" step="5" inputmode="numeric"></label>
+      </div>
+      <div class="btnrow">
+        <button id="sRot" class="btn small" type="button" data-i18n="p.rot">↻ 90° 회전</button>
+        <button id="sDel" class="btn small danger" type="button" data-i18n="p.del">삭제</button>
+      </div>
+    </section>
+
+    <section id="listPanel">
+      <h2 id="listTitle">놓인 가구</h2>
+      <ul id="itemList" class="ilist"></ul>
+    </section>
+
+    <section class="actions">
+      <h2 data-i18n="h.save">저장</h2>
+      <button id="savePng" class="btn primary" type="button" disabled data-i18n="h.png">도면 + 가구 그림 저장 (PNG)</button>
+      <button id="clearAll" class="btn ghost small" type="button" data-i18n="p.clear">가구 모두 지우기</button>
+      <button id="rmImg" class="btn ghost small" type="button" disabled data-i18n="h.rmImg">도면 사진 지우기</button>
+      <p class="hint" style="margin:0" data-i18n="h.saved">작업 내용(가구 위치·축척·도면 사진)은 이 기기의 브라우저에 자동 저장돼요. 사진이 너무 커서 저장되지 않으면 다음에 다시 올려 주세요.</p>
+    </section>
+  </aside>
+</main>
+
+<footer class="footer"><span data-i18n="brand">방 만들기</span><span data-i18n="footer.pilot">시범 운영 중</span></footer>
+
+<script src="설정.js"></script>
+<script src="i18n.js"></script>
+<script>
+(function () {
+  "use strict";
+  var CFG = window.ROOM_CONFIG || {};
+  var t = I18N.t;
+  var STORE = "roommaker.house.v1";
+  var NS = "http://www.w3.org/2000/svg";
+  var FONT = "Malgun Gothic, Apple SD Gothic Neo, Hiragino Sans, Yu Gothic, Meiryo, PingFang SC, Microsoft YaHei, sans-serif";
+  var SNAP = 5;                                           // 방향키로 움직이는 간격(cm)
+  var DEFAULT_COLOR = "#C7CFAE";
+
+  // ---------- 저장소 ----------
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  var state = { img: null, imgW: 0, imgH: 0, ppc: null, items: [], nextId: 1 };   // ppc = 도면 사진에서 1cm 가 몇 픽셀인지
+  try {
+    var saved = JSON.parse(load(STORE));
+    if (saved && Array.isArray(saved.items)) {
+      state.items = saved.items.filter(function (it) { return it && isFinite(it.w) && isFinite(it.h) && isFinite(it.x) && isFinite(it.y); });
+      state.nextId = Number(saved.nextId) || (state.items.length + 1);
+      if (typeof saved.img === "string" && /^data:image\//.test(saved.img) && saved.imgW > 0 && saved.imgH > 0) {
+        state.img = saved.img; state.imgW = saved.imgW; state.imgH = saved.imgH;
+        if (saved.ppc > 0) state.ppc = saved.ppc;
+      }
+    }
+  } catch (e) {}
+  if (!state.img) { state.ppc = null; state.items = []; }
+  function persist() {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); }
+    catch (e) { try { localStorage.setItem(STORE, JSON.stringify({ img: null, imgW: 0, imgH: 0, ppc: null, items: [], nextId: state.nextId })); } catch (e2) {} }   // 사진이 너무 커서 안 들어가면 사진 없이 비움
+  }
+  var imgEl = null;                                       // PNG 저장용 사진 요소
+  function makeImgEl() { imgEl = null; if (state.img) { imgEl = new Image(); imgEl.src = state.img; } }
+  makeImgEl();
+
+  var selectedId = null, calib = { on: false, pts: [] }, drag = null;
+  function byId(id) { for (var i = 0; i < state.items.length; i++) if (state.items[i].id === id) return state.items[i]; return null; }
+  function dispName(it) { return I18N.name(it.name); }
+  function num(v, min, fb) { v = Number(v); return isFinite(v) && v >= min ? v : fb; }
+
+  // ---------- 안내 문구 (글자를 만드는 방법으로 기억해서 언어가 바뀌면 다시 만듦) ----------
+  function msgText(m) { return typeof m === "function" ? m() : Array.isArray(m) ? t(m[0], m[1]) : (m || ""); }
+  var imgMsg = document.getElementById("imgMsg"), imgMsgState = { m: "", warn: false };
+  function paintImg() { imgMsg.textContent = msgText(imgMsgState.m); imgMsg.className = "hint" + (imgMsgState.warn ? " warn" : ""); }
+  function imgSay(m, warn) { imgMsgState = { m: m, warn: !!warn }; paintImg(); }
+  var scaleMsg = document.getElementById("scaleMsg"), scaleWarn = null;
+  function paintScale() {
+    var m;
+    if (scaleWarn) m = t(scaleWarn);
+    else if (calib.on) m = t(calib.pts.length === 0 ? "h.calibHint0" : calib.pts.length === 1 ? "h.calibHint1" : "h.calibHint2");
+    else if (state.ppc) m = t("h.scaleOk", { px: Math.round(state.ppc * 100) });
+    else m = t("h.scaleNo");
+    scaleMsg.textContent = m;
+    scaleMsg.className = "hint" + (scaleWarn ? " warn" : "");
+    document.getElementById("calibBtn").textContent = t(state.ppc ? "h.calibRe" : "h.calibBtn");
+    document.getElementById("addHint").textContent = t(state.ppc ? "h.s3hint" : "h.needScale");
+  }
+
+  // ---------- 그리기 ----------
+  var svg = document.getElementById("plan");
+  function el(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function rectOf(it) { return { x: it.x, y: it.y, w: it.w * state.ppc, h: it.h * state.ppc }; }
+  function overlapIds() {
+    var bad = {}, r = state.items.map(rectOf);
+    for (var i = 0; i < r.length; i++) for (var j = i + 1; j < r.length; j++) {
+      if (r[i].x < r[j].x + r[j].w && r[j].x < r[i].x + r[i].w && r[i].y < r[j].y + r[j].h && r[j].y < r[i].y + r[i].h) {
+        bad[state.items[i].id] = true; bad[state.items[j].id] = true;
+      }
+    }
+    return bad;
+  }
+  function draw() {
+    var has = !!state.img;
+    document.getElementById("stageEmpty").hidden = has;
+    document.getElementById("stageBody").hidden = !has;
+    if (!has) return;
+    var u = state.imgW / 800;                              // 사진 크기에 맞춘 선·글자 기준 길이
+    svg.setAttribute("viewBox", "0 0 " + state.imgW + " " + state.imgH);
+    svg.setAttribute("class", calib.on ? "calib" : "");
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    el("image", { href: state.img, x: 0, y: 0, width: state.imgW, height: state.imgH }, svg);
+    if (state.ppc) {
+      var bad = overlapIds();
+      state.items.forEach(function (it) {
+        var r = rectOf(it), g = el("g", { "data-id": it.id, style: "cursor:grab" }, svg);
+        var stroke = "#141414", sw = 1.6 * u, dash = null;
+        if (bad[it.id]) { stroke = "#C42A1E"; sw = 3 * u; }
+        else if (it.id === selectedId) { stroke = "#4B6A12"; sw = 3 * u; }
+        var rect = el("rect", { x: r.x, y: r.y, width: r.w, height: r.h, rx: 2 * u, fill: it.color || DEFAULT_COLOR, "fill-opacity": 0.88, stroke: stroke, "stroke-width": sw }, g);
+        if (dash) rect.setAttribute("stroke-dasharray", dash);
+        if (it.id === selectedId) el("rect", { x: r.x - 3 * u, y: r.y - 3 * u, width: r.w + 6 * u, height: r.h + 6 * u, rx: 4 * u, fill: "none", stroke: "#4B6A12", "stroke-width": 1.2 * u, "stroke-dasharray": (4 * u) + " " + (4 * u) }, g);
+        var f = Math.max(7 * u, Math.min(r.w / 6, r.h / 3, 16 * u));
+        if (r.w > f * 2 && r.h > f * 1.6) {
+          var tx = el("text", { x: r.x + r.w / 2, y: r.y + r.h / 2 + f * 0.3, "text-anchor": "middle", "font-size": f, "font-weight": "700", fill: "#1f1d1b", "font-family": FONT, "pointer-events": "none" }, g);
+          tx.textContent = dispName(it);
+        }
+      });
+    }
+    // 축척 맞추기 점 두 개 + 선
+    if (calib.pts.length) {
+      if (calib.pts.length === 2) el("line", { x1: calib.pts[0].x, y1: calib.pts[0].y, x2: calib.pts[1].x, y2: calib.pts[1].y, stroke: "#C42A1E", "stroke-width": 2 * u }, svg);
+      calib.pts.forEach(function (p) { el("circle", { cx: p.x, cy: p.y, r: 5 * u, fill: "#C42A1E", stroke: "#fff", "stroke-width": 1.5 * u }, svg); });
+    }
+  }
+
+  // ---------- 화면 갱신 ----------
+  var selPanel = document.getElementById("selPanel");
+  var sName = document.getElementById("sName"), sW = document.getElementById("sW"), sH = document.getElementById("sH");
+  var itemListEl = document.getElementById("itemList"), listTitle = document.getElementById("listTitle"), listSig = "";
+  function renderList() {
+    var sig = I18N.lang + "|" + selectedId + "|" + state.items.map(function (it) { return it.id + ":" + it.name + ":" + it.w + "x" + it.h; }).join(",");
+    if (sig === listSig) return;
+    listSig = sig;
+    listTitle.textContent = t("p.list", { n: state.items.length });
+    itemListEl.textContent = "";
+    if (!state.items.length) { var e = document.createElement("li"); e.className = "empty"; e.textContent = t("p.listEmpty"); itemListEl.appendChild(e); return; }
+    state.items.forEach(function (it) {
+      var li = document.createElement("li"); if (it.id === selectedId) li.className = "on";
+      var pick = document.createElement("button"); pick.type = "button"; pick.className = "pick";
+      var dot = document.createElement("span"); dot.className = "dot"; dot.style.background = it.color || DEFAULT_COLOR;
+      pick.appendChild(dot); pick.appendChild(document.createTextNode(dispName(it) + "  " + it.w + "×" + it.h));
+      pick.addEventListener("click", function () { selectedId = it.id; render(); });
+      var x = document.createElement("button"); x.type = "button"; x.className = "x"; x.textContent = "✕";
+      x.setAttribute("aria-label", t("p.remove", { name: dispName(it) }));
+      x.addEventListener("click", function () {
+        state.items = state.items.filter(function (o) { return o.id !== it.id; });
+        if (selectedId === it.id) selectedId = null;
+        commit();
+      });
+      li.appendChild(pick); li.appendChild(x); itemListEl.appendChild(li);
+    });
+  }
+  function render() {
+    draw(); renderList();
+    var has = !!state.img, scaled = !!state.ppc;
+    document.getElementById("calibBtn").disabled = !has;
+    document.getElementById("savePng").disabled = !has;
+    document.getElementById("rmImg").disabled = !has;
+    Array.prototype.forEach.call(document.querySelectorAll("#presetList .fbtn"), function (b) { b.disabled = !scaled; });
+    document.getElementById("cAdd").disabled = !scaled;
+    paintScale();
+    var it = byId(selectedId);
+    selPanel.hidden = !it;
+    if (it) {
+      if (document.activeElement !== sName) sName.value = dispName(it);
+      if (document.activeElement !== sW) sW.value = it.w;
+      if (document.activeElement !== sH) sH.value = it.h;
+    }
+  }
+  function commit() { persist(); render(); }
+
+  // ---------- 도면 사진 올리기 ----------
+  function setImage(dataUrl, w, h) {
+    state.img = dataUrl; state.imgW = w; state.imgH = h; state.ppc = null; state.items = []; selectedId = null;
+    calib = { on: false, pts: [] }; scaleWarn = null; document.getElementById("calibAsk").hidden = true;
+    makeImgEl(); commit();
+    imgSay(["h.imgOk"]);
+  }
+  document.getElementById("imgFile").addEventListener("change", function (e) {
+    var f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { imgSay(["h.imgBad"], true); return; }
+    if (f.size > 20 * 1024 * 1024) { imgSay(["h.imgBig"], true); return; }
+    if (state.img && (state.items.length || state.ppc) && !confirm(t("h.confirmNewImg"))) return;
+    var url = URL.createObjectURL(f), im = new Image();
+    im.onload = function () {
+      var s = Math.min(1, 1800 / Math.max(im.naturalWidth, im.naturalHeight));       // 긴 쪽 1800px 이하로 줄여 저장 공간을 아낌
+      var c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(im.naturalWidth * s)); c.height = Math.max(1, Math.round(im.naturalHeight * s));
+      var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      setImage(c.toDataURL("image/jpeg", 0.88), c.width, c.height);
+    };
+    im.onerror = function () { URL.revokeObjectURL(url); imgSay(["h.imgBad"], true); };
+    im.src = url;
+  });
+  document.getElementById("rmImg").addEventListener("click", function () {
+    if (!confirm(t("h.confirmRmImg"))) return;
+    state.img = null; state.imgW = state.imgH = 0; state.ppc = null; state.items = []; selectedId = null;
+    calib = { on: false, pts: [] }; document.getElementById("calibAsk").hidden = true; makeImgEl(); imgSay(""); commit();
+  });
+
+  // ---------- 축척 맞추기 ----------
+  var calibAsk = document.getElementById("calibAsk"), calibCm = document.getElementById("calibCm");
+  document.getElementById("calibBtn").addEventListener("click", function () {
+    if (!state.img) return;
+    calib = { on: true, pts: [] }; scaleWarn = null; calibAsk.hidden = true; calibCm.value = ""; selectedId = null; render();
+  });
+  document.getElementById("calibCancel").addEventListener("click", function () {
+    calib = { on: false, pts: [] }; scaleWarn = null; calibAsk.hidden = true; render();
+  });
+  document.getElementById("calibApply").addEventListener("click", function () {
+    var cm = Number(calibCm.value);
+    if (calib.pts.length < 2) return;
+    var d = Math.sqrt(Math.pow(calib.pts[0].x - calib.pts[1].x, 2) + Math.pow(calib.pts[0].y - calib.pts[1].y, 2));
+    if (d < state.imgW * 0.01) { scaleWarn = "h.calibShort"; render(); return; }
+    if (!(isFinite(cm) && cm >= 10 && cm <= 10000)) { scaleWarn = "h.calibBad"; render(); return; }
+    state.ppc = d / cm;                                   // 1cm 가 몇 픽셀인지
+    calib = { on: false, pts: [] }; scaleWarn = null; calibAsk.hidden = true;
+    commit();
+  });
+
+  // ---------- 가구 추가 ----------
+  function addItem(name, w, h, color) {
+    if (!state.ppc) return;
+    var it = { id: state.nextId++, name: name, w: Math.round(w), h: Math.round(h), color: color || DEFAULT_COLOR, x: 0, y: 0 };
+    it.x = Math.round(state.imgW / 2 - it.w * state.ppc / 2); it.y = Math.round(state.imgH / 2 - it.h * state.ppc / 2);
+    state.items.push(it); selectedId = it.id; commit();
+  }
+  var presetList = document.getElementById("presetList");
+  function buildPresets() {
+    presetList.textContent = "";
+    var groups = {}, order = [];
+    (CFG.furniture || []).forEach(function (f) {
+      var gName = f.group || "기타";
+      if (!groups[gName]) {
+        var box = document.createElement("div"); box.className = "group";
+        var h3 = document.createElement("h3"); h3.textContent = I18N.group(gName); box.appendChild(h3);
+        var grid = document.createElement("div"); grid.className = "grid2"; box.appendChild(grid);
+        groups[gName] = grid; order.push(box);
+      }
+      var b = document.createElement("button"); b.type = "button"; b.className = "fbtn"; b.disabled = !state.ppc;
+      var nm = document.createElement("span"); nm.className = "nm";
+      var d = document.createElement("span"); d.className = "dot"; d.style.background = f.color; nm.appendChild(d);
+      nm.appendChild(document.createTextNode(I18N.name(f.name))); b.appendChild(nm);
+      var sz = document.createElement("span"); sz.className = "sz"; sz.textContent = f.w + "×" + f.h; b.appendChild(sz);
+      b.setAttribute("aria-label", t("l.addaria", { name: I18N.name(f.name), size: f.w + "×" + f.h }));
+      b.addEventListener("click", function () { addItem(f.name, f.w, f.h, f.color); });
+      groups[gName].appendChild(b);
+    });
+    order.forEach(function (box) { presetList.appendChild(box); });
+  }
+  buildPresets();
+  document.getElementById("cAdd").addEventListener("click", function () {
+    addItem(document.getElementById("cName").value.trim() || "가구", num(document.getElementById("cW").value, 5, 80), num(document.getElementById("cH").value, 5, 40));
+  });
+
+  // ---------- 선택한 가구 수정 ----------
+  sName.addEventListener("input", function () { var it = byId(selectedId); if (it) { it.name = sName.value.slice(0, 20) || "가구"; commit(); } });
+  function onSize() {
+    var it = byId(selectedId); if (!it) return;
+    it.w = Math.round(num(sW.value, 5, it.w)); it.h = Math.round(num(sH.value, 5, it.h)); sW.value = it.w; sH.value = it.h; commit();
+  }
+  sW.addEventListener("change", onSize); sH.addEventListener("change", onSize);
+  function rotate() {
+    var it = byId(selectedId); if (!it) return;
+    var cx = it.x + it.w * state.ppc / 2, cy = it.y + it.h * state.ppc / 2, w = it.w; it.w = it.h; it.h = w;
+    it.x = Math.round(cx - it.w * state.ppc / 2); it.y = Math.round(cy - it.h * state.ppc / 2); commit();
+  }
+  function removeSel() { state.items = state.items.filter(function (it) { return it.id !== selectedId; }); selectedId = null; commit(); }
+  document.getElementById("sRot").addEventListener("click", rotate);
+  document.getElementById("sDel").addEventListener("click", removeSel);
+  document.getElementById("clearAll").addEventListener("click", function () {
+    if (!state.items.length) return;
+    if (confirm(t("p.confirmClear"))) { state.items = []; selectedId = null; commit(); }
+  });
+
+  // ---------- 끌어서 옮기기 · 점 찍기 ----------
+  function toPx(evt) {
+    var pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  svg.addEventListener("pointerdown", function (evt) {
+    var p = toPx(evt);
+    if (calib.on) {                                       // 축척 맞추기 중: 클릭한 곳에 점을 찍음 (최대 2개)
+      if (calib.pts.length < 2) {
+        calib.pts.push({ x: Math.round(p.x), y: Math.round(p.y) }); scaleWarn = null; render();
+        if (calib.pts.length === 2) { calibAsk.hidden = false; calibCm.focus(); }
+      }
+      evt.preventDefault(); return;
+    }
+    var g = evt.target.closest ? evt.target.closest("g[data-id]") : null;
+    if (!g) { selectedId = null; render(); return; }
+    var it = byId(Number(g.getAttribute("data-id"))); if (!it) return;
+    selectedId = it.id;
+    drag = { id: it.id, dx: p.x - it.x, dy: p.y - it.y, pid: evt.pointerId, moved: false };
+    try { svg.setPointerCapture(evt.pointerId); } catch (e) {}
+    evt.preventDefault(); render();
+  });
+  svg.addEventListener("pointermove", function (evt) {
+    if (!drag || evt.pointerId !== drag.pid) return;
+    var it = byId(drag.id); if (!it) return;
+    var p = toPx(evt), nx = Math.round(p.x - drag.dx), ny = Math.round(p.y - drag.dy);
+    if (nx !== it.x || ny !== it.y) { it.x = nx; it.y = ny; drag.moved = true; draw(); }
+  });
+  function endDrag(evt) {
+    if (!drag || (evt && evt.pointerId !== drag.pid)) return;
+    var moved = drag.moved; drag = null; if (moved) commit();
+  }
+  svg.addEventListener("pointerup", endDrag); svg.addEventListener("pointercancel", endDrag);
+  document.addEventListener("keydown", function (evt) {
+    var tag = (evt.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    var it = byId(selectedId); if (!it || !state.ppc) return;
+    var step = SNAP * state.ppc, moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (moves[evt.key]) { it.x = Math.round(it.x + moves[evt.key][0]); it.y = Math.round(it.y + moves[evt.key][1]); commit(); evt.preventDefault(); }
+    else if (evt.key === "Delete" || evt.key === "Backspace") { removeSel(); evt.preventDefault(); }
+    else if (evt.key === "r" || evt.key === "R") rotate();
+  });
+
+  // ---------- PNG 저장 (도면 사진 + 가구) ----------
+  document.getElementById("savePng").addEventListener("click", function () {
+    if (!state.img || !imgEl) return;
+    function go() {
+      try {
+        var c = document.createElement("canvas"); c.width = state.imgW; c.height = state.imgH;
+        var x = c.getContext("2d"); x.drawImage(imgEl, 0, 0, state.imgW, state.imgH);
+        var u = state.imgW / 800, bad = state.ppc ? overlapIds() : {};
+        if (state.ppc) state.items.forEach(function (it) {
+          var r = rectOf(it);
+          x.globalAlpha = 0.88; x.fillStyle = it.color || DEFAULT_COLOR; x.fillRect(r.x, r.y, r.w, r.h);
+          x.globalAlpha = 1; x.lineWidth = (bad[it.id] ? 3 : 1.6) * u; x.strokeStyle = bad[it.id] ? "#C42A1E" : "#141414"; x.strokeRect(r.x, r.y, r.w, r.h);
+          var f = Math.max(7 * u, Math.min(r.w / 6, r.h / 3, 16 * u));
+          if (r.w > f * 2 && r.h > f * 1.6) { x.fillStyle = "#1f1d1b"; x.font = "700 " + f + "px " + FONT; x.textAlign = "center"; x.fillText(dispName(it), r.x + r.w / 2, r.y + r.h / 2 + f * 0.3); }
+        });
+        var a = document.createElement("a"); a.download = t("h.fileName"); a.href = c.toDataURL("image/png");
+        document.body.appendChild(a); a.click(); a.remove();
+      } catch (e) { alert(t("p.pngBlocked")); }
+    }
+    if (imgEl.complete) go(); else imgEl.onload = go;
+  });
+
+  // ---------- 언어가 바뀌면 코드가 만든 글자도 다시 그림 ----------
+  I18N.onChange(function () { buildPresets(); paintImg(); render(); });
+  render();
+})();
+</script>
+</body>
+</html>
