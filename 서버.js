@@ -44,7 +44,8 @@ const TYPES = {
   ".jpg":  "image/jpeg",
   ".jpeg": "image/jpeg",
   ".svg":  "image/svg+xml",
-  ".ico":  "image/x-icon"
+  ".ico":  "image/x-icon",
+  ".webmanifest": "application/manifest+json; charset=utf-8"
 };
 // 사이트에 보여 주지 않을 파일·폴더 (특히 .env* 는 키가 들어 있을 수 있어 반드시 숨김)
 const HIDDEN = [
@@ -56,7 +57,8 @@ const HIDDEN = [
 // AI 요청 길: 주소 → 서버 함수 파일 (배포 서버에서는 api/ 폴더가 자동으로 이 역할을 함)
 const API_ROUTES = {
   "/api/read-furniture": path.join(ROOT, "api", "read-furniture.js"),
-  "/api/render": path.join(ROOT, "api", "render.js")
+  "/api/render": path.join(ROOT, "api", "render.js"),
+  "/api/login": path.join(ROOT, "api", "login.js")
 };
 
 function send(res, code, text) {

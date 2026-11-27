@@ -132,11 +132,11 @@ html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3, html[lang="zh"] h1, 
 }
 
 /* ---------- 입력칸 ---------- */
-input[type="number"], input[type="text"] {
+input[type="number"], input[type="text"], input[type="password"] {
   width: 100%; min-height: 46px; padding: 6px 14px;
   border: 1px solid var(--line); border-radius: 12px; font: inherit; background: #fff;
 }
-input[type="number"]:focus, input[type="text"]:focus { outline: none; border-color: var(--text); box-shadow: 0 0 0 3px rgba(11, 11, 20, 0.08); }
+input[type="number"]:focus, input[type="text"]:focus, input[type="password"]:focus { outline: none; border-color: var(--text); box-shadow: 0 0 0 3px rgba(11, 11, 20, 0.08); }
 label { display: block; font-size: 13px; color: var(--muted); }
 
 a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
@@ -144,4 +144,25 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .footer {
   color: var(--muted); font-size: 13px; padding: 28px clamp(16px, 4vw, 40px);
   border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+
+/* ---------- 앱 설치 버튼 (바닥글) ---------- */
+.install-btn { font: inherit; font-size: 13px; font-weight: 600; border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.install-btn:hover { background: var(--soft); }
+.install-btn[hidden] { display: none; }
+
+/* ---------- 앱으로 열었을 때: 노치·상태 표시줄·홈 바에 가려지지 않게 여백 ---------- */
+@supports (padding: max(0px)) {
+  .top { padding-top: max(14px, env(safe-area-inset-top)); padding-left: max(clamp(16px, 4vw, 40px), env(safe-area-inset-left)); padding-right: max(clamp(16px, 4vw, 40px), env(safe-area-inset-right)); }
+  @media (max-width: 560px) { .top { padding-top: max(10px, env(safe-area-inset-top)); } }
+  .footer { padding-bottom: max(28px, calc(env(safe-area-inset-bottom) + 12px)); }
+}
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+
+/* ---------- 위쪽 로그인 표시 ---------- */
+.acct { font-size: 13px; font-weight: 600; text-decoration: none; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; white-space: nowrap; color: var(--text); background: #fff; }
+.acct:hover, .acct.on { background: var(--soft); }
+@media (max-width: 560px) {
+  .acct { order: 1; margin-left: auto; }
+  .lang { margin-left: 0; }
 }

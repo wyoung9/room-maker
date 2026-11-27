@@ -2,7 +2,15 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B14">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="방 만들기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title data-i18n="title.layout">방 만들기 · 배치</title>
 <link rel="stylesheet" href="공통.css">
 <style>
@@ -161,6 +169,65 @@
     .fbtn { flex-direction: column; align-items: flex-start; gap: 0; min-height: 48px; }
     #plan { max-height: 55vh; }
   }
+
+  /* ===== 휴대폰 앱 화면 (폭 760px 이하): 도면이 화면을 채우고, 패널은 아래에서 올라오는 시트 ===== */
+  #appnav, #sheetBackdrop { display: none; }
+  .more-wrap { display: contents; }
+  @media (max-width: 760px) {
+    :root { --nav-h: 62px; --dock-h: 0px; }
+    body { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+    body.has-sel { --dock-h: 150px; }
+    body.has-door { --dock-h: 206px; }
+    .footer, .stage > .hint, .legend .note { display: none; }
+    .tool { padding: 6px 8px 0; gap: 6px; }
+    .work { gap: 6px; }
+    .side { gap: 0; }
+    .stage { padding: 8px; border-radius: 16px; }
+    .autobar { padding: 0 2px 6px; gap: 6px; }
+    #autoBtn { display: none; }                                    /* 아래 탭의 가운데 큰 버튼이 대신함 */
+    .autobar .hint { margin: 0; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .legend { font-size: 11px; padding: 0 2px 6px; margin-bottom: 4px; gap: 2px 12px; }
+    #plan { max-height: calc(100vh - 92px - 126px - var(--nav-h) - env(safe-area-inset-bottom) - var(--dock-h));
+            max-height: calc(100dvh - 92px - 126px - var(--nav-h) - env(safe-area-inset-bottom) - var(--dock-h)); min-height: 200px; margin: 0 auto; }
+
+    /* 아래 탭 바 */
+    #appnav { display: flex; align-items: stretch; gap: 4px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: rgba(255,255,255,0.97); backdrop-filter: blur(10px); border-top: 1px solid var(--line); }
+    #appnav button { flex: 1; min-width: 0; min-height: 50px; border: 0; background: transparent; border-radius: 14px; font: inherit; font-size: 11px; font-weight: 600;
+      color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; }
+    #appnav button svg { width: 24px; height: 24px; }
+    #appnav button.on { color: var(--text); background: var(--soft); }
+    #appnav button.main { flex: 0 0 84px; background: var(--text); color: #fff; }
+    #appnav button:active { transform: scale(0.96); }
+
+    /* 아래에서 올라오는 시트 */
+    #sheetBackdrop:not([hidden]) { display: block; position: fixed; inset: 0; z-index: 34; background: rgba(11,11,20,0.35); }
+    .sheet { display: none; }
+    body[data-sheet="room"] .sheet-room, body[data-sheet="add"] .sheet-add, body[data-sheet="more"] .sheet-more {
+      display: block; position: fixed; left: 0; right: 0; z-index: 35; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      max-height: 66vh; max-height: 66dvh; overflow-y: auto; overscroll-behavior: contain;
+      background: #fff; border: 0; border-radius: 22px 22px 0 0; padding: 26px 16px 18px; box-shadow: 0 -12px 40px rgba(11,11,20,0.2); }
+    .sheet::before { content: ""; position: absolute; top: 9px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: #D5D5DB; }
+    .sheet-more > section { border: 0; border-radius: 0; padding: 0 0 14px; background: transparent; }
+    .sheet-more > section + section { border-top: 1px solid var(--line); padding-top: 14px; }
+    .sheet .btn, .sheet input, .sheet select { min-height: 46px; }
+    .sheet .btn.small { min-height: 44px; }
+    .sheet-more .actions .btn { width: 100%; }
+    #installHost .install-btn { width: 100%; min-height: 46px; margin-top: 12px; }
+
+    /* 가구를 누르면 아래에 뜨는 작은 편집 바 */
+    #selPanel:not([hidden]) { position: fixed; left: 8px; right: 8px; z-index: 36; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);
+      display: grid; grid-template-columns: 1fr 72px 72px; gap: 8px; padding: 12px; box-shadow: 0 8px 30px rgba(11,11,20,0.2); }
+    #selPanel h2 { display: none; }
+    #selPanel .row { display: contents; }
+    #selPanel .btnrow { grid-column: 1 / -1; margin-top: 0; }
+    #selPanel input { min-height: 44px; padding: 6px 8px; }
+    #selPanel .btn { min-height: 44px; }
+
+    /* 팝업창은 전체 화면 */
+    .imp-dlg { width: 100vw; max-width: 100vw; height: 100vh; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; border-radius: 0;
+      padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); }
+  }
 </style>
 </head>
 <body>
@@ -180,7 +247,7 @@
   <div class="work">
   <!-- 왼쪽 칸: 위에 방 크기, 아래에 가구 추가 -->
   <div class="side">
-    <section>
+    <section class="sheet sheet-room">
       <h2 data-i18n="l.s1">1. 방 크기</h2>
       <div class="row">
         <label><span data-i18n="l.w">가로 (cm)</span><input id="roomW" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
@@ -198,7 +265,7 @@
       <p id="areaInfo" class="info"></p>
     </section>
 
-    <section class="addcol">
+    <section class="addcol sheet sheet-add">
       <h2 data-i18n="l.s2">2. 가구 추가</h2>
       <button id="impOpen" class="btn small impbtn" type="button" data-i18n="l.import">📎 사진·링크로 가구 불러오기</button>
       <p class="hint" data-i18n="l.addhint">누르면 방 가운데에 놓여요. (치수는 예시 값)</p>
@@ -254,6 +321,7 @@
       </div>
     </section>
 
+    <div class="more-wrap sheet sheet-more">
     <section id="listPanel">
       <h2 id="listTitle">놓인 가구</h2>
       <ul id="itemList" class="ilist"></ul>
@@ -266,9 +334,38 @@
       <button id="clearAll" class="btn ghost small" type="button" data-i18n="p.clear">가구 모두 지우기</button>
       <p class="hint" style="margin:0" data-i18n="p.saved">작업 내용은 이 기기의 브라우저에 자동 저장돼요.</p>
     </section>
+    <div id="installHost"></div>
+    </div>
 
   </aside>
 </main>
+
+<footer class="footer"><span data-i18n="brand">방 만들기</span><span data-i18n="footer.pilot">시범 운영 중</span></footer>
+
+<!-- 휴대폰 앱 화면: 아래 탭 + 시트 배경 (넓은 화면에서는 숨김) -->
+<div id="sheetBackdrop" hidden></div>
+<nav id="appnav" aria-label="도구" data-i18n-attr="aria-label:m.navLabel">
+  <button type="button" data-sheet="room" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h6M14 4v6"/></svg>
+    <span data-i18n="m.room">방</span>
+  </button>
+  <button type="button" data-sheet="add" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    <span data-i18n="m.add">가구</span>
+  </button>
+  <button type="button" id="navAuto" class="main">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z"/></svg>
+    <span data-i18n="m.auto">자동 배치</span>
+  </button>
+  <button type="button" id="navRender">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="1.6"/><path d="M21 16l-5-4-9 7"/></svg>
+    <span data-i18n="m.render">렌더</span>
+  </button>
+  <button type="button" data-sheet="more" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+    <span data-i18n="m.more">더보기</span>
+  </button>
+</nav>
 
 <!-- 가구 불러오기: 사진·링크를 붙이고, 한 줄에 가구 하나씩 이름·종류·치수를 확인하는 표 -->
 <dialog id="importDlg" class="imp-dlg" aria-labelledby="impTitle">
@@ -363,6 +460,8 @@
 
 <script src="설정.js"></script>
 <script src="i18n.js"></script>
+<script src="pwa.js"></script>
+<script src="auth.js"></script>
 <script>
 (function () {
   "use strict";
@@ -583,6 +682,8 @@
     var it = byId(selectedId);
     selPanel.hidden = !it;
     document.getElementById("doorOpts").hidden = !(it && it.type === "door");
+    document.body.classList.toggle("has-sel", !!it);                       // 휴대폰: 편집 바가 뜨면 도면을 그만큼 줄임
+    document.body.classList.toggle("has-door", !!(it && it.type === "door"));
     if (it) {
       if (document.activeElement !== sName) sName.value = dispName(it);
       if (document.activeElement !== sW) sW.value = it.w;
@@ -621,7 +722,7 @@
       var dot = document.createElement("span"); dot.className = "dot";
       dot.style.background = it.type === "furniture" ? (it.color || COLORS.furniture.fill) : (COLORS[it.type] || COLORS.furniture).fill;
       pick.appendChild(dot); pick.appendChild(document.createTextNode(dispName(it) + "  " + it.w + "×" + it.h));
-      pick.addEventListener("click", function () { selectedId = it.id; render(); });
+      pick.addEventListener("click", function () { selectedId = it.id; setSheet(""); render(); });
       var x = document.createElement("button"); x.type = "button"; x.className = "x"; x.textContent = "✕";
       x.setAttribute("aria-label", t("p.remove", { name: dispName(it) }));
       x.addEventListener("click", function () {
@@ -1448,7 +1549,7 @@
   function paintQuota() {
     var k = rdQuotaState.kind, info = rdQuotaState.info || {};
     rdPaid.hidden = k !== "out";
-    rdQuota.className = "rd-quota" + (k === "checking" || k === "ok" ? "" : " warn");
+    rdQuota.className = "rd-quota" + (k === "checking" || k === "ok" || k === "unlimited" ? "" : " warn");
     rdQuota.textContent = k === "checking" ? t("d.checking")
       : k === "ok" ? t("d.remain", { r: info.remaining, f: info.free })
       : k === "out" ? t("d.used", { f: info.free })
@@ -1457,9 +1558,10 @@
   function rdApplyQuota(info, kind) {              // 무료 남은 횟수에 따라 화면을 바꿈
     if (kind) rdQuotaState = { kind: kind, info: info };
     else if (!info || !info.enabled) rdQuotaState = { kind: "off", info: null };
+    else if (info.unlimited) rdQuotaState = { kind: "unlimited", info: info };           // 로그인한 테스트 계정: 횟수 제한 없음
     else if (info.remaining > 0) rdQuotaState = { kind: "ok", info: info };
     else rdQuotaState = { kind: "out", info: info };
-    rdUsable = rdQuotaState.kind === "ok";
+    rdUsable = rdQuotaState.kind === "ok" || rdQuotaState.kind === "unlimited";
     paintQuota();
     rdUpdateGo();
   }
@@ -1566,7 +1668,7 @@
       if (res.status === 200 && data.image && data.image.data) {
         var src = "data:" + (data.image.mime || "image/jpeg") + ";base64," + data.image.data;
         rdImg.src = src; rdSave.href = src; rdResult.hidden = false;
-        rdApplyQuota({ enabled: true, free: data.free, remaining: data.remaining });
+        rdApplyQuota({ enabled: true, free: data.free, remaining: data.remaining, unlimited: data.unlimited });
         rdSay(function () { return t("d.done") + (skipped ? t("d.skipped", { n: skipped }) : ""); });
         rdRecState = { items: recItems }; paintRec();          // 렌더가 끝나면 가구 찾아보기 링크를 보여 줌
         rdImg.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -1613,6 +1715,29 @@
     catch (err) { rdPhoto = null; rdShowPhoto(); rdSay(["d.photoBad"], true); }
   });
   document.getElementById("rdThumbDel").addEventListener("click", function () { rdPhoto = null; rdShowPhoto(); rdSay(""); });
+
+  // ---------- 휴대폰 앱 화면: 아래 탭을 누르면 시트가 올라옴 ----------
+  var appnav = document.getElementById("appnav"), sheetBackdrop = document.getElementById("sheetBackdrop");
+  function setSheet(name) {
+    document.body.setAttribute("data-sheet", name || "");
+    sheetBackdrop.hidden = !name;
+    Array.prototype.forEach.call(appnav.querySelectorAll("[data-sheet]"), function (b) {
+      var on = b.getAttribute("data-sheet") === name;
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  Array.prototype.forEach.call(appnav.querySelectorAll("[data-sheet]"), function (b) {
+    b.addEventListener("click", function () {
+      var name = b.getAttribute("data-sheet");
+      setSheet(document.body.getAttribute("data-sheet") === name ? "" : name);       // 같은 탭을 또 누르면 닫음
+    });
+  });
+  sheetBackdrop.addEventListener("click", function () { setSheet(""); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") setSheet(""); });
+  document.getElementById("navAuto").addEventListener("click", function () { setSheet(""); autoBtn.click(); });
+  document.getElementById("navRender").addEventListener("click", function () { setSheet(""); document.getElementById("rdOpen").click(); });
+  ["impOpen", "rdOpen", "savePng", "cAdd"].forEach(function (id) { document.getElementById(id).addEventListener("click", function () { setSheet(""); }); });
+  presetList.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".fbtn")) setSheet(""); });   // 가구를 추가하면 시트를 닫아 도면에서 바로 보이게
 
   // ---------- 언어를 바꾸면, 코드가 만든 글자(가구 버튼·도면 속 이름·안내 문구)도 새 언어로 다시 그림 ----------
   function relang() {

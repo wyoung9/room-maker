@@ -48,8 +48,8 @@ async function fresh(env) {                      // 환경 변수는 파일을 �
 
 test("GET: 무료 남은 횟수를 알려 줌 (쿠키 기준)", async () => {
   const handler = createHandler({ client: fakeClient() });
-  assert.deepEqual((await call(handler, null, { method: "GET" })).body, { enabled: true, free: 2, used: 0, remaining: 2 });
-  assert.deepEqual((await call(handler, null, { method: "GET", headers: { cookie: "a=1; rm_render=1" } })).body, { enabled: true, free: 2, used: 1, remaining: 1 });
+  assert.deepEqual((await call(handler, null, { method: "GET" })).body, { enabled: true, free: 2, used: 0, remaining: 2, unlimited: false });
+  assert.deepEqual((await call(handler, null, { method: "GET", headers: { cookie: "a=1; rm_render=1" } })).body, { enabled: true, free: 2, used: 1, remaining: 1, unlimited: false });
   assert.equal((await call(handler, null, { method: "GET", headers: { cookie: "rm_render=9" } })).body.remaining, 0);
 });
 

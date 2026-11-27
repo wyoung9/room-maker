@@ -11,6 +11,7 @@
 //   AI_ENABLED           0 으로 두면 기능을 바로 끔 (비상용)
 
 import OpenAI from "openai";
+import { isUnlimited } from "./_auth.js";
 import { timingSafeEqual } from "node:crypto";
 
 const MODEL = process.env.OPENAI_MODEL || "gpt-6.2-astra";
@@ -169,7 +170,7 @@ export function createHandler(options = {}) {
       }
     }
 
-    if (!checkRate(clientIp(req), images.length)) {
+    if (!isUnlimited(req) && !checkRate(clientIp(req), images.length)) {      // 로그인한 테스트 계정은 시간당 사진 수 제한 없음
       return send(res, 429, { error: "rate_limited", message: "잠시 뒤에 다시 해 주세요. (한 시간에 읽을 수 있는 사진 수를 넘었어요.)" });
     }
 

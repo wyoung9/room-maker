@@ -14,6 +14,7 @@
 
 import OpenAI, { toFile } from "openai";
 import { createHash } from "node:crypto";
+import { isUnlimited } from "./_auth.js";
 
 const MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-sunburst";
 const QUALITY = ["low", "medium", "high"].includes(process.env.RENDER_QUALITY) ? process.env.RENDER_QUALITY : "medium";
@@ -21,6 +22,8 @@ const SIZE = "1536x1024";                      // 가로로 긴 그림
 const envFree = process.env.RENDER_FREE_COUNT;
 const FREE = envFree !== undefined && envFree !== "" && Number.isInteger(Number(envFree)) && Number(envFree) >= 0 ? Number(envFree) : 2;
 const DAILY_PER_IP = Number(process.env.RENDER_DAILY_PER_IP) > 0 ? Number(process.env.RENDER_DAILY_PER_IP) : 6;
+// 로그인한 테스트 계정은 무료 횟수(FREE)를 세지 않습니다. 다만 실수·악용으로 요금이 폭주하지 않게 하루 상한은 넉넉하게 둡니다.
+const testDailyCap = () => (Number(process.env.RENDER_TEST_DAILY) > 0 ? Number(process.env.RENDER_TEST_DAILY) : 200);
 const TIMEOUT_MS = 170_000;                    // Vercel 함수 최대 시간(vercel.json)보다 짧게
 
 const COOKIE = "rm_render";
@@ -41,10 +44,10 @@ export const STYLES = {
 // ---------- 남용 막기 (서버 함수는 여러 개로 나뉠 수 있어 '대략적인' 장치) ----------
 const daily = new Map();                       // IP → { used, resetAt }
 const inflight = new Set();                    // 지금 렌더를 만드는 중인 IP (동시에 두 번 누르기 방지)
-function dailyOk(ip, now = Date.now()) {
+function dailyOk(ip, cap = DAILY_PER_IP, now = Date.now()) {
   if (daily.size > 5000) for (const [k, v] of daily) if (v.resetAt <= now) daily.delete(k);
   const e = daily.get(ip);
-  return !e || e.resetAt <= now || e.used < DAILY_PER_IP;
+  return !e || e.resetAt <= now || e.used < cap;
 }
 function dailyAdd(ip, now = Date.now()) {
   const e = daily.get(ip);
@@ -171,8 +174,9 @@ export function createHandler(options = {}) {
     if (!sameOrigin(req)) return send(res, 403, { error: "forbidden_origin" });
 
     const used = readUsed(req);
+    const unlimited = isUnlimited(req);          // 로그인한 테스트 계정이면 횟수 제한 없음
     if (req.method === "GET") {                 // 화면에 '무료 남은 횟수'를 보여 줄 때 씀
-      return send(res, 200, { enabled: configured, free: FREE, used, remaining: Math.max(0, FREE - used) });
+      return send(res, 200, { enabled: configured, free: FREE, used, remaining: Math.max(0, FREE - used), unlimited });
     }
     if (!configured) return send(res, 503, { error: "ai_not_configured" });
 
@@ -182,12 +186,12 @@ export function createHandler(options = {}) {
     if (!checked.ok) return send(res, 400, { error: "bad_request", message: checked.error });
     const { layout, photo, room, items, style } = checked.ok;
 
-    if (used >= FREE) {
+    if (!unlimited && used >= FREE) {
       return send(res, 402, { error: "free_limit", free: FREE, used, remaining: 0,
         message: `무료 렌더 ${FREE}회를 모두 사용했어요. 유료 이용은 준비 중이에요.` });
     }
     const ip = clientIp(req);
-    if (!dailyOk(ip)) return send(res, 429, { error: "daily_limit", message: "오늘 만들 수 있는 렌더 수를 넘었어요. 내일 다시 해 주세요." });
+    if (!dailyOk(ip, unlimited ? testDailyCap() : DAILY_PER_IP)) return send(res, 429, { error: "daily_limit", message: "오늘 만들 수 있는 렌더 수를 넘었어요. 내일 다시 해 주세요." });
     if (inflight.has(ip)) return send(res, 429, { error: "already_rendering", message: "이미 렌더를 만드는 중이에요. 끝날 때까지 기다려 주세요." });
 
     inflight.add(ip);
@@ -212,14 +216,14 @@ export function createHandler(options = {}) {
       const b64 = result && result.data && result.data[0] && result.data[0].b64_json;
       if (typeof b64 !== "string" || !b64) return send(res, 502, { error: "no_image", message: "이미지를 받지 못했어요. 다시 해 보세요." });
 
-      const nowUsed = used + 1;                 // 성공했을 때만 무료 횟수를 차감
+      const nowUsed = unlimited ? used : used + 1;   // 성공했을 때만 무료 횟수를 차감 (테스트 계정은 차감 없음)
       dailyAdd(ip);
-      setUsed(req, res, nowUsed);
+      if (!unlimited) setUsed(req, res, nowUsed);
       const u = (result && result.usage) || {};
       console.log("render 사용량:", MODEL, QUALITY, "입력 토큰", u.input_tokens, "출력 토큰", u.output_tokens, photo ? "(방 사진 있음)" : "(배치도만)");
       return send(res, 200, {
         image: { mime: "image/jpeg", data: b64 },
-        free: FREE, used: nowUsed, remaining: Math.max(0, FREE - nowUsed),
+        free: FREE, used: nowUsed, remaining: Math.max(0, FREE - nowUsed), unlimited,
         model: MODEL, usage: { input_tokens: u.input_tokens ?? null, output_tokens: u.output_tokens ?? null }
       });
     } catch (error) {

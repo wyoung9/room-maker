@@ -543,6 +543,47 @@
   K("h.saved", "작업 내용(가구 위치·축척·도면 사진)은 이 기기의 브라우저에 자동 저장돼요. 사진이 너무 커서 저장되지 않으면 다음에 다시 올려 주세요.", "Your work (furniture positions, scale and plan photo) is saved automatically in this device's browser. If the photo is too large to save, please upload it again next time.", "作業内容（家具の位置・縮尺・図面の写真）はこの端末のブラウザに自動保存されます。写真が大きすぎて保存されない場合は、次回もう一度アップロードしてください。", "作业内容（家具位置、比例尺、户型图照片）会自动保存在此设备的浏览器中。如果照片太大无法保存，下次请重新上传。");
   K("h.fileName", "방만들기_집전체도면.png", "RoomMaker_whole_home.png", "部屋づくり_家全体.png", "布置房间_整套房子.png");
 
+  /* ===================== 휴대폰 아래 탭 (배치.html) ===================== */
+  K("m.navLabel", "도구", "Tools", "ツール", "工具");
+  K("m.room", "방", "Room", "部屋", "房间");
+  K("m.add", "가구", "Furniture", "家具", "家具");
+  K("m.auto", "자동 배치", "Auto", "自動配置", "自动布置");
+  K("m.render", "렌더", "Render", "レンダー", "渲染");
+  K("m.more", "더보기", "More", "その他", "更多");
+
+  /* ===================== 로그인 (로그인.html · auth.js) ===================== */
+  K("title.login", "방 만들기 · 로그인", "Room Maker · Log in", "部屋づくり · ログイン", "布置房间 · 登录");
+  K("au.h1", "로그인", "Log in", "ログイン", "登录");
+  K("au.lead", "테스트 계정으로 로그인하면 AI 렌더와 사진 읽기를 횟수 제한 없이 쓸 수 있어요.", "Log in with the test account to use AI render and photo reading without a usage limit.", "テストアカウントでログインすると、AIレンダーと写真の読み取りを回数制限なしで使えます。", "使用测试账号登录后，AI 渲染和照片读取不受次数限制。");
+  K("au.id", "아이디", "ID", "ID", "账号");
+  K("au.pw", "비밀번호", "Password", "パスワード", "密码");
+  K("au.submit", "로그인", "Log in", "ログイン", "登录");
+  K("au.logout", "로그아웃", "Log out", "ログアウト", "退出登录");
+  K("au.go", "배치하러 가기", "Go to the layout tool", "配置画面へ", "去布局页面");
+  K("au.logged", "{user} 계정으로 로그인했어요. AI 렌더와 사진 읽기를 횟수 제한 없이 쓸 수 있어요.", "Logged in as {user}. You can use AI render and photo reading without a usage limit.", "{user} アカウントでログインしました。AIレンダーと写真の読み取りを回数制限なしで使えます。", "已用 {user} 账号登录。AI 渲染和照片读取不受次数限制。");
+  K("au.bad", "아이디 또는 비밀번호가 맞지 않아요.", "The ID or password is incorrect.", "IDまたはパスワードが正しくありません。", "账号或密码不正确。");
+  K("au.many", "틀린 시도가 너무 많아요. 잠시 뒤에 다시 해 주세요.", "Too many failed attempts. Please try again in a while.", "失敗が多すぎます。しばらくしてからもう一度お試しください。", "失败次数过多。请稍后再试。");
+  K("au.na", "이 화면에서는 로그인을 쓸 수 없어요. (배포된 사이트나 「사이트_열기.bat」으로 연 화면에서 써 주세요.)", "Login isn't available on this screen. (Use the deployed site or a page opened with 「사이트_열기.bat」.)", "この画面ではログインは使えません。（公開サイトか「사이트_열기.bat」で開いた画面で使ってください。）", "此页面无法登录。（请在已发布的网站或用「사이트_열기.bat」打开的页面中使用。）");
+  K("au.fail", "로그인에 실패했어요. 잠시 뒤에 다시 해 보세요.", "Login failed. Please try again in a moment.", "ログインに失敗しました。しばらくしてからもう一度お試しください。", "登录失败。请稍后再试。");
+  K("au.note", "일반 사용자는 로그인 없이 그대로 쓸 수 있어요. (AI 렌더는 처음 {n}회 무료)", "Everyone else can use the site without logging in. (The first {n} AI renders are free.)", "一般の方はログインなしでそのまま使えます。（AIレンダーは最初の{n}回が無料）", "普通用户无需登录即可使用。（AI 渲染前 {n} 次免费）");
+  K("au.chip", "로그인", "Log in", "ログイン", "登录");
+  K("au.chipTitle", "로그인한 계정 (누르면 로그아웃할 수 있어요)", "Logged-in account (click to log out)", "ログイン中のアカウント（押すとログアウトできます）", "已登录账号（点击可退出）");
+  K("d.unlimited", "테스트 계정: AI 렌더를 횟수 제한 없이 만들 수 있어요.", "Test account: you can make AI renders without a usage limit.", "テストアカウント：AIレンダーを回数制限なしで作れます。", "测试账号：AI 渲染不受次数限制。");
+  K("r.unlimited", "무제한", "Unlimited", "無制限", "不限次数");
+
+  /* ===================== 앱 설치 (pwa.js) ===================== */
+  K("app.install", "📲 앱으로 설치", "📲 Install as app", "📲 アプリとしてインストール", "📲 安装为应用");
+  K("app.helpIos",
+    "아이폰·아이패드: Safari로 이 페이지를 열고, 공유 버튼 → 「홈 화면에 추가」를 눌러 주세요.",
+    "iPhone/iPad: open this page in Safari, tap the Share button, then “Add to Home Screen.”",
+    "iPhone・iPad：Safariでこのページを開き、共有ボタン →「ホーム画面に追加」を押してください。",
+    "iPhone/iPad：用 Safari 打开此页面，点击分享按钮 →「添加到主屏幕」。");
+  K("app.helpOther",
+    "안드로이드·컴퓨터: Chrome 메뉴(⋮)에서 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요. 메뉴에 안 보이면 이 브라우저가 설치를 지원하지 않거나 이미 설치된 거예요.",
+    "Android/desktop: in the Chrome menu (⋮), choose “Install app” or “Add to Home screen.” If you don't see it, this browser may not support installing, or the app may already be installed.",
+    "Android・パソコン：Chromeのメニュー（⋮）から「アプリをインストール」または「ホーム画面に追加」を押してください。表示されない場合は、このブラウザが対応していないか、すでにインストール済みです。",
+    "安卓/电脑：在 Chrome 菜单（⋮）中选择「安装应用」或「添加到主屏幕」。如果没有看到，可能是此浏览器不支持安装，或已经安装过了。");
+
   /* ===================== 동작 ===================== */
   function valid(l) { for (var i = 0; i < LANGS.length; i++) if (LANGS[i][0] === l) return true; return false; }
   function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }

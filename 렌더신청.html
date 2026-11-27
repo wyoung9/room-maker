@@ -2,7 +2,15 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B14">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="방 만들기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title data-i18n="title.render">방 만들기 · AI 렌더</title>
 <link rel="stylesheet" href="공통.css">
 <style>
@@ -108,6 +116,8 @@
 
 <script src="설정.js"></script>
 <script src="i18n.js"></script>
+<script src="pwa.js"></script>
+<script src="auth.js"></script>
 <script>
 (function () {
   "use strict";
@@ -138,6 +148,7 @@
 
   // ---- 화면에 보이는 가격·무료 횟수 글자 (언어를 바꾸면 다시 그림) ----
   var freeCount = (typeof CFG.freeRenders === "number") ? CFG.freeRenders : null;
+  var unlimitedFlag = false;                       // 로그인한 테스트 계정이면 true
   var LOCALE = { ko: "ko-KR", en: "en-US", ja: "ja-JP", zh: "zh-CN" };
   function showNumbers() {
     var t = I18N.t;
@@ -147,7 +158,8 @@
     } else {
       document.getElementById("priceVal").textContent = t("r.paid.tbd");
     }
-    if (freeCount !== null) {
+    if (unlimitedFlag) document.getElementById("freeVal").textContent = t("r.unlimited");
+    else if (freeCount !== null) {
       document.getElementById("freeVal").textContent = freeCount > 0 ? t("r.times", { n: freeCount }) : t("r.none");
     }
   }
@@ -160,7 +172,7 @@
     if (!m.hidden) m.textContent = I18N.t("r.form.off");
   });
   fetch("/api/render").then(function (r) { return r.ok ? r.json() : null; }).then(function (info) {
-    if (info && typeof info.free === "number") { freeCount = info.free; showNumbers(); }
+    if (info && typeof info.free === "number") { freeCount = info.free; unlimitedFlag = !!info.unlimited; showNumbers(); }
   }).catch(function () {});
 
   // ---- 유료 이용 알림 신청(구글 폼) 열기 ----

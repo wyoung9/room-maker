@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B14">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="방 만들기">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title data-i18n="title.login">방 만들기 · 로그인</title>
+<link rel="stylesheet" href="공통.css">
+<style>
+  .login { max-width: 420px; margin: 0 auto; padding: clamp(48px, 9vw, 96px) 0; }
+  .login h1 { font-size: clamp(28px, 4vw, 38px); margin: 0 0 8px; font-weight: 700; }
+  .login .lead { color: var(--muted); margin: 0 0 28px; }
+  .login form { display: grid; gap: 14px; }
+  .login .btn { width: 100%; }
+  .login .msg { min-height: 1.5em; margin: 14px 0 0; font-size: 15px; }
+  .login .msg.err { color: var(--warn); }
+  .login .note { margin-top: 28px; font-size: 13px; color: var(--muted); }
+  .ok-card { background: var(--soft); border-radius: 20px; padding: 22px; display: grid; gap: 14px; }
+  .ok-card p { margin: 0; font-weight: 600; }
+  .ok-card .row2 { display: grid; gap: 10px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a href="index.html" class="logo" data-i18n="brand">방 만들기</a>
+  <div class="top-right">
+    <nav>
+      <a href="배치.html" data-i18n="nav.place">배치</a>
+      <a href="집도면.html" data-i18n="nav.house">집 전체</a>
+      <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="login">
+    <h1 data-i18n="au.h1">로그인</h1>
+    <p class="lead" data-i18n="au.lead">테스트 계정으로 로그인하면 AI 렌더와 사진 읽기를 횟수 제한 없이 쓸 수 있어요.</p>
+
+    <form id="loginForm" autocomplete="on">
+      <label><span data-i18n="au.id">아이디</span><input id="uid" name="username" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="64" required></label>
+      <label><span data-i18n="au.pw">비밀번호</span><input id="upw" name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
+      <button id="submitBtn" class="btn primary" type="submit" data-i18n="au.submit">로그인</button>
+    </form>
+
+    <div id="doneBox" class="ok-card" hidden>
+      <p id="doneMsg"></p>
+      <div class="row2">
+        <a href="배치.html" class="btn primary" data-i18n="au.go">배치하러 가기</a>
+        <button id="logoutBtn" class="btn" type="button" data-i18n="au.logout">로그아웃</button>
+      </div>
+    </div>
+
+    <p id="msg" class="msg" aria-live="polite"></p>
+    <p class="note" data-i18n="au.note">일반 사용자는 로그인 없이 그대로 쓸 수 있어요. (AI 렌더는 처음 {n}회 무료)</p>
+  </section>
+</main>
+
+<footer class="footer"><span data-i18n="brand">방 만들기</span><span data-i18n="footer.pilot">시범 운영 중</span></footer>
+
+<script src="설정.js"></script>
+<script src="i18n.js"></script>
+<script src="pwa.js"></script>
+<script src="auth.js"></script>
+<script>
+(function () {
+  "use strict";
+  var t = I18N.t;
+  var form = document.getElementById("loginForm"), box = document.getElementById("doneBox");
+  var msg = document.getElementById("msg"), doneMsg = document.getElementById("doneMsg");
+  var msgState = null;                                    // [키, 오류인지] — 언어를 바꾸면 다시 번역해서 보여 줌
+  function say(key, err) { msgState = key ? [key, !!err] : null; paint(); }
+  function paint() {
+    msg.textContent = msgState ? t(msgState[0]) : "";
+    msg.className = "msg" + (msgState && msgState[1] ? " err" : "");
+  }
+  function show(user) {                                   // user 가 있으면 '로그인됨' 카드, 없으면 입력 폼
+    form.hidden = !!user; box.hidden = !user;
+    if (user) doneMsg.textContent = t("au.logged", { user: user });
+    window.__loginUser = user || null;
+  }
+  function errKey(status) { return status === 401 ? "au.bad" : status === 429 ? "au.many" : status === 404 ? "au.na" : "au.fail"; }
+
+  fetch("/api/login").then(function (r) { return r.ok ? r.json() : null; }).then(function (s) { show(s && s.loggedIn ? s.user : null); }).catch(function () { show(null); });
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var btn = document.getElementById("submitBtn"); btn.disabled = true; say("");
+    try {
+      var res = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: document.getElementById("uid").value, password: document.getElementById("upw").value }) });
+      var data = await res.json().catch(function () { return {}; });
+      if (res.ok && data.loggedIn) { document.getElementById("upw").value = ""; show(data.user); say(""); if (window.RM_AUTH) window.RM_AUTH.refresh(); }
+      else say(errKey(res.status), true);
+    } catch (err) { say("au.fail", true); }
+    btn.disabled = false;
+  });
+  document.getElementById("logoutBtn").addEventListener("click", async function () {
+    try { await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) }); } catch (e) {}
+    show(null); say(""); if (window.RM_AUTH) window.RM_AUTH.refresh();
+  });
+  I18N.onChange(function () { paint(); show(window.__loginUser); });
+})();
+</script>
+</body>
+</html>
