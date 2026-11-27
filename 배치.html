@@ -248,6 +248,10 @@
         <button id="sRot" class="btn small" type="button" data-i18n="p.rot">↻ 90° 회전</button>
         <button id="sDel" class="btn small danger" type="button" data-i18n="p.del">삭제</button>
       </div>
+      <div id="doorOpts" class="btnrow" hidden>
+        <button id="swingBtn" class="btn small" type="button" data-i18n="l.swingFlip">↔ 안쪽/바깥쪽 열림 바꾸기</button>
+        <button id="hingeBtn" class="btn small" type="button" data-i18n="l.hingeFlip">⇋ 경첩 쪽 바꾸기</button>
+      </div>
     </section>
 
     <section id="listPanel">
@@ -448,6 +452,25 @@
     return n;
   }
 
+  // 문이 열리는 모양: 경첩에서 문짝(실선)과 열림 호(점선 부채꼴), 안쪽 글자 '열림 90cm'
+  function drawSwing(parent, it, fs) {
+    var o = openingInfo(it), len = o.len;
+    if (len < 20) return;
+    var W = state.room.w, H = state.room.h, out = it.swing === "out", hingeStart = it.hinge !== "end";
+    var inward = o.wall === "top" ? { x: 0, y: 1 } : o.wall === "bottom" ? { x: 0, y: -1 } : o.wall === "left" ? { x: 1, y: 0 } : { x: -1, y: 0 };
+    var n = out ? { x: -inward.x, y: -inward.y } : inward;
+    function P(sc) { return o.wall === "top" ? { x: sc, y: 0 } : o.wall === "bottom" ? { x: sc, y: H } : o.wall === "left" ? { x: 0, y: sc } : { x: W, y: sc }; }
+    var hp = P(hingeStart ? o.a : o.b), ep = P(hingeStart ? o.b : o.a);
+    var lp = { x: hp.x + n.x * len, y: hp.y + n.y * len };
+    var uv = { x: (ep.x - hp.x) / len, y: (ep.y - hp.y) / len };
+    var sweep = (n.x * uv.y - n.y * uv.x) > 0 ? 1 : 0;
+    el("path", { d: "M " + hp.x + " " + hp.y + " L " + lp.x + " " + lp.y + " A " + len + " " + len + " 0 0 " + sweep + " " + ep.x + " " + ep.y + " Z",
+      fill: "rgba(11,11,20,0.05)", stroke: "#8A5524", "stroke-width": 1.5, "stroke-dasharray": "6 5", "pointer-events": "none" }, parent);
+    el("line", { x1: hp.x, y1: hp.y, x2: lp.x, y2: lp.y, stroke: "#8A5524", "stroke-width": 3, "pointer-events": "none" }, parent);
+    var lab = el("text", { x: hp.x + (n.x + uv.x) * len * 0.55, y: hp.y + (n.y + uv.y) * len * 0.55 + fs * 0.3, "font-size": fs * 0.75, fill: "#8A5524",
+      "text-anchor": "middle", "font-family": FONT, "pointer-events": "none" }, parent);
+    lab.textContent = t("l.swing", { w: Math.round(len) });
+  }
   function draw(target, forExport) {
     var W = state.room.w, H = state.room.h;
     var fs = Math.max(10, Math.min(W, H) / 22);            // 글자 크기(cm 단위)
@@ -456,6 +479,11 @@
     state.items.forEach(function (it) {
       minX = Math.min(minX, it.x); minY = Math.min(minY, it.y);
       maxX = Math.max(maxX, it.x + it.w); maxY = Math.max(maxY, it.y + it.h);
+      if (it.type === "door" && it.swing === "out") {                  // 바깥으로 열리는 문: 열림 반경만큼 그림 범위를 넓힘
+        var oi = openingInfo(it);
+        if (oi.wall === "top") minY = Math.min(minY, -oi.len); else if (oi.wall === "bottom") maxY = Math.max(maxY, H + oi.len);
+        else if (oi.wall === "left") minX = Math.min(minX, -oi.len); else maxX = Math.max(maxX, W + oi.len);
+      }
     });
     var vx = minX - MARGIN, vy = minY - MARGIN - (forExport ? fs * 2 : 0);
     var vw = maxX - minX + MARGIN * 2, vh = maxY + MARGIN - vy;
@@ -501,6 +529,7 @@
       var fill = (it.type === "furniture" && it.color) ? it.color : c.fill;
       var r = { x: it.x, y: it.y, width: it.w, height: it.h, rx: 3, fill: fill, stroke: stroke, "stroke-width": sw };
       if (dash) r["stroke-dasharray"] = dash;
+      if (it.type === "door") drawSwing(g, it, fs);
       el("rect", r, g);
       if (!forExport && it.id === selectedId) {
         el("rect", { x: it.x - 4, y: it.y - 4, width: it.w + 8, height: it.h + 8, rx: 5, fill: "none",
@@ -553,6 +582,7 @@
 
     var it = byId(selectedId);
     selPanel.hidden = !it;
+    document.getElementById("doorOpts").hidden = !(it && it.type === "door");
     if (it) {
       if (document.activeElement !== sName) sName.value = dispName(it);
       if (document.activeElement !== sW) sW.value = it.w;
@@ -687,6 +717,8 @@
     selectedId = null; commit();
   }
   document.getElementById("sRot").addEventListener("click", rotate);
+  document.getElementById("swingBtn").addEventListener("click", function () { var it = byId(selectedId); if (it) { it.swing = it.swing === "out" ? "in" : "out"; commit(); } });
+  document.getElementById("hingeBtn").addEventListener("click", function () { var it = byId(selectedId); if (it) { it.hinge = it.hinge === "end" ? "start" : "end"; commit(); } });
   document.getElementById("sDel").addEventListener("click", removeSel);
   document.getElementById("clearAll").addEventListener("click", function () {
     if (!state.items.length) return;
@@ -714,7 +746,7 @@
     if (/침대|베드|bed|ベッド|床(?!头)/i.test(n)) return "bed";
     if (/책상|데스크|desk|테이블|식탁|table|dining|机|テーブル|桌/i.test(n)) return "desk";
     if (/의자|체어|chair|스툴|stool|椅|イス|スツール/i.test(n)) return "chair";
-    if (/tv장|티비|텔레비전|テレビ|电视|옷장|장롱|수납|서랍|책장|선반|행거|붙박이|wardrobe|closet|dresser|drawer|shelf|shelves|bookcase|cabinet|ワードローブ|クローゼット|チェスト|引き出し|棚|衣柜|柜|抽屉|书架/i.test(n)) return "storage";
+    if (/싱크대|조리대|주방\s*수납|\bsink\b|counter|シンク|調理台|キッチン収納|水槽柜|灶台|厨房收纳|tv장|티비|텔레비전|テレビ|电视|옷장|장롱|수납|서랍|책장|선반|행거|붙박이|wardrobe|closet|dresser|drawer|shelf|shelves|bookcase|cabinet|ワードローブ|クローゼット|チェスト|引き出し|棚|衣柜|柜|抽屉|书架/i.test(n)) return "storage";
     if (/소파|쇼파|sofa|couch|ソファ|沙发/i.test(n)) return "sofa";
     if (/냉장고|세탁기|건조기|fridge|refrigerator|washer|washing machine|dryer|冷蔵庫|洗濯機|冰箱|洗衣机/i.test(n)) return "fridge";
     return "misc";
@@ -741,7 +773,7 @@
     var horiz = wall === "top" || wall === "bottom";
     var a = Math.max(0, horiz ? it.x : it.y);
     var b = Math.min(horiz ? W : H, horiz ? it.x + it.w : it.y + it.h);
-    return { wall: wall, a: a, b: b, len: Math.max(0, b - a), kind: it.type };
+    return { wall: wall, a: a, b: b, len: Math.max(0, b - a), kind: it.type, out: it.swing === "out" };
   }
   function zoneFromWall(wall, a, b, depth) {     // 벽에서 방 안쪽으로 depth 만큼의 사각형
     var W = state.room.w, H = state.room.h;
@@ -888,8 +920,8 @@
       windows: openings.filter(function (o) { return o.kind === "window"; }),
       placed: []
     };
-    var swing = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, d.len); });                 // 문 열리는 자리
-    var corridor = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, d.len + AUTO.CLEAR); }); // + 통로
+    var swing = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, d.out ? 0 : d.len); });                       // 문 열리는 자리 (바깥으로 열리면 없음)
+    var corridor = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, (d.out ? 0 : d.len) + AUTO.CLEAR); });   // + 통로
     var furn = state.items.filter(function (it) { return it.type === "furniture"; });
     furn.sort(function (a, b) {                                // 큰 가구부터
       var ka = KIND_ORDER[kindOf(a)], kb = KIND_ORDER[kindOf(b)];
@@ -983,6 +1015,7 @@
       if (r.bed) name = r.compact ? (area < 12 ? "싱글 침대" : area < 20 ? "슈퍼싱글 침대" : "퀸 침대")   // compact = 원룸: 한 단계 작게
                               : (area < 7 ? "싱글 침대" : area < 11 ? "슈퍼싱글 침대" : "퀸 침대");
       if (r.sofa) name = area < 14 ? "2인 소파" : "3인 소파";
+      if (r.sink) name = (r.compact ? area < 20 : area < 8) ? "싱크대 120" : "싱크대 180";   // compact = 원룸: 120 을 더 오래 씀
       var f = preset(name); if (f) out.push(f);
     });
     return out;

@@ -55,6 +55,12 @@ window.ROOM_CONFIG = {
     { group: "거실·주방", name: "3인 소파",      w: 200, h: 90,  color: "#A99BE8" },  // 진한 빨강
     { group: "거실·주방", name: "거실 테이블",   w: 100, h: 50,  color: "#FFC4A3" },  // 분홍 (소파 앞에 놓임)
     { group: "거실·주방", name: "식탁",          w: 120, h: 70,  color: "#DCC8A6" },  // 연두
+    { group: "주방",      name: "싱크대 120",    w: 120, h: 60,  color: "#C9D9F2" },  // 원룸용 작은 싱크대 (길이 120cm)
+    { group: "주방",      name: "싱크대 180",    w: 180, h: 60,  color: "#B3C8EC" },  // 일반 싱크대 (길이 180cm)
+    { group: "주방",      name: "조리대",        w: 60,  h: 60,  color: "#FFE08A" },  // 가스레인지·인덕션을 올리는 하부장
+    { group: "주방",      name: "주방 수납장",   w: 80,  h: 45,  color: "#F5D7C0" },  // 전자레인지·그릇장
+    { group: "주방",      name: "소형 냉장고",   w: 50,  h: 50,  color: "#BFE0F5" },  // 원룸용
+    { group: "주방",      name: "세탁기",        w: 60,  h: 65,  color: "#DDE6EE" },
     { group: "거실·주방", name: "냉장고",        w: 60,  h: 65,  color: "#BFE0F5" }   // 하늘색
   ],
 
@@ -69,13 +75,13 @@ window.ROOM_CONFIG = {
 
   // ⑧-2 방 종류별 필수 가구 (「자동 배치」를 가구 없이 눌렀을 때 자동으로 넣어 줌)
   //   name = 위 furniture 의 이름, minArea = 방 면적이 이 값(㎡) 이상일 때만 넣음
-  //   bed: true 는 방 크기에 맞는 침대 하나, sofa: true 는 방 크기에 맞는 소파 하나
+  //   bed: true 는 방 크기에 맞는 침대 하나, sofa: true 는 소파 하나, sink: true 는 싱크대 하나 (compact 는 원룸처럼 한 단계 작게)
   roomTypes: {
     bedroom: [ { bed: true }, { name: "옷장" }, { name: "협탁", minArea: 8 }, { name: "책상", minArea: 12 }, { name: "의자", minArea: 12 } ],
     living:  [ { sofa: true }, { name: "TV장" }, { name: "거실 테이블", minArea: 9 }, { name: "책장", minArea: 16 } ],
-    studio:  [ { bed: true, compact: true }, { name: "책상" }, { name: "의자" }, { name: "옷장" }, { name: "냉장고" }, { name: "협탁", minArea: 14 } ],
+    studio:  [ { bed: true, compact: true }, { name: "책상" }, { name: "의자" }, { name: "옷장" }, { sink: true, compact: true }, { name: "냉장고" }, { name: "협탁", minArea: 14 } ],
     study:   [ { name: "책상" }, { name: "의자" }, { name: "책장" }, { name: "서랍장", minArea: 9 } ],
-    kitchen: [ { name: "냉장고" }, { name: "식탁" }, { name: "의자" } ]
+    kitchen: [ { sink: true }, { name: "냉장고" }, { name: "식탁" }, { name: "의자" } ]
   },
 
   // ⑨ 처음 열었을 때의 방 크기(cm)
