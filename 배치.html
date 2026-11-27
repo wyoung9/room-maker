@@ -99,7 +99,10 @@
   .ai-note .ev { display: block; margin-top: 2px; }
   .imp-row.check { border-color: #E0A200; background: #FFFBEF; }
 
-  #roomType { width: 100%; min-height: 46px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 12px; font: inherit; background: #fff; color: var(--text); }
+  #roomShape, #roomType { width: 100%; min-height: 46px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 12px; font: inherit; background: #fff; color: var(--text); }
+  .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-top: 8px; }
+  .edge-list label { font-size: 12px; }
+  .edge-list input { min-height: 38px; }
   /* 놓인 가구 목록 (✕로 지우기) */
   #listPanel h2 { font-size: 16px; margin: 0 0 8px; }
   .ilist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 280px; overflow: auto; }
@@ -253,6 +256,26 @@
       <div class="row">
         <label><span data-i18n="l.w">가로 (cm)</span><input id="roomW" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
         <label><span data-i18n="l.h">세로 (cm)</span><input id="roomH" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
+      </div>
+      <label style="margin-top:8px"><span data-i18n="l.shape">방 모양</span>
+        <select id="roomShape">
+          <option value="rect" data-i18n="shape.rect">사각형</option>
+          <option value="L" data-i18n="shape.L">L자</option>
+          <option value="U" data-i18n="shape.U">ㄷ자</option>
+          <option value="para" data-i18n="shape.para">평행사변형</option>
+          <option value="diamond" data-i18n="shape.diamond">마름모</option>
+          <option value="trap" data-i18n="shape.trap">사다리꼴</option>
+          <option value="penta" data-i18n="shape.penta">오각형 (모서리 깎임)</option>
+          <option value="custom" data-i18n="shape.custom">직접 고친 모양</option>
+        </select>
+      </label>
+      <div id="shapeTools" hidden>
+        <div class="btnrow" style="margin-top:8px">
+          <button id="shapeEdit" class="btn small" type="button" data-i18n="l.shapeEdit">✎ 모양 고치기</button>
+          <button id="vtxDel" class="btn small danger" type="button" hidden data-i18n="l.vtxDel">✕ 선택한 점 지우기</button>
+        </div>
+        <p class="hint" style="margin:6px 0 0" data-i18n="l.shapeHint">고치기를 켜면 도면에 하얀 점이 나와요. 점을 끌어 모양을 바꾸고, 검은 + 를 누르면 점이 늘어요.</p>
+        <div id="edgeList" class="edge-list"></div>
       </div>
       <label style="margin-top:8px"><span data-i18n="l.roomType">방 종류</span>
         <select id="roomType">
@@ -498,6 +521,7 @@
     if (saved && saved.room && Array.isArray(saved.items)) state = saved;
   } catch (e) {}
   var selectedId = null;
+  var shapeEdit = false, selVtx = null;            // 모양 고치기 모드 / 선택한 꼭짓점
   if (!state.roomType) state.roomType = "bedroom";   // 방 종류 (필수 가구를 정할 때 씀)
 
   function persist() { save(STORE_KEY, JSON.stringify(state)); }
@@ -525,12 +549,85 @@
     if (it.type === "furniture" && !it.color) it.color = presetColor(it.name) || EXTRA[i % EXTRA.length];
   });
 
+  // ---------- 방 모양 (사각형이 아니어도 됨) ----------
+  // state.room.poly = [[x,y], …] (cm). 없으면 가로×세로 사각형. room.w·room.h 는 늘 '모양을 감싸는 네모'의 크기이고,
+  // 모양의 왼쪽 위 끝이 (0,0) 입니다. (그래서 예전에 저장한 사각형 방도 그대로 열려요)
+  function isRectRoom() { return !(state.room.poly && state.room.poly.length >= 3); }
+  function roomPoly() { var r = state.room; return isRectRoom() ? [[0, 0], [r.w, 0], [r.w, r.h], [0, r.h]] : r.poly; }
+  function polyAreaOf(p) { var a = 0; for (var i = 0; i < p.length; i++) { var q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return Math.abs(a) / 2; }
+  function roomArea() { return isRectRoom() ? state.room.w * state.room.h : polyAreaOf(state.room.poly); }
+  function distSeg(px, py, x1, y1, x2, y2) {
+    var dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy, k = l2 ? Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / l2)) : 0;
+    var qx = x1 + k * dx, qy = y1 + k * dy; return Math.sqrt((px - qx) * (px - qx) + (py - qy) * (py - qy));
+  }
+  function inPolyStrict(x, y, P) {               // 점이 도형 안쪽인지 (광선 쏘기)
+    var inside = false;
+    for (var i = 0, j = P.length - 1; i < P.length; j = i++) {
+      var xi = P[i][0], yi = P[i][1], xj = P[j][0], yj = P[j][1];
+      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+    }
+    return inside;
+  }
+  function pointInRoom(x, y, P) {                // 벽 위(0.6cm 이내)도 방 안으로 침
+    P = P || roomPoly();
+    if (inPolyStrict(x, y, P)) return true;
+    for (var i = 0; i < P.length; i++) { var q = P[(i + 1) % P.length]; if (distSeg(x, y, P[i][0], P[i][1], q[0], q[1]) < 0.6) return true; }
+    return false;
+  }
+  function rectInRoom(r) {                       // 가구 네모가 방 안에 완전히 들어가나 (오목한 방 포함)
+    var P = roomPoly(), x, y, step = 10;
+    for (x = r.x; x < r.x + r.w; x += step) { if (!pointInRoom(x, r.y, P) || !pointInRoom(x, r.y + r.h, P)) return false; }
+    for (y = r.y; y < r.y + r.h; y += step) { if (!pointInRoom(r.x, y, P) || !pointInRoom(r.x + r.w, y, P)) return false; }
+    if (!pointInRoom(r.x + r.w, r.y + r.h, P) || !pointInRoom(r.x + r.w / 2, r.y + r.h / 2, P)) return false;
+    for (var i = 0; i < P.length; i++) {         // 방 꼭짓점이 가구 네모 안쪽에 들어오면 모서리를 가로지르는 것
+      if (P[i][0] > r.x + 0.5 && P[i][0] < r.x + r.w - 0.5 && P[i][1] > r.y + 0.5 && P[i][1] < r.y + r.h - 0.5) return false;
+    }
+    return true;
+  }
+  function outsideRoom(r) {
+    if (isRectRoom()) return r.x < 0 || r.y < 0 || r.x + r.w > state.room.w || r.y + r.h > state.room.h;
+    return !rectInRoom(r);
+  }
+  // 방의 벽(변) 목록: 안쪽을 향한 방향(n), 어느 쪽 벽인지(wall), 수평(h)·수직(v)·비스듬(s)
+  function roomEdges() {
+    var P = roomPoly(), out = [];
+    for (var i = 0; i < P.length; i++) {
+      var a = P[i], b = P[(i + 1) % P.length], dx = b[0] - a[0], dy = b[1] - a[1], len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 1) continue;
+      var ux = dx / len, uy = dy / len, mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, n = { x: -uy, y: ux };
+      if (!inPolyStrict(mx + n.x * 2, my + n.y * 2, P)) n = { x: uy, y: -ux };
+      var axis = Math.abs(dy) < 0.01 ? "h" : Math.abs(dx) < 0.01 ? "v" : "s";
+      var wall = Math.abs(n.y) >= Math.abs(n.x) ? (n.y > 0 ? "top" : "bottom") : (n.x > 0 ? "left" : "right");
+      out.push({ i: i, x1: a[0], y1: a[1], x2: b[0], y2: b[1], len: len, ux: ux, uy: uy, n: n, axis: axis, wall: wall });
+    }
+    return out;
+  }
+  // 모양을 고친 뒤: 왼쪽 위 끝을 (0,0)으로 옮기고(가구도 같이 옮김) 감싸는 네모 크기를 다시 계산
+  function normalizeRoom() {
+    var P = state.room.poly; if (!P || P.length < 3) return;
+    var minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+    P.forEach(function (p) { minx = Math.min(minx, p[0]); miny = Math.min(miny, p[1]); maxx = Math.max(maxx, p[0]); maxy = Math.max(maxy, p[1]); });
+    if (minx || miny) {
+      P.forEach(function (p) { p[0] -= minx; p[1] -= miny; });
+      state.items.forEach(function (it) { it.x -= minx; it.y -= miny; });
+    }
+    state.room.w = Math.max(50, Math.round(maxx - minx)); state.room.h = Math.max(50, Math.round(maxy - miny));
+  }
+  var SHAPES = {                                 // 기본 모양 (0~1 비율 × 지금 방 크기)
+    L: [[0, 0], [1, 0], [1, 0.45], [0.5, 0.45], [0.5, 1], [0, 1]],
+    U: [[0, 0], [1, 0], [1, 1], [0.7, 1], [0.7, 0.4], [0.3, 0.4], [0.3, 1], [0, 1]],
+    para: [[0.25, 0], [1, 0], [0.75, 1], [0, 1]],
+    diamond: [[0.5, 0], [1, 0.5], [0.5, 1], [0, 0.5]],
+    trap: [[0.2, 0], [0.8, 0], [1, 1], [0, 1]],
+    penta: [[0, 0], [0.75, 0], [1, 0.25], [1, 1], [0, 1]]
+  };
+
   // ---------- 검사 ----------
   function overlaps(a, b) {
     return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   }
   function isOutside(it) {
-    return it.x < 0 || it.y < 0 || it.x + it.w > state.room.w || it.y + it.h > state.room.h;
+    return outsideRoom(it);
   }
   function checkAll() {
     var res = {};
@@ -558,10 +655,10 @@
   function drawSwing(parent, it, fs) {
     var o = openingInfo(it), len = o.len;
     if (len < 20) return;
-    var W = state.room.w, H = state.room.h, out = it.swing === "out", hingeStart = it.hinge !== "end";
+    var out = it.swing === "out", hingeStart = it.hinge !== "end";
     var inward = o.wall === "top" ? { x: 0, y: 1 } : o.wall === "bottom" ? { x: 0, y: -1 } : o.wall === "left" ? { x: 1, y: 0 } : { x: -1, y: 0 };
     var n = out ? { x: -inward.x, y: -inward.y } : inward;
-    function P(sc) { return o.wall === "top" ? { x: sc, y: 0 } : o.wall === "bottom" ? { x: sc, y: H } : o.wall === "left" ? { x: 0, y: sc } : { x: W, y: sc }; }
+    function P(sc) { return (o.wall === "top" || o.wall === "bottom") ? { x: sc, y: o.c } : { x: o.c, y: sc }; }
     var hp = P(hingeStart ? o.a : o.b), ep = P(hingeStart ? o.b : o.a);
     var lp = { x: hp.x + n.x * len, y: hp.y + n.y * len };
     var uv = { x: (ep.x - hp.x) / len, y: (ep.y - hp.y) / len };
@@ -583,12 +680,13 @@
       maxX = Math.max(maxX, it.x + it.w); maxY = Math.max(maxY, it.y + it.h);
       if (it.type === "door" && it.swing === "out") {                  // 바깥으로 열리는 문: 열림 반경만큼 그림 범위를 넓힘
         var oi = openingInfo(it);
-        if (oi.wall === "top") minY = Math.min(minY, -oi.len); else if (oi.wall === "bottom") maxY = Math.max(maxY, H + oi.len);
-        else if (oi.wall === "left") minX = Math.min(minX, -oi.len); else maxX = Math.max(maxX, W + oi.len);
+        if (oi.wall === "top") minY = Math.min(minY, oi.c - oi.len); else if (oi.wall === "bottom") maxY = Math.max(maxY, oi.c + oi.len);
+        else if (oi.wall === "left") minX = Math.min(minX, oi.c - oi.len); else maxX = Math.max(maxX, oi.c + oi.len);
       }
     });
-    var vx = minX - MARGIN, vy = minY - MARGIN - (forExport ? fs * 2 : 0);
-    var vw = maxX - minX + MARGIN * 2, vh = maxY + MARGIN - vy;
+    var MG = isRectRoom() ? MARGIN : MARGIN + fs * 3;      // 모양이 있는 방은 변 길이 글자가 잘리지 않게 여백을 넉넉히
+    var vx = minX - MG, vy = minY - MG - (forExport ? fs * 2 : 0);
+    var vw = maxX - minX + MG * 2, vh = maxY + MG - vy;
     if (!forExport && drag) {             // 끄는 동안에는 범위를 고정 (가구가 튀지 않게)
       if (!drag.vb) drag.vb = [vx, vy, vw, vh];
       vx = drag.vb[0]; vy = drag.vb[1]; vw = drag.vb[2]; vh = drag.vb[3];
@@ -599,23 +697,36 @@
     el("rect", { x: vx, y: vy, width: vw, height: vh, fill: "#ffffff" }, target);
 
     if (forExport) {
-      var title = el("text", { x: vx + MARGIN, y: vy + fs * 1.4, "font-size": fs * 1.1, fill: "#2b2724", "font-weight": "700",
+      var title = el("text", { x: vx + MG, y: vy + fs * 1.4, "font-size": fs * 1.1, fill: "#2b2724", "font-weight": "700",
         "font-family": FONT }, target);
       title.textContent = t("p.export", { w: W, h: H });
     }
 
-    // 바닥 + 50cm 격자
-    el("rect", { x: 0, y: 0, width: W, height: H, fill: "#FBF8F1" }, target);
-    var grid = el("g", { stroke: "#EFEBE3", "stroke-width": 1 }, target);
+    // 바닥 + 50cm 격자 (방 모양 안쪽만)
+    var poly = roomPoly(), rectRoom = isRectRoom();
+    var pd = "M " + poly.map(function (p) { return p[0] + " " + p[1]; }).join(" L ") + " Z";
+    var defs = el("defs", {}, target); el("path", { d: pd }, el("clipPath", { id: "roomClip" }, defs));
+    el("path", { d: pd, fill: "#FBF8F1" }, target);
+    var grid = el("g", { stroke: "#EFEBE3", "stroke-width": 1, "clip-path": "url(#roomClip)" }, target);
     for (var gx = 50; gx < W; gx += 50) el("line", { x1: gx, y1: 0, x2: gx, y2: H }, grid);
     for (var gy = 50; gy < H; gy += 50) el("line", { x1: 0, y1: gy, x2: W, y2: gy }, grid);
-    el("rect", { x: 0, y: 0, width: W, height: H, fill: "none", stroke: "#141414", "stroke-width": 6 }, target);
+    el("path", { d: pd, fill: "none", stroke: "#141414", "stroke-width": 6, "stroke-linejoin": "miter" }, target);
 
-    // 치수 글자
+    // 치수 글자: 사각형은 가로·세로, 그 밖의 모양은 변마다 길이
     var lbl = { "font-size": fs, fill: "#6f675f", "text-anchor": "middle", "font-family": FONT };
-    var tw = el("text", Object.assign({ x: W / 2, y: -fs * 0.8 }, lbl), target); tw.textContent = W + " cm";
-    var th = el("text", Object.assign({ x: -fs * 0.8, y: H / 2, transform: "rotate(-90 " + (-fs * 0.8) + " " + (H / 2) + ")" }, lbl), target);
-    th.textContent = H + " cm";
+    if (rectRoom) {
+      var tw = el("text", Object.assign({ x: W / 2, y: -fs * 0.8 }, lbl), target); tw.textContent = W + " cm";
+      var th = el("text", Object.assign({ x: -fs * 0.8, y: H / 2, transform: "rotate(-90 " + (-fs * 0.8) + " " + (H / 2) + ")" }, lbl), target);
+      th.textContent = H + " cm";
+    } else {
+      roomEdges().forEach(function (e) {
+        if (e.len < fs * 3) return;
+        var txt = Math.round(e.len) + " cm", tw2 = txt.length * fs * 0.85 * 0.58;          // 글자 폭만큼 벽에서 띄워 벽선과 안 겹치게
+        var off = fs * 0.7 + Math.abs(e.n.x) * tw2 / 2 + Math.abs(e.n.y) * fs * 0.35;
+        var el2 = el("text", Object.assign({}, lbl, { x: (e.x1 + e.x2) / 2 - e.n.x * off, y: (e.y1 + e.y2) / 2 - e.n.y * off + fs * 0.3, "font-size": fs * 0.85 }), target);
+        el2.textContent = txt;
+      });
+    }
 
     var checks = checkAll();
     // 문·창문을 먼저, 가구를 나중에 그림 → 가구가 위에 보임
@@ -661,6 +772,19 @@
         el("title", {}, bg).textContent = t("p.remove", { name: dispName(it) });
       }
     });
+    if (!forExport && shapeEdit && !rectRoom) {   // 모양 고치기 모드: 점을 끌어 옮기고, 검은 + 를 눌러 점을 늘림
+      var hr = Math.max(9, fs * 0.75);
+      roomEdges().forEach(function (e) {
+        var mg = el("g", { "data-mid": e.i, style: "cursor:copy" }, target);
+        el("circle", { cx: (e.x1 + e.x2) / 2, cy: (e.y1 + e.y2) / 2, r: hr * 0.7, fill: "#0B0B14", stroke: "#fff", "stroke-width": 1.5 }, mg);
+        var pl = el("text", { x: (e.x1 + e.x2) / 2, y: (e.y1 + e.y2) / 2 + hr * 0.3, "text-anchor": "middle", "font-size": hr, fill: "#fff", "font-weight": "700", "font-family": FONT, "pointer-events": "none" }, mg);
+        pl.textContent = "+";
+      });
+      poly.forEach(function (p, i) {
+        var vg = el("g", { "data-vtx": i, style: "cursor:move" }, target);
+        el("circle", { cx: p[0], cy: p[1], r: hr, fill: selVtx === i ? "#C42A1E" : "#fff", stroke: "#141414", "stroke-width": 2.5 }, vg);
+      });
+    }
   }
 
   // ---------- 화면 갱신 ----------
@@ -672,16 +796,17 @@
   function render() {
     draw(svg, false);
     renderList();
-    var m2 = state.room.w * state.room.h / 10000;
+    var m2 = roomArea() / 10000;
     var pyeong = m2 / 3.305785;
     var used = 0;
     state.items.forEach(function (it) { if (it.type === "furniture") used += it.w * it.h; });
-    var ratio = used / (state.room.w * state.room.h) * 100;
+    var ratio = used / roomArea() * 100;
     var checks = checkAll(), bad = 0;
     for (var k in checks) if (checks[k].overlap || checks[k].outside) bad++;
     areaInfo.innerHTML = t("l.area", { m2: m2.toFixed(1), py: pyeong.toFixed(1), ratio: ratio.toFixed(0) }) +
       (bad ? "<br><span style='color:#C42A1E'>" + t("l.check", { n: bad }) + "</span>" : "");
 
+    syncShapeUI();
     var it = byId(selectedId);
     selPanel.hidden = !it;
     document.getElementById("doorOpts").hidden = !(it && it.type === "door");
@@ -698,9 +823,58 @@
   // ---------- 방 크기 ----------
   roomW.value = state.room.w; roomH.value = state.room.h;
   function onRoom() {
-    state.room.w = snap(num(roomW.value, 100, state.room.w));
-    state.room.h = snap(num(roomH.value, 100, state.room.h));
+    var nw = snap(num(roomW.value, 100, state.room.w)), nh = snap(num(roomH.value, 100, state.room.h));
+    if (!isRectRoom()) {                         // 모양이 있는 방: 가로·세로를 바꾸면 모양 전체를 그 비율로 늘이거나 줄임
+      var sx = nw / state.room.w, sy = nh / state.room.h;
+      state.room.poly = state.room.poly.map(function (p) { return [Math.round(p[0] * sx), Math.round(p[1] * sy)]; });
+      normalizeRoom();
+    } else { state.room.w = nw; state.room.h = nh; }
     commit();
+  }
+
+  // ---------- 방 모양 고르기 · 점 고치기 ----------
+  var roomShape = document.getElementById("roomShape"), shapeTools = document.getElementById("shapeTools");
+  var shapeEditBtn = document.getElementById("shapeEdit"), vtxDelBtn = document.getElementById("vtxDel"), edgeListEl = document.getElementById("edgeList"), edgeSig = "";
+  function applyShape(kind) {
+    var W = state.room.w, H = state.room.h;
+    selVtx = null;
+    if (kind === "rect") { delete state.room.poly; state.room.shape = "rect"; shapeEdit = false; }
+    else if (SHAPES[kind]) {
+      state.room.poly = SHAPES[kind].map(function (p) { return [Math.round(p[0] * W / 5) * 5, Math.round(p[1] * H / 5) * 5]; });
+      state.room.shape = kind; shapeEdit = true;
+    } else { return; }
+    normalizeRoom(); commit();
+  }
+  roomShape.addEventListener("change", function () { applyShape(roomShape.value); });
+  shapeEditBtn.addEventListener("click", function () { shapeEdit = !shapeEdit; selVtx = null; render(); });
+  vtxDelBtn.addEventListener("click", function () {
+    var P = state.room.poly;
+    if (!P || selVtx === null || P.length <= 3) return;
+    P.splice(selVtx, 1); selVtx = null; state.room.shape = "custom"; normalizeRoom(); commit();
+  });
+  function syncShapeUI() {                       // 화면의 모양 칸들을 지금 방에 맞춤
+    var rect = isRectRoom();
+    roomShape.value = rect ? "rect" : (state.room.shape && SHAPES[state.room.shape] || state.room.shape === "custom" ? state.room.shape : "custom");
+    shapeTools.hidden = rect;
+    shapeEditBtn.textContent = t(shapeEdit ? "l.shapeDone" : "l.shapeEdit");
+    shapeEditBtn.classList.toggle("primary", shapeEdit);
+    vtxDelBtn.hidden = !(shapeEdit && selVtx !== null && !rect && state.room.poly.length > 3);
+    if (document.activeElement !== roomW) roomW.value = state.room.w;
+    if (document.activeElement !== roomH) roomH.value = state.room.h;
+    var sig = rect ? "" : JSON.stringify(state.room.poly) + I18N.lang;
+    if (sig !== edgeSig && !(edgeListEl.contains(document.activeElement))) {   // 변 길이 칸 (치수를 직접 적고 싶을 때)
+      edgeSig = sig; edgeListEl.textContent = "";
+      if (!rect) roomEdges().forEach(function (e, k) {
+        var lab = document.createElement("label"); lab.appendChild(document.createTextNode(t("l.edge", { n: k + 1 })));
+        var inp = document.createElement("input"); inp.type = "number"; inp.min = "10"; inp.step = "5"; inp.inputMode = "numeric"; inp.value = Math.round(e.len);
+        inp.addEventListener("change", function () {
+          var L = num(inp.value, 10, e.len), P = state.room.poly, a = P[e.i], b = P[(e.i + 1) % P.length];
+          b[0] = Math.round(a[0] + e.ux * L); b[1] = Math.round(a[1] + e.uy * L);     // 이 변의 끝점을 같은 방향으로 늘이거나 줄임
+          state.room.shape = "custom"; normalizeRoom(); commit();
+        });
+        lab.appendChild(inp); edgeListEl.appendChild(lab);
+      });
+    }
   }
   roomW.addEventListener("change", onRoom);
   roomH.addEventListener("change", onRoom);
@@ -746,9 +920,18 @@
       it.color = color || presetColor(name) || (kind && KIND_COLORS[kind]) || nextExtraColor();
       it.x = snap(Math.max(0, (state.room.w - it.w) / 2));
       it.y = snap(Math.max(0, (state.room.h - it.h) / 2));
-    } else { // 문·창문은 위쪽 벽에 걸쳐서
-      it.x = snap(Math.max(0, (state.room.w - it.w) / 2));
-      it.y = -snap(it.h / 2);
+    } else { // 문·창문은 벽(수평·수직 변) 가운데에 걸쳐서
+      var edges = roomEdges().filter(function (e) { return e.axis !== "s"; });
+      edges.sort(function (a, b) { return ((a.wall === "top" ? 0 : 1) - (b.wall === "top" ? 0 : 1)) || (b.len - a.len); });
+      var fit = edges.filter(function (e) { return e.len >= it.w; })[0] || edges[0];
+      if (fit && fit.axis === "h") {
+        it.x = snap(Math.min(fit.x1, fit.x2) + (fit.len - it.w) / 2); it.y = fit.y1 - snap(it.h / 2);
+      } else if (fit) {                           // 수직 벽이면 가로·세로를 바꿔서 세움
+        var tw0 = it.w; it.w = it.h; it.h = tw0;
+        it.x = fit.x1 - snap(it.w / 2); it.y = snap(Math.min(fit.y1, fit.y2) + (fit.len - it.h) / 2);
+      } else {
+        it.x = snap(Math.max(0, (state.room.w - it.w) / 2)); it.y = -snap(it.h / 2);
+      }
     }
     state.items.push(it);
     selectedId = it.id;
@@ -868,33 +1051,36 @@
     var h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
     return (w > 0 && h > 0) ? w * h : 0;
   }
-  function openingInfo(it) {                     // 문·창문이 어느 벽의 어디에 있는지
-    var W = state.room.w, H = state.room.h;
-    var cx = it.x + it.w / 2, cy = it.y + it.h / 2;
-    var d = { top: Math.abs(cy), bottom: Math.abs(cy - H), left: Math.abs(cx), right: Math.abs(cx - W) };
-    var wall = "top";
-    for (var k in d) if (d[k] < d[wall]) wall = k;
-    var horiz = wall === "top" || wall === "bottom";
-    var a = Math.max(0, horiz ? it.x : it.y);
-    var b = Math.min(horiz ? W : H, horiz ? it.x + it.w : it.y + it.h);
-    return { wall: wall, a: a, b: b, len: Math.max(0, b - a), kind: it.type, out: it.swing === "out" };
+  function openingInfo(it) {                     // 문·창문이 어느 벽의 어디에 있는지 (c = 그 벽의 위치: 위·아래 벽이면 y, 왼·오른 벽이면 x)
+    var cx = it.x + it.w / 2, cy = it.y + it.h / 2, best = null, bd = Infinity, bestAny = null, bdAny = Infinity;
+    roomEdges().forEach(function (e) {
+      var d = distSeg(cx, cy, e.x1, e.y1, e.x2, e.y2);
+      if (d < bdAny) { bdAny = d; bestAny = e; }
+      if (e.axis !== "s" && d < bd) { bd = d; best = e; }
+    });
+    var e = best || bestAny;
+    if (!e) return { wall: "top", c: 0, a: it.x, b: it.x + it.w, len: it.w, kind: it.type, out: it.swing === "out" };
+    var horiz = e.wall === "top" || e.wall === "bottom";
+    var c = e.axis === "h" ? e.y1 : e.axis === "v" ? e.x1 : (horiz ? cy : cx);       // 비스듬한 벽에는 문 위치 그대로
+    var lo = horiz ? Math.min(e.x1, e.x2) : Math.min(e.y1, e.y2), hi = horiz ? Math.max(e.x1, e.x2) : Math.max(e.y1, e.y2);
+    if (e.axis === "s") { lo = -Infinity; hi = Infinity; }
+    var a = Math.max(lo, horiz ? it.x : it.y), b = Math.min(hi, horiz ? it.x + it.w : it.y + it.h);
+    return { wall: e.wall, c: c, a: a, b: b, len: Math.max(0, b - a), kind: it.type, out: it.swing === "out" };
   }
-  function zoneFromWall(wall, a, b, depth) {     // 벽에서 방 안쪽으로 depth 만큼의 사각형
+  function zoneFromWall(wall, a, b, depth, c) {  // 벽에서 방 안쪽으로 depth 만큼의 사각형
     var W = state.room.w, H = state.room.h;
     depth = Math.min(depth, (wall === "top" || wall === "bottom") ? H : W);
-    if (wall === "top") return { x: a, y: 0, w: b - a, h: depth };
-    if (wall === "bottom") return { x: a, y: H - depth, w: b - a, h: depth };
-    if (wall === "left") return { x: 0, y: a, w: depth, h: b - a };
-    return { x: W - depth, y: a, w: depth, h: b - a };
+    if (wall === "top") return { x: a, y: c, w: b - a, h: depth };
+    if (wall === "bottom") return { x: a, y: c - depth, w: b - a, h: depth };
+    if (wall === "left") return { x: c, y: a, w: depth, h: b - a };
+    return { x: c - depth, y: a, w: depth, h: b - a };
   }
   function wallPoint(o) {                        // 문·창문의 가운데 점
-    var W = state.room.w, H = state.room.h, m = (o.a + o.b) / 2;
-    if (o.wall === "top") return { x: m, y: 0 };
-    if (o.wall === "bottom") return { x: m, y: H };
-    if (o.wall === "left") return { x: 0, y: m };
-    return { x: W, y: m };
+    var m = (o.a + o.b) / 2;
+    return (o.wall === "top" || o.wall === "bottom") ? { x: m, y: o.c } : { x: o.c, y: m };
   }
   function wallCandidates(w0, h0) {              // 벽에 붙는 모든 자리 (두 방향 모두)
+    if (!isRectRoom()) return polyWallCandidates(w0, h0);
     var W = state.room.w, H = state.room.h, out = [];
     var dims = [[w0, h0]];
     if (w0 !== h0) dims.push([h0, w0]);
@@ -912,6 +1098,30 @@
     });
     return out;
   }
+  // 사각형이 아닌 방: 방의 모든 벽(변)을 따라 후보 자리를 만듦. 비스듬한 벽에는 가구를 기울이지 않고, 벽에 모서리를 대고 놓음.
+  function polyWallCandidates(w0, h0) {
+    var out = [], dims = [[w0, h0]];
+    if (w0 !== h0) dims.push([h0, w0]);
+    roomEdges().forEach(function (e) {
+      dims.forEach(function (d) {
+        var w = d[0], h = d[1], p;
+        if (e.axis === "h") {
+          var xa = Math.min(e.x1, e.x2), xb = Math.max(e.x1, e.x2);
+          for (p = xa; p <= xb - w + 0.001; p += AUTO.STEP) out.push({ x: p, y: e.wall === "top" ? e.y1 : e.y1 - h, w: w, h: h, wall: e.wall });
+        } else if (e.axis === "v") {
+          var ya = Math.min(e.y1, e.y2), yb = Math.max(e.y1, e.y2);
+          for (p = ya; p <= yb - h + 0.001; p += AUTO.STEP) out.push({ x: e.wall === "left" ? e.x1 : e.x1 - w, y: p, w: w, h: h, wall: e.wall });
+        } else {
+          var cnt = Math.max(1, Math.round(e.len / (AUTO.STEP * 2)));
+          for (var k = 0; k <= cnt; k++) {
+            var px = e.x1 + (e.x2 - e.x1) * k / cnt, py = e.y1 + (e.y2 - e.y1) * k / cnt;
+            out.push({ x: Math.round(e.n.x >= 0 ? px : px - w), y: Math.round(e.n.y >= 0 ? py : py - h), w: w, h: h, wall: e.wall, slanted: true });
+          }
+        }
+      });
+    });
+    return out;
+  }
   function frontZone(c, depth) {                 // 가구 앞(방 안쪽) 공간
     if (c.wall === "top") return { x: c.x, y: c.y + c.h, w: c.w, h: depth };
     if (c.wall === "bottom") return { x: c.x, y: c.y - depth, w: c.w, h: depth };
@@ -919,6 +1129,11 @@
     return { x: c.x - depth, y: c.y, w: depth, h: c.h };
   }
   function cornerDist(c) {                       // 가장 가까운 방 모서리까지 거리
+    if (!isRectRoom()) {                         // 사각형이 아닌 방: 가장 가까운 꼭짓점까지 (가구 크기의 절반만큼 빼서 비슷한 기준으로)
+      var cx = c.x + c.w / 2, cy = c.y + c.h / 2, m = Infinity;
+      state.room.poly.forEach(function (p) { m = Math.min(m, Math.sqrt((p[0] - cx) * (p[0] - cx) + (p[1] - cy) * (p[1] - cy))); });
+      return Math.max(0, m - Math.min(c.w, c.h) / 2);
+    }
     var W = state.room.w, H = state.room.h;
     if (c.wall === "top" || c.wall === "bottom") return Math.min(c.x, W - (c.x + c.w));
     return Math.min(c.y, H - (c.y + c.h));
@@ -971,8 +1186,7 @@
     return s;
   }
   function isBlocked(c, blocks, placed) {
-    var W = state.room.w, H = state.room.h;
-    if (c.x < 0 || c.y < 0 || c.x + c.w > W || c.y + c.h > H) return true;
+    if (outsideRoom(c)) return true;
     for (var i = 0; i < blocks.length; i++) if (overlaps(c, blocks[i])) return true;
     for (var j = 0; j < placed.length; j++) if (overlaps(c, placed[j])) return true;
     return false;
@@ -994,15 +1208,15 @@
   }
   // 협탁: 침대 바로 옆(같은 벽, 침대 양쪽 끝 중 문에서 먼 쪽 먼저)
   function sideSpot(it, ctx, blocks) {
-    var W = state.room.w, H = state.room.h, best = null;
+    var best = null;
     ctx.placed.forEach(function (d) {
       if (d.kind !== "bed") return;
       var w = it.w, h = it.h, cands;
-      if (d.wall === "top" || d.wall === "bottom") {
-        var y = d.wall === "top" ? 0 : H - h;
+      if (d.wall === "top" || d.wall === "bottom") {          // 침대와 같은 벽에, 침대의 벽쪽 끝에 맞춰
+        var y = d.wall === "top" ? d.y : d.y + d.h - h;
         cands = [{ x: d.x - w, y: y, w: w, h: h, wall: d.wall }, { x: d.x + d.w, y: y, w: w, h: h, wall: d.wall }];
       } else {
-        var x = d.wall === "left" ? 0 : W - w;
+        var x = d.wall === "left" ? d.x : d.x + d.w - w;
         cands = [{ x: x, y: d.y - h, w: w, h: h, wall: d.wall }, { x: x, y: d.y + d.h, w: w, h: h, wall: d.wall }];
       }
       cands.forEach(function (c) {
@@ -1024,8 +1238,8 @@
       windows: openings.filter(function (o) { return o.kind === "window"; }),
       placed: []
     };
-    var swing = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, d.out ? 0 : d.len); });                       // 문 열리는 자리 (바깥으로 열리면 없음)
-    var corridor = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, (d.out ? 0 : d.len) + AUTO.CLEAR); });   // + 통로
+    var swing = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, d.out ? 0 : d.len, d.c); });                       // 문 열리는 자리 (바깥으로 열리면 없음)
+    var corridor = ctx.doors.map(function (d) { return zoneFromWall(d.wall, d.a, d.b, (d.out ? 0 : d.len) + AUTO.CLEAR, d.c); });   // + 통로
     var furn = state.items.filter(function (it) { return it.type === "furniture"; });
     furn.sort(function (a, b) {                                // 큰 가구부터
       var ka = KIND_ORDER[kindOf(a)], kb = KIND_ORDER[kindOf(b)];
@@ -1111,7 +1325,7 @@
   // 방 종류에 맞는 필수 가구 목록 (설정.js 의 roomTypes 규칙 + 방 면적)
   function essentialPresets() {
     var rules = (CFG.roomTypes || {})[state.roomType] || [];
-    var area = state.room.w * state.room.h / 10000, out = [];
+    var area = roomArea() / 10000, out = [];
     function preset(name) { var l = CFG.furniture || []; for (var i = 0; i < l.length; i++) if (l[i].name === name) return l[i]; return null; }
     rules.forEach(function (r) {
       if (r.minArea && area < r.minArea) return;
@@ -1463,6 +1677,22 @@
       if (selectedId === delId) selectedId = null;
       evt.preventDefault(); commit(); return;
     }
+    var vt = evt.target.closest ? evt.target.closest("[data-vtx]") : null;         // 모양 고치기: 점을 잡음
+    if (vt) {
+      selVtx = Number(vt.getAttribute("data-vtx"));
+      drag = { vtx: selVtx, pid: evt.pointerId, moved: false };
+      try { svg.setPointerCapture(evt.pointerId); } catch (e) {}
+      evt.preventDefault(); render(); return;
+    }
+    var md = evt.target.closest ? evt.target.closest("[data-mid]") : null;       // 검은 + : 그 자리에 새 점을 만들고 바로 끌 수 있게
+    if (md && state.room.poly) {
+      var mi = Number(md.getAttribute("data-mid")), P = state.room.poly, p1 = P[mi], p2 = P[(mi + 1) % P.length];
+      P.splice(mi + 1, 0, [Math.round((p1[0] + p2[0]) / 2), Math.round((p1[1] + p2[1]) / 2)]);
+      state.room.shape = "custom"; selVtx = mi + 1;
+      drag = { vtx: selVtx, pid: evt.pointerId, moved: false };
+      try { svg.setPointerCapture(evt.pointerId); } catch (e) {}
+      evt.preventDefault(); render(); return;
+    }
     var g = evt.target.closest ? evt.target.closest("g[data-id]") : null;
     if (!g) { selectedId = null; render(); return; }
     var it = byId(Number(g.getAttribute("data-id")));
@@ -1476,6 +1706,12 @@
   });
   svg.addEventListener("pointermove", function (evt) {
     if (!drag || evt.pointerId !== drag.pid) return;
+    if (drag.vtx !== undefined) {                  // 점 끌기
+      var vp = toCm(evt), P = state.room.poly; if (!P) return;
+      var nx = snap(vp.x), ny = snap(vp.y);
+      if (P[drag.vtx][0] !== nx || P[drag.vtx][1] !== ny) { P[drag.vtx] = [nx, ny]; drag.moved = true; render(); }
+      return;
+    }
     var it = byId(drag.id); if (!it) return;
     var p = toCm(evt);
     var nx = snap(p.x - drag.dx), ny = snap(p.y - drag.dy);
@@ -1483,8 +1719,9 @@
   });
   function endDrag(evt) {
     if (!drag || (evt && evt.pointerId !== drag.pid)) return;
-    var moved = drag.moved;
+    var moved = drag.moved, wasVtx = drag.vtx !== undefined;
     drag = null;
+    if (wasVtx) { if (moved) { state.room.shape = "custom"; normalizeRoom(); } commit(); return; }
     if (moved) commit();
   }
   svg.addEventListener("pointerup", endDrag);
@@ -1675,7 +1912,7 @@
     rdSay(["d.making"]);
     var ctrl = new AbortController(), timer = setTimeout(function () { ctrl.abort(); }, 190000);
     try {
-      var body = { layout: await planToJpeg(1280), room: { w: room.w, h: room.h }, items: items, style: style, styleText: styleText };
+      var body = { layout: await planToJpeg(1280), room: { w: room.w, h: room.h, poly: room.poly || undefined }, items: items, style: style, styleText: styleText };
       if (rdPhoto) body.photo = rdPhoto;
       var res = await fetch(RENDER_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
       var data = await res.json().catch(function () { return {}; });

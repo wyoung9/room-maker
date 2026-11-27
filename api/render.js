@@ -96,6 +96,12 @@ export function validate(body) {
   if (hasPhoto && !checkImage(body.photo, ["image/png", "image/jpeg", "image/webp"], MAX_PHOTO_B64)) return { error: "방 사진 형식(JPG·PNG·WEBP)이나 크기가 맞지 않아요." };
   const room = body.room;
   if (!room || !num(room.w, 100, 3000) || !num(room.h, 100, 3000)) return { error: "방 크기가 올바르지 않아요." };
+  let poly = null;                                // 사각형이 아닌 방의 윤곽(꼭짓점 3~16개, cm). 없으면 사각형
+  if (room.poly !== undefined && room.poly !== null) {
+    if (!Array.isArray(room.poly) || room.poly.length < 3 || room.poly.length > 16 ||
+        !room.poly.every((p) => Array.isArray(p) && p.length === 2 && num(p[0], -100, 3100) && num(p[1], -100, 3100))) return { error: "방 모양이 올바르지 않아요." };
+    poly = room.poly.map((p) => [Math.round(p[0]), Math.round(p[1])]);
+  }
   const items = Array.isArray(body.items) ? body.items : null;
   if (!items || items.length < 1 || items.length > MAX_ITEMS) return { error: `가구는 1~${MAX_ITEMS}개까지 넣을 수 있어요.` };
   const clean = [];
@@ -115,7 +121,7 @@ export function validate(body) {
     style = STYLES[body.style];
   } else return { error: "분위기를 골라 주세요." };
 
-  return { ok: { layout: body.layout, photo: hasPhoto ? body.photo : null, room: { w: room.w, h: room.h }, items: clean, style } };
+  return { ok: { layout: body.layout, photo: hasPhoto ? body.photo : null, room: poly ? { w: room.w, h: room.h, poly } : { w: room.w, h: room.h }, items: clean, style } };
 }
 
 // ---------- 가구 위치 설명 (숫자로 서버가 직접 글을 만듦) ----------
@@ -157,7 +163,9 @@ export function buildPrompt({ room, items, style, hasPhoto }) {
     hasPhoto
       ? "Image 1 is a top-down floor plan of the room with the furniture drawn to scale. Image 2 is a photo of the real room: keep its real walls, floor, window, door, proportions, light and camera feel, and place the furniture from the plan into this room."
       : "The image is a top-down floor plan of the room with the furniture drawn to scale. Follow its layout.",
-    `Room size: ${Math.round(room.w)} x ${Math.round(room.h)} cm. In the plan, the top, bottom, left and right edges are the four walls of the room.`,
+    room.poly
+      ? `The room is NOT a rectangle. Its floor outline has these corners in the plan, in cm (origin = top-left of the room's bounding box, ${Math.round(room.w)} x ${Math.round(room.h)} cm): ${room.poly.map((p) => `(${p[0]}, ${p[1]})`).join(", ")}. The walls follow this outline exactly, including any slanted or notched walls. Do not make the room rectangular.`
+      : `Room size: ${Math.round(room.w)} x ${Math.round(room.h)} cm. In the plan, the top, bottom, left and right edges are the four walls of the room.`,
     "Furniture, doors and windows (keep these positions, sizes and proportions):",
     items.map((it) => describeItem(it, room)).join("\n"),
     `Style: ${style}.`,

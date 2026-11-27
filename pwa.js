@@ -11,6 +11,15 @@
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js").catch(function () {}); });
   }
+  // 설치용 앱 주소: 웹사이트에서 「앱으로 설치」를 누르면 이 주소로 이동해요. (이미 이 주소에 있거나, 내 컴퓨터(localhost)에서 시험 중이면 이동하지 않고 그 자리에서 설치해요)
+  var APP_URL = "https://room-maker-app-rho.vercel.app/";
+  function installTarget(hostname) {
+    var appHost; try { appHost = new URL(APP_URL).hostname; } catch (e) { return null; }
+    if (!hostname || hostname === appHost || hostname === "localhost" || hostname === "127.0.0.1") return null;
+    return APP_URL;
+  }
+  window.RM_PWA = { installTarget: installTarget, appUrl: APP_URL };
+
   var standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
   if (standalone || !window.I18N) return;
 
@@ -26,6 +35,8 @@
   function label() { btn.textContent = I18N.t("app.install"); }
   label(); I18N.onChange(label);
   btn.addEventListener("click", async function () {
+    var target = installTarget(location.hostname);
+    if (target) { location.href = target; return; }                                  // 웹사이트 → 앱 주소로 이동
     if (deferred) {
       deferred.prompt();
       try { await deferred.userChoice; } catch (e) {}

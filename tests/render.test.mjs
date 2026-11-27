@@ -257,3 +257,19 @@ test("buildPrompt: 규칙 문장이 들어 있음", () => {
   assert.match(p, /Do not draw text, labels, dimension numbers/);
   assert.match(p, /concept image/);
 });
+
+test("사각형이 아닌 방: 방 모양(poly)을 받아서 프롬프트에 넣고, 이상한 모양은 거절", () => {
+  const L = [[0, 0], [400, 0], [400, 225], [200, 225], [200, 500], [0, 500]];
+  const ok = validate(goodBody({ room: { w: 400, h: 500, poly: L } }));
+  assert.ok(ok.ok, "L자 모양은 통과");
+  assert.deepEqual(ok.ok.room.poly, L);
+  const prompt = buildPrompt({ room: ok.ok.room, items: ok.ok.items, style: "nordic", hasPhoto: false });
+  assert.match(prompt, /NOT a rectangle/);
+  assert.match(prompt, /\(200, 225\)/);
+  const plain = validate(goodBody());                       // 모양이 없으면 예전 그대로
+  assert.equal(plain.ok.room.poly, undefined);
+  assert.match(buildPrompt({ room: plain.ok.room, items: plain.ok.items, style: "nordic", hasPhoto: false }), /Room size: 300 x 400 cm/);
+  for (const bad of [[[0, 0], [1, 1]], "x", Array(17).fill([1, 1]), [[0, 0], [10, "a"], [5, 5]], [[0, 0], [99999, 0], [5, 5]]]) {
+    assert.ok(validate(goodBody({ room: { w: 300, h: 400, poly: bad } })).error, "거절: " + JSON.stringify(bad).slice(0, 30));
+  }
+});

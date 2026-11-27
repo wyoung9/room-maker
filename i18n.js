@@ -653,6 +653,22 @@
   K("hm.confirmNew", "지금 작업 중인 방을 지우고 새로 시작할까요? 되돌릴 수 없어요.", "Clear the room you're working on and start a new one? This can't be undone.", "今作業中の部屋を消して新しく始めますか？元に戻せません。", "要清除正在编辑的房间并重新开始吗？此操作无法撤销。");
   K("hm.openApp", "📱 앱 화면으로 열기", "📱 Open the app view", "📱 アプリ画面で開く", "📱 打开应用界面");
 
+  /* ===================== 방 모양 (배치.html) ===================== */
+  K("l.shape", "방 모양", "Room shape", "部屋の形", "房间形状");
+  K("shape.rect", "사각형", "Rectangle", "四角形", "矩形");
+  K("shape.L", "L자", "L-shape", "L字", "L 形");
+  K("shape.U", "ㄷ자", "U-shape", "コの字", "U 形");
+  K("shape.para", "평행사변형", "Parallelogram", "平行四辺形", "平行四边形");
+  K("shape.diamond", "마름모", "Diamond", "ひし形", "菱形");
+  K("shape.trap", "사다리꼴", "Trapezoid", "台形", "梯形");
+  K("shape.penta", "오각형 (모서리 깎임)", "Pentagon (cut corner)", "五角形（角を落とした形）", "五边形（切角）");
+  K("shape.custom", "직접 고친 모양", "Custom shape", "自分で直した形", "自定义形状");
+  K("l.shapeEdit", "✎ 모양 고치기", "✎ Edit shape", "✎ 形を直す", "✎ 编辑形状");
+  K("l.shapeDone", "✓ 모양 고치기 끝", "✓ Done editing", "✓ 形を直し終える", "✓ 完成编辑");
+  K("l.vtxDel", "✕ 선택한 점 지우기", "✕ Delete selected point", "✕ 選んだ点を消す", "✕ 删除所选点");
+  K("l.shapeHint", "고치기를 켜면 도면에 하얀 점이 나와요. 점을 끌어 모양을 바꾸고, 검은 + 를 누르면 점이 늘어요.", "With editing on, white points appear on the plan. Drag a point to reshape the room; press a black + to add a point.", "編集をオンにすると、図面に白い点が出ます。点をドラッグして形を変え、黒い + を押すと点が増えます。", "开启编辑后，图上会出现白点。拖动白点改变形状，点击黑色 + 可增加点。");
+  K("l.edge", "변 {n} (cm)", "Side {n} (cm)", "辺{n} (cm)", "边 {n} (cm)");
+
   /* ===================== 동작 ===================== */
   function valid(l) { for (var i = 0; i < LANGS.length; i++) if (LANGS[i][0] === l) return true; return false; }
   function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }

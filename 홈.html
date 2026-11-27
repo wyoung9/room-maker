@@ -274,7 +274,11 @@
     var svg = document.createElementNS(NS, "svg"), W = s.room.w, H = s.room.h, m = Math.max(W, H) * 0.06;
     svg.setAttribute("viewBox", (-m) + " " + (-m) + " " + (W + 2 * m) + " " + (H + 2 * m));
     function el(tag, a) { var n = document.createElementNS(NS, tag); for (var k in a) n.setAttribute(k, a[k]); svg.appendChild(n); return n; }
-    el("rect", { x: 0, y: 0, width: W, height: H, fill: "#FBF8F1", stroke: "#141414", "stroke-width": Math.max(W, H) * 0.025 });
+    if (s.room.poly && s.room.poly.length >= 3) {                              // 사각형이 아닌 방은 그 모양대로
+      el("path", { d: "M " + s.room.poly.map(function (p) { return p[0] + " " + p[1]; }).join(" L ") + " Z", fill: "#FBF8F1", stroke: "#141414", "stroke-width": Math.max(W, H) * 0.025, "stroke-linejoin": "miter" });
+    } else {
+      el("rect", { x: 0, y: 0, width: W, height: H, fill: "#FBF8F1", stroke: "#141414", "stroke-width": Math.max(W, H) * 0.025 });
+    }
     (s.items || []).forEach(function (it) {
       if (it.type !== "furniture") return;
       el("rect", { x: it.x, y: it.y, width: it.w, height: it.h, rx: 3, fill: it.color || "#7CA7EB", stroke: "#141414", "stroke-width": Math.max(W, H) * 0.012 });
