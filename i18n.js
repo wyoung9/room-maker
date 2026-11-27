@@ -571,6 +571,33 @@
   K("d.unlimited", "테스트 계정: AI 렌더를 횟수 제한 없이 만들 수 있어요.", "Test account: you can make AI renders without a usage limit.", "テストアカウント：AIレンダーを回数制限なしで作れます。", "测试账号：AI 渲染不受次数限制。");
   K("r.unlimited", "무제한", "Unlimited", "無制限", "不限次数");
 
+  /* ===================== 내 렌더 (내렌더.html · renders.js) ===================== */
+  K("nav.mine", "내 렌더", "My renders", "マイレンダー", "我的渲染");
+  K("title.mine", "방 만들기 · 내 렌더", "Room Maker · My renders", "部屋づくり · マイレンダー", "布置房间 · 我的渲染");
+  K("mn.h1", "내 렌더", "My renders", "マイレンダー", "我的渲染");
+  K("mn.lead", "AI 렌더로 만든 이미지가 이 기기에 저장돼요. 언제든 다시 보고 내려받을 수 있어요.", "Images you make with AI render are saved on this device. You can view and download them again any time.", "AIレンダーで作った画像はこの端末に保存されます。いつでも見直したりダウンロードしたりできます。", "用 AI 渲染生成的图片会保存在此设备上，随时可以再次查看和下载。");
+  K("mn.note", "이미지는 이 기기의 브라우저에만 저장돼요(서버에는 저장하지 않아요). 다른 기기에서는 보이지 않고, 브라우저 데이터를 지우면 사라져요. 가장 오래된 것부터 최대 {max}장까지 보관해요. 중요한 건 「이미지 저장」으로 내려받아 두세요.",
+    "Images are stored only in this device's browser (nothing is stored on our server). They won't show on other devices, and they disappear if you clear the browser's data. Up to {max} are kept, oldest removed first. Download the important ones with “Save image.”",
+    "画像はこの端末のブラウザにだけ保存されます（サーバーには保存しません）。他の端末では表示されず、ブラウザのデータを消すと失われます。古いものから最大{max}枚まで保管します。大切なものは「画像を保存」でダウンロードしておいてください。",
+    "图片只保存在此设备的浏览器中（不会保存到服务器）。在其他设备上看不到，清除浏览器数据后也会消失。最多保留 {max} 张，超出时先删除最旧的。重要的图片请用「保存图片」下载留存。");
+  K("mn.unsupported", "이 브라우저에서는 저장 기능을 쓸 수 없어요. (시크릿 모드이거나 저장이 막혀 있을 수 있어요.)", "Saving isn't available in this browser. (You may be in private mode, or storage may be blocked.)", "このブラウザでは保存機能を使えません。（プライベートモードか、保存がブロックされている可能性があります。）", "此浏览器无法使用保存功能。（可能处于无痕模式，或存储被禁用。）");
+  K("mn.empty", "아직 저장된 렌더가 없어요. 배치 화면에서 AI 렌더를 만들면 여기에 자동으로 저장돼요.", "No saved renders yet. When you make an AI render on the layout screen, it's saved here automatically.", "まだ保存されたレンダーはありません。配置画面でAIレンダーを作ると、ここに自動で保存されます。", "还没有保存的渲染。在布局页面生成 AI 渲染后会自动保存到这里。");
+  K("mn.count", "저장된 렌더 {n}장", "{n} saved render(s)", "保存済みレンダー {n}枚", "已保存 {n} 张渲染");
+  K("mn.view", "크게 보기", "View larger", "拡大して見る", "查看大图");
+  K("mn.deleteAll", "모두 삭제", "Delete all", "すべて削除", "全部删除");
+  K("mn.confirmDel", "이 렌더 이미지를 지울까요? 되돌릴 수 없어요.", "Delete this render image? This can't be undone.", "このレンダー画像を削除しますか？元に戻せません。", "要删除这张渲染图吗？此操作无法撤销。");
+  K("mn.confirmAll", "저장된 렌더 {n}장을 모두 지울까요? 되돌릴 수 없어요.", "Delete all {n} saved renders? This can't be undone.", "保存済みのレンダー{n}枚をすべて削除しますか？元に戻せません。", "要删除全部 {n} 张已保存的渲染吗？此操作无法撤销。");
+  K("mn.furn", "가구 찾아보기", "Find furniture", "家具を探す", "找家具");
+  K("mn.size", "{w}×{h}cm 방", "{w}×{h} cm room", "{w}×{h}cmの部屋", "{w}×{h}cm 房间");
+  K("mn.items", "가구: {list}", "Furniture: {list}", "家具：{list}", "家具：{list}");
+  K("mn.file", "방만들기_AI렌더_{d}.jpg", "RoomMaker_AI_render_{d}.jpg", "部屋づくり_AIレンダー_{d}.jpg", "布置房间_AI渲染_{d}.jpg");
+  K("mn.saved", "이 렌더는 이 기기에 저장됐어요.", "This render is saved on this device.", "このレンダーはこの端末に保存されました。", "此渲染已保存在此设备上。");
+  K("mn.open", "「내 렌더」에서 보기 →", "View in “My renders” →", "「マイレンダー」で見る →", "在「我的渲染」中查看 →");
+  K("mn.saveFail", "이 브라우저에서는 렌더를 저장하지 못했어요. 「이미지 저장」으로 내려받아 두세요.", "Couldn't save this render in this browser. Download it with “Save image.”", "このブラウザではレンダーを保存できませんでした。「画像を保存」でダウンロードしておいてください。", "此浏览器无法保存该渲染。请用「保存图片」下载留存。");
+  K("r.priv.5", "만든 렌더 이미지는 이 기기의 브라우저에만 저장돼서 「내 렌더」에서 다시 볼 수 있어요. 서버에는 저장하지 않아요.", "The render images you make are stored only in this device's browser, so you can view them again in “My renders.” Nothing is stored on our server.", "作ったレンダー画像はこの端末のブラウザにだけ保存され、「マイレンダー」でもう一度見られます。サーバーには保存しません。", "生成的渲染图只保存在此设备的浏览器中，可在「我的渲染」中再次查看。不会保存到服务器。");
+
+  K("intro.link", "서비스 소개서", "About the service", "サービス紹介", "服务介绍");
+
   /* ===================== 앱 설치 (pwa.js) ===================== */
   K("app.install", "📲 앱으로 설치", "📲 Install as app", "📲 アプリとしてインストール", "📲 安装为应用");
   K("app.helpIos",
@@ -583,6 +610,48 @@
     "Android/desktop: in the Chrome menu (⋮), choose “Install app” or “Add to Home screen.” If you don't see it, this browser may not support installing, or the app may already be installed.",
     "Android・パソコン：Chromeのメニュー（⋮）から「アプリをインストール」または「ホーム画面に追加」を押してください。表示されない場合は、このブラウザが対応していないか、すでにインストール済みです。",
     "安卓/电脑：在 Chrome 菜单（⋮）中选择「安装应用」或「添加到主屏幕」。如果没有看到，可能是此浏览器不支持安装，或已经安装过了。");
+
+  K("m.photo", "도면", "Plan", "図面", "户型图");
+  K("m.scale", "축척", "Scale", "縮尺", "比例尺");
+
+  /* ===================== 앱 홈 화면 (홈.html) ===================== */
+  K("hm.title", "방 만들기 · 홈", "Room Maker · Home", "部屋づくり · ホーム", "布置房间 · 首页");
+  K("hm.tag", "이사 전에, 먼저 놓아 보세요", "Before you move, try placing it first", "引っ越し前に、先に置いてみましょう", "搬家之前，先摆一摆");
+  K("hm.h1", "이사 전에,<br>먼저 놓아 보세요", "Before you move,<br>try placing it first", "引っ越し前に、<br>先に置いてみましょう", "搬家之前，<br>先摆一摆");
+  K("hm.lead", "방 크기를 넣고 가구를 끌어다 놓아 보세요. 침대와 책상이 들어갈지 이사 전에 확인할 수 있어요.", "Enter your room size and drag furniture in. You can check before you move whether the bed and desk will fit.", "部屋の広さを入れて家具をドラッグして置いてみましょう。ベッドや机が入るか、引っ越し前に確認できます。", "输入房间尺寸并拖入家具。搬家前就能确认床和书桌放不放得下。");
+  K("hm.tabHome", "홈", "Home", "ホーム", "首页");
+  K("hm.new", "✦ 새 방 만들기", "✦ Start a new room", "✦ 新しい部屋を作る", "✦ 新建房间");
+  K("hm.start", "방 종류로 바로 시작", "Start with a room type", "部屋の種類ですぐ始める", "按房间类型快速开始");
+  K("hm.startHint", "고르면 방 크기를 넣는 화면으로 가요. 「자동 배치」를 누르면 그 방에 필요한 가구가 들어가요.", "Pick one and you'll go to the room-size screen. Press “Auto layout” and the furniture that room needs is added.", "選ぶと部屋の広さを入れる画面に移ります。「自動配置」を押すと、その部屋に必要な家具が入ります。", "选择后会进入输入房间尺寸的页面。点击「自动布置」就会加入该房间需要的家具。");
+  K("hm.resume", "이어서 하기", "Continue", "続きから", "继续");
+  K("hm.resumeRoom", "방 {w}×{h}cm", "Room {w}×{h} cm", "部屋 {w}×{h}cm", "房间 {w}×{h}cm");
+  K("hm.resumeHouse", "집 전체 도면", "Whole-home plan", "家全体の間取り図", "整套房子户型图");
+  K("hm.resumeCount", "가구 {n}개", "{n} piece(s) of furniture", "家具{n}個", "{n} 件家具");
+  K("hm.continue", "이어하기", "Continue", "続ける", "继续");
+  K("hm.menu", "메뉴", "Menu", "メニュー", "菜单");
+  K("hm.m1", "방 배치", "Room layout", "部屋の配置", "房间布局");
+  K("hm.m1d", "방 크기를 넣고 가구를 끌어다 놓아요", "Enter the room size and drag furniture in", "部屋の広さを入れて家具をドラッグ", "输入房间尺寸并拖入家具");
+  K("hm.m2", "집 전체 도면", "Whole-home plan", "家全体の間取り図", "整套房子户型图");
+  K("hm.m2d", "도면 사진 위에 실제 크기로 놓아요", "Place furniture on a plan photo at real size", "図面の写真の上に実寸で置く", "在户型图照片上按实际大小摆放");
+  K("hm.m3", "AI 렌더 안내", "About AI Render", "AIレンダーの案内", "AI 渲染介绍");
+  K("hm.m3d", "분위기 이미지와 무료 횟수 안내", "Mood images and free renders", "雰囲気画像と無料回数のご案内", "氛围图与免费次数说明");
+  K("hm.m4", "내 렌더", "My renders", "マイレンダー", "我的渲染");
+  K("hm.m4d", "만든 렌더를 다시 보고 저장해요", "View and save the renders you made", "作ったレンダーを見返して保存", "查看并保存已生成的渲染");
+  K("hm.m5", "사진으로 가구 치수 읽기", "Read sizes from a photo", "写真から家具の寸法を読み取る", "从照片读取家具尺寸");
+  K("hm.m5d", "가구 사진을 올리면 AI가 적힌 치수를 읽어 줘요", "Upload a furniture photo and the AI reads the written size", "家具の写真をアップロードすると、AIが書かれた寸法を読み取ります", "上传家具照片，AI 会读取上面标注的尺寸");
+  K("hm.help", "사용법 다시 보기", "Show the intro again", "使い方をもう一度見る", "再看一遍使用介绍");
+  K("hm.about", "서비스 소개", "About the service", "サービス紹介", "服务介绍");
+  K("hm.skip", "건너뛰기", "Skip", "スキップ", "跳过");
+  K("hm.next", "다음", "Next", "次へ", "下一步");
+  K("hm.go", "시작하기", "Get started", "はじめる", "开始使用");
+  K("hm.ob1.t", "방 크기를 넣고", "Enter your room size", "部屋の広さを入れて", "输入房间尺寸");
+  K("hm.ob1.d", "가로·세로(cm)만 넣으면 방이 그려져요.", "Just enter the width and length (cm) and the room is drawn.", "横と縦（cm）を入れるだけで部屋が描かれます。", "只要输入长宽（cm），房间就会画出来。");
+  K("hm.ob2.t", "가구를 끌어다 놓아요", "Drag furniture in", "家具をドラッグして置く", "把家具拖进去");
+  K("hm.ob2.d", "겹치면 빨간 테두리로 알려 주고, 「자동 배치」는 필수 가구까지 알아서 넣어 줘요.", "Overlaps get a red outline, and “Auto layout” even adds the essential furniture for you.", "重なると赤い枠でお知らせし、「自動配置」は必需品の家具まで自動で入れます。", "重叠时会用红框提示，「自动布置」还会自动加入必备家具。");
+  K("hm.ob3.t", "AI 렌더로 분위기까지", "See the mood with AI render", "AIレンダーで雰囲気まで", "用 AI 渲染看氛围");
+  K("hm.ob3.d", "완성된 방의 분위기 이미지를 만들고, 어울리는 가구를 찾아봐요.", "Create a mood image of the finished room and look for matching furniture.", "完成した部屋の雰囲気画像を作り、合う家具を探しましょう。", "生成完成后房间的氛围图，并找到合适的家具。");
+  K("hm.confirmNew", "지금 작업 중인 방을 지우고 새로 시작할까요? 되돌릴 수 없어요.", "Clear the room you're working on and start a new one? This can't be undone.", "今作業中の部屋を消して新しく始めますか？元に戻せません。", "要清除正在编辑的房间并重新开始吗？此操作无法撤销。");
+  K("hm.openApp", "📱 앱 화면으로 열기", "📱 Open the app view", "📱 アプリ画面で開く", "📱 打开应用界面");
 
   /* ===================== 동작 ===================== */
   function valid(l) { for (var i = 0; i < LANGS.length; i++) if (LANGS[i][0] === l) return true; return false; }

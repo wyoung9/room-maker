@@ -26,3 +26,16 @@
   paint(); refresh();
   I18N.onChange(paint);
 })();
+
+/* 바닥글 맨 끝에 작은 「서비스 소개서」 링크 (소개서.html). 각 페이지 파일은 고치지 않고 여기서 넣어요. */
+(function () {
+  "use strict";
+  var footer = document.querySelector(".footer");
+  if (!footer || !window.I18N || footer.querySelector(".intro-link")) return;
+  var link = document.createElement("a");
+  link.className = "intro-link"; link.href = "/%EC%86%8C%EA%B0%9C%EC%84%9C.html";           // 소개서.html
+  link.style.cssText = "font-size:12px;color:inherit;opacity:.85;text-decoration:underline;white-space:nowrap";
+  function paint() { link.textContent = I18N.t("intro.link"); }
+  paint(); I18N.onChange(paint);
+  footer.appendChild(link);
+})();
