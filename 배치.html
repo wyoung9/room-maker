@@ -568,24 +568,60 @@
     }
     return inside;
   }
-  function pointInRoom(x, y, P) {                // 벽 위(0.6cm 이내)도 방 안으로 침
-    P = P || roomPoly();
+  function pointInRoom(x, y, P, tol) {           // 벽 위(0.6cm 이내, 기울인 가구는 1.5cm)도 방 안으로 침
+    P = P || roomPoly(); tol = tol || 0.6;
     if (inPolyStrict(x, y, P)) return true;
-    for (var i = 0; i < P.length; i++) { var q = P[(i + 1) % P.length]; if (distSeg(x, y, P[i][0], P[i][1], q[0], q[1]) < 0.6) return true; }
+    for (var i = 0; i < P.length; i++) { var q = P[(i + 1) % P.length]; if (distSeg(x, y, P[i][0], P[i][1], q[0], q[1]) < tol) return true; }
     return false;
   }
-  function rectInRoom(r) {                       // 가구 네모가 방 안에 완전히 들어가나 (오목한 방 포함)
-    var P = roomPoly(), x, y, step = 10;
-    for (x = r.x; x < r.x + r.w; x += step) { if (!pointInRoom(x, r.y, P) || !pointInRoom(x, r.y + r.h, P)) return false; }
-    for (y = r.y; y < r.y + r.h; y += step) { if (!pointInRoom(r.x, y, P) || !pointInRoom(r.x + r.w, y, P)) return false; }
-    if (!pointInRoom(r.x + r.w, r.y + r.h, P) || !pointInRoom(r.x + r.w / 2, r.y + r.h / 2, P)) return false;
-    for (var i = 0; i < P.length; i++) {         // 방 꼭짓점이 가구 네모 안쪽에 들어오면 모서리를 가로지르는 것
-      if (P[i][0] > r.x + 0.5 && P[i][0] < r.x + r.w - 0.5 && P[i][1] > r.y + 0.5 && P[i][1] < r.y + r.h - 0.5) return false;
+  // 가구는 (x,y,w,h)에 놓인 네모이고, rot(도)만큼 가운데를 중심으로 기울어 있을 수 있어요. (벽이 비스듬한 방에서 자동 배치가 기울여 놓음)
+  function cornersOf(r) {
+    var cx = r.x + r.w / 2, cy = r.y + r.h / 2, a = (r.rot || 0) * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+    return [[-r.w / 2, -r.h / 2], [r.w / 2, -r.h / 2], [r.w / 2, r.h / 2], [-r.w / 2, r.h / 2]].map(function (p) { return [cx + p[0] * c - p[1] * s, cy + p[0] * s + p[1] * c]; });
+  }
+  function aabbOf(r) {                           // 기울인 가구를 감싸는 반듯한 네모
+    if (!r.rot) return r;
+    var C = cornersOf(r), x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    C.forEach(function (p) { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); });
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
+  function satOverlap(A, B) {                    // 볼록 네모 두 개가 겹치나 (닿기만 하면 겹침 아님)
+    var polys = [A, B];
+    for (var k = 0; k < 2; k++) {
+      var P = polys[k];
+      for (var i = 0; i < P.length; i++) {
+        var q = P[(i + 1) % P.length], ax = -(q[1] - P[i][1]), ay = q[0] - P[i][0];
+        var a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity, j, d;
+        for (j = 0; j < A.length; j++) { d = A[j][0] * ax + A[j][1] * ay; a0 = Math.min(a0, d); a1 = Math.max(a1, d); }
+        for (j = 0; j < B.length; j++) { d = B[j][0] * ax + B[j][1] * ay; b0 = Math.min(b0, d); b1 = Math.max(b1, d); }
+        var len = Math.sqrt(ax * ax + ay * ay) || 1;
+        if (a1 <= b0 + 0.01 * len || b1 <= a0 + 0.01 * len) return false;
+      }
     }
     return true;
   }
+  function inConvexStrict(x, y, C) {             // 점이 기울인 네모의 안쪽(경계에서 0.5cm 이상)인가
+    var sign = 0;
+    for (var i = 0; i < 4; i++) {
+      var a = C[i], b = C[(i + 1) % 4], len = Math.sqrt((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1])) || 1;
+      var d = ((b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0])) / len;
+      if (Math.abs(d) < 0.5) return false;
+      var s = d > 0 ? 1 : -1; if (sign === 0) sign = s; else if (s !== sign) return false;
+    }
+    return true;
+  }
+  function rectInRoom(r) {                       // 가구 네모가 방 안에 완전히 들어가나 (오목한 방·기울인 가구 포함)
+    var P = roomPoly(), C = cornersOf(r), tol = r.rot ? 1.5 : 0.6, i, k;
+    for (i = 0; i < 4; i++) {                    // 네모의 둘레를 10cm 간격으로 점검
+      var a = C[i], b = C[(i + 1) % 4], L = Math.sqrt((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1])), n = Math.max(1, Math.ceil(L / 10));
+      for (k = 0; k < n; k++) if (!pointInRoom(a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n, P, tol)) return false;
+    }
+    if (!pointInRoom(r.x + r.w / 2, r.y + r.h / 2, P, tol)) return false;
+    for (i = 0; i < P.length; i++) { if (inConvexStrict(P[i][0], P[i][1], C)) return false; }   // 방 꼭짓점이 가구 안쪽에 들어오면 모서리를 가로지르는 것
+    return true;
+  }
   function outsideRoom(r) {
-    if (isRectRoom()) return r.x < 0 || r.y < 0 || r.x + r.w > state.room.w || r.y + r.h > state.room.h;
+    if (isRectRoom() && !r.rot) return r.x < 0 || r.y < 0 || r.x + r.w > state.room.w || r.y + r.h > state.room.h;
     return !rectInRoom(r);
   }
   // 방의 벽(변) 목록: 안쪽을 향한 방향(n), 어느 쪽 벽인지(wall), 수평(h)·수직(v)·비스듬(s)
@@ -624,7 +660,8 @@
 
   // ---------- 검사 ----------
   function overlaps(a, b) {
-    return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    if (!a.rot && !b.rot) return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    return satOverlap(cornersOf(a), cornersOf(b));
   }
   function isOutside(it) {
     return outsideRoom(it);
@@ -743,19 +780,20 @@
       var r = { x: it.x, y: it.y, width: it.w, height: it.h, rx: 3, fill: fill, stroke: stroke, "stroke-width": sw };
       if (dash) r["stroke-dasharray"] = dash;
       if (it.type === "door") drawSwing(g, it, fs);
-      el("rect", r, g);
+      var gi = it.rot ? el("g", { transform: "rotate(" + it.rot + " " + (it.x + it.w / 2) + " " + (it.y + it.h / 2) + ")" }, g) : g;   // 기울인 가구는 가운데를 중심으로 돌려서 그림
+      el("rect", r, gi);
       if (!forExport && it.id === selectedId) {
         el("rect", { x: it.x - 4, y: it.y - 4, width: it.w + 8, height: it.h + 8, rx: 5, fill: "none",
-          stroke: COLORS.selected, "stroke-width": 1.5, "stroke-dasharray": "4 4" }, g);
+          stroke: COLORS.selected, "stroke-width": 1.5, "stroke-dasharray": "4 4" }, gi);
       }
       // 이름과 치수 (가구가 충분히 클 때만)
       if (it.type === "furniture") {
         var f = Math.max(8, Math.min(fs, it.w / 6, it.h / 3));
         var base = { "text-anchor": "middle", fill: "#2b2724", "font-family": FONT, "pointer-events": "none" };
-        var n1 = el("text", Object.assign({ x: it.x + it.w / 2, y: it.y + it.h / 2 - f * 0.1, "font-size": f, "font-weight": "600" }, base), g);
+        var n1 = el("text", Object.assign({ x: it.x + it.w / 2, y: it.y + it.h / 2 - f * 0.1, "font-size": f, "font-weight": "600" }, base), gi);
         n1.textContent = dispName(it);
         if (it.h >= f * 2.6) {
-          var n2 = el("text", Object.assign({ x: it.x + it.w / 2, y: it.y + it.h / 2 + f * 1.05, "font-size": f * 0.8, fill: "#6f675f" }, base), g);
+          var n2 = el("text", Object.assign({ x: it.x + it.w / 2, y: it.y + it.h / 2 + f * 1.05, "font-size": f * 0.8, fill: "#6f675f" }, base), gi);
           n2.textContent = it.w + "×" + it.h;
         }
       } else {
@@ -764,10 +802,10 @@
         lab.textContent = dispName(it);
       }
       if (!forExport) {                          // 모서리의 빨간 ✕ 버튼: 누르면 바로 지움 (저장하는 PNG 에는 안 그림)
-        var br = Math.max(8, fs * 0.6);
+        var br = Math.max(8, fs * 0.6), bp = it.rot ? cornersOf(it)[1] : [it.x + it.w, it.y];     // ✕ 는 (기울였다면 돌아간) 오른쪽 위 모서리에
         var bg = el("g", { "data-del": it.id, style: "cursor:pointer" }, g);
-        el("circle", { cx: it.x + it.w, cy: it.y, r: br, fill: "#C42A1E", stroke: "#fff", "stroke-width": 1.5 }, bg);
-        var bx = el("text", { x: it.x + it.w, y: it.y + br * 0.38, "text-anchor": "middle", "font-size": br * 1.1, fill: "#fff", "font-weight": "700", "font-family": FONT, "pointer-events": "none" }, bg);
+        el("circle", { cx: bp[0], cy: bp[1], r: br, fill: "#C42A1E", stroke: "#fff", "stroke-width": 1.5 }, bg);
+        var bx = el("text", { x: bp[0], y: bp[1] + br * 0.38, "text-anchor": "middle", "font-size": br * 1.1, fill: "#fff", "font-weight": "700", "font-family": FONT, "pointer-events": "none" }, bg);
         bx.textContent = "✕";
         el("title", {}, bg).textContent = t("p.remove", { name: dispName(it) });
       }
@@ -835,6 +873,9 @@
   // ---------- 방 모양 고르기 · 점 고치기 ----------
   var roomShape = document.getElementById("roomShape"), shapeTools = document.getElementById("shapeTools");
   var shapeEditBtn = document.getElementById("shapeEdit"), vtxDelBtn = document.getElementById("vtxDel"), edgeListEl = document.getElementById("edgeList"), edgeSig = "";
+  function reshapeHint() {                       // 모양을 바꾸면 가구는 제자리에 남으므로, 다시 맞추는 방법을 안내
+    if (state.items.some(function (it) { return it.type === "furniture"; })) setAutoMsg(["a.reshape"]);
+  }
   function applyShape(kind) {
     var W = state.room.w, H = state.room.h;
     selVtx = null;
@@ -843,14 +884,14 @@
       state.room.poly = SHAPES[kind].map(function (p) { return [Math.round(p[0] * W / 5) * 5, Math.round(p[1] * H / 5) * 5]; });
       state.room.shape = kind; shapeEdit = true;
     } else { return; }
-    normalizeRoom(); commit();
+    normalizeRoom(); commit(); reshapeHint();
   }
   roomShape.addEventListener("change", function () { applyShape(roomShape.value); });
   shapeEditBtn.addEventListener("click", function () { shapeEdit = !shapeEdit; selVtx = null; render(); });
   vtxDelBtn.addEventListener("click", function () {
     var P = state.room.poly;
     if (!P || selVtx === null || P.length <= 3) return;
-    P.splice(selVtx, 1); selVtx = null; state.room.shape = "custom"; normalizeRoom(); commit();
+    P.splice(selVtx, 1); selVtx = null; state.room.shape = "custom"; normalizeRoom(); commit(); reshapeHint();
   });
   function syncShapeUI() {                       // 화면의 모양 칸들을 지금 방에 맞춤
     var rect = isRectRoom();
@@ -870,7 +911,7 @@
         inp.addEventListener("change", function () {
           var L = num(inp.value, 10, e.len), P = state.room.poly, a = P[e.i], b = P[(e.i + 1) % P.length];
           b[0] = Math.round(a[0] + e.ux * L); b[1] = Math.round(a[1] + e.uy * L);     // 이 변의 끝점을 같은 방향으로 늘이거나 줄임
-          state.room.shape = "custom"; normalizeRoom(); commit();
+          state.room.shape = "custom"; normalizeRoom(); commit(); reshapeHint();
         });
         lab.appendChild(inp); edgeListEl.appendChild(lab);
       });
@@ -912,7 +953,7 @@
   }
 
   // ---------- 가구 추가 ----------
-  var KIND_COLORS = { bed: "#7CA7EB", side: "#CBB290", desk: "#FFD230", chair: "#F0E6DA", storage: "#FFA175", sofa: "#D2C7FF", table: "#FFC4A3", fridge: "#BFE0F5" };
+  var KIND_COLORS = { bed: "#7CA7EB", side: "#CBB290", desk: "#FFD230", chair: "#F0E6DA", storage: "#FFA175", sofa: "#D2C7FF", table: "#FFC4A3", fridge: "#BFE0F5", rug: "#C8A8FF" };
   function addItem(name, w, h, type, color, kind) {
     var it = { id: state.nextId++, name: name, w: snap(w), h: snap(h), type: type || "furniture" };
     if (it.type === "furniture") {
@@ -994,6 +1035,7 @@
   sW.addEventListener("change", onSize); sH.addEventListener("change", onSize);
   function rotate() {
     var it = byId(selectedId); if (!it) return;
+    if (it.rot) { it.rot = (it.rot + 90) % 180; if (it.rot > 90) it.rot -= 180; if (!it.rot) delete it.rot; commit(); return; }   // 기울인 가구: 각도만 90° 더함
     var cx = it.x + it.w / 2, cy = it.y + it.h / 2;
     var w = it.w; it.w = it.h; it.h = w;
     it.x = snap(cx - it.w / 2); it.y = snap(cy - it.h / 2);
@@ -1023,13 +1065,14 @@
   var autoSeed = 0, autoBackup = null;
   var autoPresses = 0;                           // 「자동 배치」를 누른 횟수 (누를 때마다 다른 배치를 내려고 셈)
   // 놓는 순서 (자취방에서 중요한 것부터): 침대 → 책상 → 옷장·서랍 → 냉장고 → 소파 → 기타 → 의자
-  var KIND_ORDER = { bed: 0, side: 0.5, desk: 1, storage: 2, fridge: 3, sofa: 4, table: 4.5, misc: 5, chair: 6 };   // side = 협탁(침대 옆), table = 거실 테이블(소파 앞)
+  var KIND_ORDER = { bed: 0, side: 0.5, desk: 1, storage: 2, fridge: 3, sofa: 4, table: 4.5, misc: 5, chair: 6, rug: 7 };   // side = 협탁(침대 옆), table = 거실 테이블(소파 앞)
 
   function kindOf(it) {                          // 고른 종류가 있으면 그것, 없으면 이름으로 짐작
     if (it.kind && KIND_ORDER.hasOwnProperty(it.kind)) return it.kind;
     var n = it.name || "";              // 한국어 외에 영어·일본어·중국어 이름도 알아봄
     if (/협탁|사이드\s*테이블|nightstand|bedside|ナイトテーブル|サイドテーブル|床头柜/i.test(n)) return "side";
     if (/거실\s*테이블|커피\s*테이블|coffee\s*table|センターテーブル|茶几/i.test(n)) return "table";
+    if (/러그|카펫|\brug\b|carpet|ラグ|カーペット|地毯/i.test(n)) return "rug";
     if (/침대|베드|bed|ベッド|床(?!头)/i.test(n)) return "bed";
     if (/책상|데스크|desk|테이블|식탁|table|dining|机|テーブル|桌/i.test(n)) return "desk";
     if (/의자|체어|chair|스툴|stool|椅|イス|スツール/i.test(n)) return "chair";
@@ -1046,7 +1089,8 @@
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
-  function area(a, b) {                          // 두 사각형이 겹치는 넓이
+  function area(a, b) {                          // 두 사각형이 겹치는 넓이 (기울인 것은 감싸는 네모로 어림)
+    a = aabbOf(a); b = aabbOf(b);
     var w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
     var h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
     return (w > 0 && h > 0) ? w * h : 0;
@@ -1111,11 +1155,14 @@
         } else if (e.axis === "v") {
           var ya = Math.min(e.y1, e.y2), yb = Math.max(e.y1, e.y2);
           for (p = ya; p <= yb - h + 0.001; p += AUTO.STEP) out.push({ x: e.wall === "left" ? e.x1 : e.x1 - w, y: p, w: w, h: h, wall: e.wall });
-        } else {
-          var cnt = Math.max(1, Math.round(e.len / (AUTO.STEP * 2)));
+        } else if (e.len >= w) {                  // 비스듬한 벽: 가구를 벽과 같은 각도로 기울여, 긴 변(w)을 벽에 딱 붙임
+          var ang = Math.atan2(e.uy, e.ux) * 180 / Math.PI;
+          if (ang > 90) ang -= 180; if (ang <= -90) ang += 180;
+          var cnt = Math.max(1, Math.floor((e.len - w) / (AUTO.STEP * 2)));
           for (var k = 0; k <= cnt; k++) {
-            var px = e.x1 + (e.x2 - e.x1) * k / cnt, py = e.y1 + (e.y2 - e.y1) * k / cnt;
-            out.push({ x: Math.round(e.n.x >= 0 ? px : px - w), y: Math.round(e.n.y >= 0 ? py : py - h), w: w, h: h, wall: e.wall, slanted: true });
+            var s = w / 2 + (e.len - w) * k / cnt, px = e.x1 + e.ux * s, py = e.y1 + e.uy * s;
+            var ccx = px + e.n.x * h / 2, ccy = py + e.n.y * h / 2;
+            out.push({ x: Math.round(ccx - w / 2), y: Math.round(ccy - h / 2), w: w, h: h, rot: Math.round(ang * 10) / 10, wall: e.wall, slanted: true, n: e.n });
           }
         }
       });
@@ -1123,6 +1170,11 @@
     return out;
   }
   function frontZone(c, depth) {                 // 가구 앞(방 안쪽) 공간
+    if (c.slanted) {                             // 기울인 가구: 앞쪽으로 depth 만큼 민 모양까지 감싸는 네모
+      var C = cornersOf(c), pts = C.concat(C.map(function (p) { return [p[0] + c.n.x * depth, p[1] + c.n.y * depth]; })), x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      pts.forEach(function (p) { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); });
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    }
     if (c.wall === "top") return { x: c.x, y: c.y + c.h, w: c.w, h: depth };
     if (c.wall === "bottom") return { x: c.x, y: c.y - depth, w: c.w, h: depth };
     if (c.wall === "left") return { x: c.x + c.w, y: c.y, w: depth, h: c.h };
@@ -1139,13 +1191,13 @@
     return Math.min(c.y, H - (c.y + c.h));
   }
   var LONG_SIDE_TO_WALL = { desk: true, storage: true, sofa: true };
-  var ANCHORED = { chair: true, side: true, table: true };   // 다른 가구(책상·침대·소파)를 먼저 놓은 뒤에 자리를 정하는 가구
-  function longSideOnWall(c) { return (c.wall === "top" || c.wall === "bottom") ? c.w >= c.h : c.h >= c.w; }
+  var ANCHORED = { chair: true, side: true, table: true, rug: true };   // 다른 가구(책상·침대·소파)를 먼저 놓은 뒤에 자리를 정하는 가구
+  function longSideOnWall(c) { if (c.slanted) return c.w >= c.h; return (c.wall === "top" || c.wall === "bottom") ? c.w >= c.h : c.h >= c.w; }
   function alongWall(c) { return (c.wall === "top" || c.wall === "bottom") ? [c.x, c.x + c.w] : [c.y, c.y + c.h]; }
 
   function scoreSpot(kind, c, ctx, rand) {       // 점수가 낮을수록 좋은 자리
     var s = 0, cx = c.x + c.w / 2, cy = c.y + c.h / 2;
-    var cornerWeight = { bed: 3, side: 0.3, storage: 2, fridge: 2, sofa: 1, table: 0.6, desk: 0.6, misc: 0.6, chair: 0.3 }[kind];
+    var cornerWeight = { bed: 3, side: 0.3, storage: 2, fridge: 2, sofa: 1, table: 0.6, desk: 0.6, misc: 0.6, chair: 0.3, rug: 0 }[kind];
     s += cornerDist(c) / 100 * cornerWeight;                 // 모서리 가까이
     ctx.doors.forEach(function (d) {
       var p = wallPoint(d), dist = Math.sqrt((cx - p.x) * (cx - p.x) + (cy - p.y) * (cy - p.y));
@@ -1191,11 +1243,26 @@
     for (var j = 0; j < placed.length; j++) if (overlaps(c, placed[j])) return true;
     return false;
   }
+  function rugSpot(it, ctx, blocks) {
+    var P = roomPoly(), mx = 0, my = 0, best = null, dims = [[it.w, it.h]];
+    P.forEach(function (p) { mx += p[0]; my += p[1]; }); mx /= P.length; my /= P.length;
+    if (it.w !== it.h) dims.push([it.h, it.w]);
+    dims.forEach(function (d) {
+      for (var x = 0; x <= state.room.w - d[0]; x += 10) for (var y = 0; y <= state.room.h - d[1]; y += 10) {
+        var c = { x: x, y: y, w: d[0], h: d[1], wall: "top" };
+        var dx = x + d[0] / 2 - mx, dy = y + d[1] / 2 - my, sc = dx * dx + dy * dy;
+        if (best && sc >= best.score) continue;
+        if (isBlocked(c, blocks, ctx.placed)) continue;
+        c.score = sc; best = c;
+      }
+    });
+    return best;
+  }
   // 앵커(책상·소파) 바로 앞에 놓는 자리. 의자 = 책상 앞(간격 0), 거실 테이블 = 소파 앞(간격 40cm)
   function frontSpot(it, ctx, blocks, anchorKind, gap) {
     var best = null;
     ctx.placed.forEach(function (d) {
-      if (d.kind !== anchorKind || best) return;
+      if (d.kind !== anchorKind || best || d.rot) return;                 // 기울인 가구 앞은 계산하지 않음 (벽 후보로 넘어감)
       var w = it.w, h = it.h, c;
       if (d.wall === "top") c = { x: d.x + d.w / 2 - w / 2, y: d.y + d.h + gap, w: w, h: h, wall: "top" };
       else if (d.wall === "bottom") c = { x: d.x + d.w / 2 - w / 2, y: d.y - h - gap, w: w, h: h, wall: "bottom" };
@@ -1212,6 +1279,18 @@
     ctx.placed.forEach(function (d) {
       if (d.kind !== "bed") return;
       var w = it.w, h = it.h, cands;
+      if (d.rot) {                               // 기울인 침대(비스듬한 벽): 같은 각도로, 침대의 양쪽 끝에 벽에 붙여 놓음
+        var ar = d.rot * Math.PI / 180, ux = Math.cos(ar), uy = Math.sin(ar), dcx = d.x + d.w / 2, dcy = d.y + d.h / 2;
+        [-1, 1].forEach(function (sg) {
+          var gap = d.w / 2 + w / 2 + 1.5;                  // 반올림 때문에 겹침으로 잘못 판정되지 않게 1.5cm 틈
+          var ccx = dcx + sg * ux * gap + d.n.x * (h - d.h) / 2, ccy = dcy + sg * uy * gap + d.n.y * (h - d.h) / 2;
+          var c = { x: Math.round(ccx - w / 2), y: Math.round(ccy - h / 2), w: w, h: h, rot: d.rot, wall: d.wall, slanted: true, n: d.n };
+          if (isBlocked(c, blocks, ctx.placed)) return;
+          var near = 0; ctx.doors.forEach(function (dr) { var p = wallPoint(dr); near += Math.sqrt((ccx - p.x) * (ccx - p.x) + (ccy - p.y) * (ccy - p.y)); });
+          c.score = -near; if (!best || c.score < best.score) best = c;
+        });
+        return;
+      }
       if (d.wall === "top" || d.wall === "bottom") {          // 침대와 같은 벽에, 침대의 벽쪽 끝에 맞춰
         var y = d.wall === "top" ? d.y : d.y + d.h - h;
         cands = [{ x: d.x - w, y: y, w: w, h: h, wall: d.wall }, { x: d.x + d.w, y: y, w: w, h: h, wall: d.wall }];
@@ -1256,6 +1335,7 @@
       if (kind === "chair") best = frontSpot(it, ctx, swing, "desk", 0);
       else if (kind === "table") best = frontSpot(it, ctx, swing, "sofa", 40);
       else if (kind === "side") best = sideSpot(it, ctx, swing);
+      else if (kind === "rug") best = rugSpot(it, ctx, swing);
       if (!best) {
         // 1차: 문 앞 통로까지 비우고 찾기 → 안 되면 2차: 문 열리는 자리만 비우고 찾기
         [corridor, swing].some(function (blocks, pass) {
@@ -1304,8 +1384,8 @@
     var W = state.room.w, yOff = 0;
     furn.forEach(function (it) {
       var c = r.result[it.id];
-      if (c) { it.x = c.x; it.y = c.y; it.w = c.w; it.h = c.h; }
-      else { it.x = W + 20; it.y = yOff; yOff += it.h + 10; }   // 자리가 없으면 방 밖 오른쪽에
+      if (c) { it.x = c.x; it.y = c.y; it.w = c.w; it.h = c.h; if (c.rot) it.rot = c.rot; else delete it.rot; }
+      else { it.x = W + 20; it.y = yOff; delete it.rot; yOff += it.h + 10; }   // 자리가 없으면 방 밖 오른쪽에
     });
     selectedId = null;
     commit();
@@ -1354,7 +1434,7 @@
     var addedIds = added.map(function (it) { return it.id; });
     lastFill = added.length ? { room: state.roomType, items: added } : null;
     autoBackup = { pos: state.items.filter(function (it) { return addedIds.indexOf(it.id) < 0; })
-                     .map(function (it) { return { id: it.id, x: it.x, y: it.y, w: it.w, h: it.h }; }), added: addedIds };
+                     .map(function (it) { return { id: it.id, x: it.x, y: it.y, w: it.w, h: it.h, rot: it.rot }; }), added: addedIds };
     var first = autoPresses++ === 0 || added.length > 0;    // 처음(또는 필수 가구를 막 채운 때)은 가장 무난한 기본 배치, 그다음부터는 누를 때마다 새 배치
     autoSeed = first ? 0 : autoSeed + 1;
     applyLayout(autoSeed);
@@ -1362,7 +1442,7 @@
   altBtn.addEventListener("click", function () { lastFill = null; autoSeed++; applyLayout(autoSeed); });
   undoAuto.addEventListener("click", function () {
     if (!autoBackup) return;
-    autoBackup.pos.forEach(function (b) { var it = byId(b.id); if (it) { it.x = b.x; it.y = b.y; it.w = b.w; it.h = b.h; } });
+    autoBackup.pos.forEach(function (b) { var it = byId(b.id); if (it) { it.x = b.x; it.y = b.y; it.w = b.w; it.h = b.h; if (b.rot) it.rot = b.rot; else delete it.rot; } });
     state.items = state.items.filter(function (it) { return autoBackup.added.indexOf(it.id) < 0; });   // 자동으로 넣은 필수 가구는 지움
     autoBackup = null; undoAuto.hidden = true;
     selectedId = null; commit();
@@ -1721,7 +1801,7 @@
     if (!drag || (evt && evt.pointerId !== drag.pid)) return;
     var moved = drag.moved, wasVtx = drag.vtx !== undefined;
     drag = null;
-    if (wasVtx) { if (moved) { state.room.shape = "custom"; normalizeRoom(); } commit(); return; }
+    if (wasVtx) { if (moved) { state.room.shape = "custom"; normalizeRoom(); } commit(); if (moved) reshapeHint(); return; }
     if (moved) commit();
   }
   svg.addEventListener("pointerup", endDrag);

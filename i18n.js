@@ -669,6 +669,8 @@
   K("l.shapeHint", "고치기를 켜면 도면에 하얀 점이 나와요. 점을 끌어 모양을 바꾸고, 검은 + 를 누르면 점이 늘어요.", "With editing on, white points appear on the plan. Drag a point to reshape the room; press a black + to add a point.", "編集をオンにすると、図面に白い点が出ます。点をドラッグして形を変え、黒い + を押すと点が増えます。", "开启编辑后，图上会出现白点。拖动白点改变形状，点击黑色 + 可增加点。");
   K("l.edge", "변 {n} (cm)", "Side {n} (cm)", "辺{n} (cm)", "边 {n} (cm)");
 
+  K("a.reshape", "방 모양이 바뀌었어요. 가구를 새 벽에 다시 맞추려면 「✦ 자동 배치」를 눌러 보세요.", "The room shape changed. Press “✦ Auto layout” to fit the furniture to the new walls.", "部屋の形が変わりました。家具を新しい壁に合わせ直すには「✦ 自動配置」を押してください。", "房间形状已改变。点击「✦ 自动布置」可让家具重新贴合新的墙面。");
+
   /* ===================== 동작 ===================== */
   function valid(l) { for (var i = 0; i < LANGS.length; i++) if (LANGS[i][0] === l) return true; return false; }
   function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
