@@ -214,3 +214,18 @@ test("cleanResult: 이상한 입력에도 죽지 않음", () => {
   assert.deepEqual(cleanResult({ items: "x" }), { items: [], notes: "" });
   assert.equal(cleanResult({ items: Array(20).fill({ name: "a", kind: "bed" }) }).items.length, 8);
 });
+
+test("lang 을 보내면 AI에게 그 언어로 이름·근거를 쓰라고 하고, 모르는 값이면 한국어", async () => {
+  const askWith = async (lang, ip) => {
+    const client = fakeClient(empty());
+    await call(createHandler({ client }), goodBody(lang === undefined ? {} : { lang }), { ip });
+    return client.calls[0].instructions;
+  };
+  assert.match(await askWith("en", "8.0.0.1"), /short English name/);
+  assert.match(await askWith("ja", "8.0.0.2"), /short Japanese name/);
+  assert.match(await askWith("zh", "8.0.0.3"), /short Simplified Chinese name/);
+  assert.match(await askWith("ko", "8.0.0.4"), /short Korean name/);
+  assert.match(await askWith(undefined, "8.0.0.5"), /short Korean name/);
+  assert.match(await askWith("__proto__", "8.0.0.6"), /short Korean name/);   // 엉뚱한 값은 한국어로
+  assert.ok(!(await askWith("en", "8.0.0.7")).includes("{LANG}"), "자리표시({LANG})가 남으면 안 됨");
+});

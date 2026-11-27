@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>방 만들기</title>
-<meta name="description" content="이사 전에 가구 배치와 방 분위기를 미리 보고, 사기 전에 방에 들어가는지 확인하세요.">
+<title data-i18n="brand">방 만들기</title>
+<meta name="description" content="이사 전에 가구 배치와 방 분위기를 미리 보고, 사기 전에 방에 들어가는지 확인하세요." data-i18n-attr="content:meta.index">
 <link rel="stylesheet" href="공통.css">
 <style>
   section { scroll-margin-top: 80px; }
@@ -94,25 +94,25 @@
 </head>
 <body>
 <header class="top">
-  <a href="index.html" class="logo">방 만들기</a>
+  <a href="index.html" class="logo" data-i18n="brand">방 만들기</a>
   <div class="top-right">
     <nav>
-      <a href="배치.html">배치</a>
-      <a href="렌더신청.html">AI 렌더</a>
+      <a href="배치.html" data-i18n="nav.place">배치</a>
+      <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
     </nav>
-    <a href="배치.html" class="btn primary top-cta">무료로 배치하기</a>
+    <a href="배치.html" class="btn primary top-cta" data-i18n="cta.place">무료로 배치하기</a>
   </div>
 </header>
 
 <main>
   <!-- 1. 첫 화면 -->
   <section class="wrap hero">
-    <span class="label">이사 전 가구 배치 미리보기</span>
-    <h1><span class="u wave">침대</span> 놓고 <span class="u dash">책상</span>까지<br>놓을 <span class="u wave">자리</span>가 있을까?</h1>
-    <p class="lead">이사 전에 가구 배치를 직접 해 보고, 사기 전에 방에 들어가는지 확인하세요. 완성된 분위기는 AI 렌더로 미리 볼 수 있어요.</p>
+    <span class="label" data-i18n="hero.label">이사 전 가구 배치 미리보기</span>
+    <h1 data-i18n-html="hero.h1"><span class="u wave">침대</span> 놓고 <span class="u dash">책상</span>까지<br>놓을 <span class="u wave">자리</span>가 있을까?</h1>
+    <p class="lead" data-i18n="hero.lead">이사 전에 가구 배치를 직접 해 보고, 사기 전에 방에 들어가는지 확인하세요. 완성된 분위기는 AI 렌더로 미리 볼 수 있어요.</p>
     <div class="cta">
-      <a href="배치.html" class="btn primary">무료로 배치 시작하기</a>
-      <a href="렌더신청.html" class="btn">AI 렌더 알아보기</a>
+      <a href="배치.html" class="btn primary" data-i18n="hero.cta1">무료로 배치 시작하기</a>
+      <a href="렌더신청.html" class="btn" data-i18n="hero.cta2">AI 렌더 알아보기</a>
     </div>
     <p id="pilot" hidden></p>
   </section>
@@ -121,24 +121,24 @@
   <section class="block">
     <div class="wrap case">
       <div>
-        <span class="label">방 만들기는</span>
-        <h2>방 크기를 넣고,<br>가구를 끌어다 놓아 보세요</h2>
-        <p class="intro">이사 전에 가구가 들어가는지 먼저 놓아 볼 수 있는 배치 도구예요. 횟수 제한 없이 무료이고, 회원가입 없이 바로 쓸 수 있어요.</p>
+        <span class="label" data-i18n="case.label">방 만들기는</span>
+        <h2 data-i18n-html="case.h2">방 크기를 넣고,<br>가구를 끌어다 놓아 보세요</h2>
+        <p class="intro" data-i18n="case.intro">이사 전에 가구가 들어가는지 먼저 놓아 볼 수 있는 배치 도구예요. 횟수 제한 없이 무료이고, 회원가입 없이 바로 쓸 수 있어요.</p>
         <ol class="mini-steps">
           <li>
             <span class="num">01</span>
-            <div><b>방 크기 입력 <span class="pill">무료</span></b><p>가로·세로 길이(cm)만 넣으면 방이 그려져요. 면적과 평수도 바로 보여요.</p></div>
+            <div><b><span data-i18n="case.s1.t">방 크기 입력</span> <span class="pill" data-i18n="case.s1.pill">무료</span></b><p data-i18n="case.s1.d">가로·세로 길이(cm)만 넣으면 방이 그려져요. 면적과 평수도 바로 보여요.</p></div>
           </li>
           <li>
             <span class="num">02</span>
-            <div><b>가구 배치 <span class="pill">무제한</span></b><p>가구를 끌어다 놓아 보세요. 겹치거나 방 밖으로 나가면 색으로 알려 드려요.</p></div>
+            <div><b><span data-i18n="case.s2.t">가구 배치</span> <span class="pill" data-i18n="case.s2.pill">무제한</span></b><p data-i18n="case.s2.d">가구를 끌어다 놓아 보세요. 겹치거나 방 밖으로 나가면 색으로 알려 드려요.</p></div>
           </li>
         </ol>
-        <a href="배치.html" class="btn primary">무료로 배치 시작하기</a>
+        <a href="배치.html" class="btn primary" data-i18n="hero.cta1">무료로 배치 시작하기</a>
       </div>
       <!-- 좌표 단위는 cm (방 300×400) -->
       <figure class="sample">
-        <svg viewBox="-30 -40 375 470" role="img" aria-label="300×400cm 방에 책상, 의자, 침대, 옷장을 놓은 배치도 예시">
+        <svg viewBox="-30 -40 375 470" role="img" aria-label="300×400cm 방에 책상, 의자, 침대, 옷장을 놓은 배치도 예시" data-i18n-attr="aria-label:case.svg">
           <g font-family="Pretendard Variable, Pretendard, Malgun Gothic, sans-serif" text-anchor="middle">
             <g stroke="#9A9AA4" stroke-width="1.5">
               <line x1="0" y1="-22" x2="300" y2="-22"/><line x1="0" y1="-28" x2="0" y2="-16"/><line x1="300" y1="-28" x2="300" y2="-16"/>
@@ -156,29 +156,29 @@
             <rect x="20" y="-4.5" width="120" height="9" fill="#FFFFFF" stroke="#0B0B14" stroke-width="1.5"/>
             <line x1="20" y1="0" x2="140" y2="0" stroke="#0B0B14" stroke-width="1.5"/>
             <rect x="20" y="10" width="120" height="60" rx="6" fill="#F7D26A" stroke="#0B0B14" stroke-width="1.5"/>
-            <text x="80" y="38" font-size="13" font-weight="700" fill="#0B0B14">책상</text>
+            <text x="80" y="38" font-size="13" font-weight="700" fill="#0B0B14" data-i18n="sv.desk">책상</text>
             <text x="80" y="54" font-size="11" fill="#55555E">120×60</text>
             <circle cx="80" cy="95" r="17" fill="#D9D4CA" stroke="#0B0B14" stroke-width="1.5"/>
             <rect x="190" y="10" width="100" height="200" rx="8" fill="#C7CFAE" stroke="#0B0B14" stroke-width="1.5"/>
             <rect x="198" y="20" width="38" height="22" rx="6" fill="#FFFFFF" stroke="#0B0B14" stroke-width="1"/>
             <rect x="244" y="20" width="38" height="22" rx="6" fill="#FFFFFF" stroke="#0B0B14" stroke-width="1"/>
             <line x1="190" y1="52" x2="290" y2="52" stroke="#0B0B14" stroke-width="1"/>
-            <text x="240" y="128" font-size="13" font-weight="700" fill="#0B0B14">침대</text>
+            <text x="240" y="128" font-size="13" font-weight="700" fill="#0B0B14" data-i18n="sv.bed">침대</text>
             <text x="240" y="144" font-size="11" fill="#55555E">100×200</text>
             <rect x="5" y="230" width="60" height="100" rx="6" fill="#F4B49A" stroke="#0B0B14" stroke-width="1.5"/>
-            <text x="35" y="278" font-size="13" font-weight="700" fill="#0B0B14">옷장</text>
+            <text x="35" y="278" font-size="13" font-weight="700" fill="#0B0B14" data-i18n="sv.wardrobe">옷장</text>
             <text x="35" y="294" font-size="11" fill="#55555E">100×60</text>
-            <text x="252" y="370" font-size="11" font-weight="600" fill="#0B0B14">문 열리는</text>
-            <text x="252" y="384" font-size="11" font-weight="600" fill="#0B0B14">자리</text>
-            <text x="245" y="422" font-size="11" fill="#6E6E78">문 90 cm</text>
+            <text x="252" y="370" font-size="11" font-weight="600" fill="#0B0B14" data-i18n="sv.door1">문 열리는</text>
+            <text x="252" y="384" font-size="11" font-weight="600" fill="#0B0B14" data-i18n="sv.door2">자리</text>
+            <text x="245" y="422" font-size="11" fill="#6E6E78" data-i18n="sv.door">문 90 cm</text>
           </g>
         </svg>
         <div class="legend">
-          <span><i style="background:#C7CFAE;border:1px solid #0B0B14"></i>가구</span>
-          <span><i style="background:#fff;border:1px solid #0B0B14"></i>창문</span>
-          <span><i style="background:rgba(11,11,20,0.06);border:1px dashed #0B0B14"></i>문이 열리는 자리</span>
+          <span><i style="background:#C7CFAE;border:1px solid #0B0B14"></i><span data-i18n="case.lg1">가구</span></span>
+          <span><i style="background:#fff;border:1px solid #0B0B14"></i><span data-i18n="case.lg2">창문</span></span>
+          <span><i style="background:rgba(11,11,20,0.06);border:1px dashed #0B0B14"></i><span data-i18n="case.lg3">문이 열리는 자리</span></span>
         </div>
-        <figcaption>예시: 300×400cm 방 · 격자 1칸 = 50cm · 가구 크기는 흔한 예시 규격</figcaption>
+        <figcaption data-i18n="case.cap">예시: 300×400cm 방 · 격자 1칸 = 50cm · 가구 크기는 흔한 예시 규격</figcaption>
       </figure>
     </div>
   </section>
@@ -187,10 +187,10 @@
   <section class="block" style="padding-top:0;padding-bottom:0">
     <div class="wrap">
       <div class="service">
-        <div><span class="num">03</span><h3>AI 렌더</h3></div>
+        <div><span class="num">03</span><h3 data-i18n="nav.render">AI 렌더</h3></div>
         <div>
-          <p>배치한 도면으로 AI가 완성된 방의 분위기 이미지를 바로 만들어 줘요. 방 사진을 올리면 그 방의 느낌도 반영해요. 처음 2회는 무료예요. 렌더 이미지는 AI가 그린 참고용 시안이라 실제 제품의 색·질감과 다를 수 있어요.</p>
-          <a href="렌더신청.html" class="btn">렌더 알아보기</a>
+          <p data-i18n="ai.p">배치한 도면으로 AI가 완성된 방의 분위기 이미지를 바로 만들어 줘요. 방 사진을 올리면 그 방의 느낌도 반영해요. 처음 2회는 무료예요. 렌더 이미지는 AI가 그린 참고용 시안이라 실제 제품의 색·질감과 다를 수 있어요.</p>
+          <a href="렌더신청.html" class="btn" data-i18n="ai.btn">렌더 알아보기</a>
         </div>
       </div>
     </div>
@@ -200,21 +200,21 @@
   <section class="block">
     <div class="wrap needs">
       <div>
-        <h2>이사를 앞둔 분들은<br>이렇게 느낀다고 생각해요</h2>
-        <span class="tag">가정 · 인터뷰로 확인하기 전</span>
+        <h2 data-i18n-html="needs.h2">이사를 앞둔 분들은<br>이렇게 느낀다고 생각해요</h2>
+        <span class="tag" data-i18n="needs.tag">가정 · 인터뷰로 확인하기 전</span>
       </div>
       <ul>
         <li>
           <svg viewBox="0 0 36 36" fill="none" stroke="#0B0B14" stroke-width="1.6" aria-hidden="true"><rect x="4" y="8" width="28" height="20" rx="3"/><path d="M4 18h28M14 8v10"/></svg>
-          <p>가구를 어디에 둘지, 들어갈지 감이 안 와요.<small>고객의 말 (가정)</small></p>
+          <p><span data-i18n="needs.1">가구를 어디에 둘지, 들어갈지 감이 안 와요.</span><small data-i18n="needs.who">고객의 말 (가정)</small></p>
         </li>
         <li>
           <svg viewBox="0 0 36 36" fill="none" stroke="#0B0B14" stroke-width="1.6" aria-hidden="true"><rect x="3" y="13" width="30" height="10" rx="2"/><path d="M9 13v5M15 13v3M21 13v5M27 13v3"/></svg>
-          <p>치수 재는 게 번거로워요.<small>고객의 말 (가정)</small></p>
+          <p><span data-i18n="needs.2">치수 재는 게 번거로워요.</span><small data-i18n="needs.who">고객의 말 (가정)</small></p>
         </li>
         <li>
           <svg viewBox="0 0 36 36" fill="none" stroke="#0B0B14" stroke-width="1.6" aria-hidden="true"><rect x="4" y="6" width="28" height="22" rx="3"/><circle cx="13" cy="14" r="2.5"/><path d="M32 23l-8-7-14 12"/></svg>
-          <p>완성된 분위기가 상상이 안 돼서, 사고 나서 후회할까 봐 걱정돼요.<small>고객의 말 (가정)</small></p>
+          <p><span data-i18n="needs.3">완성된 분위기가 상상이 안 돼서, 사고 나서 후회할까 봐 걱정돼요.</span><small data-i18n="needs.who">고객의 말 (가정)</small></p>
         </li>
       </ul>
     </div>
@@ -223,12 +223,12 @@
   <!-- 6. 검정 구역 -->
   <section class="dark">
     <div class="wrap inner">
-      <span class="label">무료 시범 운영 중</span>
-      <h2>곧 이사하시나요?<br>먼저 놓아 보고 결정하세요.</h2>
-      <p>배치는 무료로 바로 해 볼 수 있어요. 완성된 분위기가 궁금하면 AI 렌더로 바로 만들어 보세요. 처음 2회는 무료예요.</p>
+      <span class="label" data-i18n="dark.label">무료 시범 운영 중</span>
+      <h2 data-i18n-html="dark.h2">곧 이사하시나요?<br>먼저 놓아 보고 결정하세요.</h2>
+      <p data-i18n="dark.p">배치는 무료로 바로 해 볼 수 있어요. 완성된 분위기가 궁금하면 AI 렌더로 바로 만들어 보세요. 처음 2회는 무료예요.</p>
       <div class="cta">
-        <a href="배치.html" class="btn light">무료로 배치 시작하기</a>
-        <a href="배치.html" class="btn">AI 렌더 만들어 보기</a>
+        <a href="배치.html" class="btn light" data-i18n="hero.cta1">무료로 배치 시작하기</a>
+        <a href="배치.html" class="btn" data-i18n="dark.btn2">AI 렌더 만들어 보기</a>
       </div>
     </div>
     <!-- 가구 모양 흰 도형: 침대 · 의자 · 옷장 · 소파 -->
@@ -248,43 +248,53 @@
   <section class="block" style="border-top:0">
     <div class="wrap split">
       <div>
-        <span class="label">자주 묻는 질문</span>
-        <p class="big" style="margin-bottom:0">궁금한 점을<br>모아 봤어요</p>
+        <span class="label" data-i18n="faq.label">자주 묻는 질문</span>
+        <p class="big" style="margin-bottom:0" data-i18n-html="faq.big">궁금한 점을<br>모아 봤어요</p>
       </div>
       <div class="faq-list">
         <details>
-          <summary>배치는 정말 무료인가요?</summary>
-          <p>네. 가구 배치는 횟수 제한 없이 무료로 쓸 수 있어요.</p>
+          <summary data-i18n="faq.q1">배치는 정말 무료인가요?</summary>
+          <p data-i18n="faq.a1">네. 가구 배치는 횟수 제한 없이 무료로 쓸 수 있어요.</p>
         </details>
         <details>
-          <summary>AI 렌더는 얼마인가요?</summary>
-          <p id="faqPrice">AI 렌더 페이지에서 확인할 수 있어요.</p>
+          <summary data-i18n="faq.q2">AI 렌더는 얼마인가요?</summary>
+          <p id="faqPrice" data-i18n="faq.a2">AI 렌더 페이지에서 확인할 수 있어요.</p>
         </details>
         <details>
-          <summary>가구 치수는 정확한가요?</summary>
-          <p>기본 가구 치수는 흔한 예시 값이에요. 사려는 제품의 실제 치수로 고쳐서 확인해 주세요.</p>
+          <summary data-i18n="faq.q3">가구 치수는 정확한가요?</summary>
+          <p data-i18n="faq.a3">기본 가구 치수는 흔한 예시 값이에요. 사려는 제품의 실제 치수로 고쳐서 확인해 주세요.</p>
         </details>
         <details>
-          <summary>회원가입이 필요한가요?</summary>
-          <p>배치는 가입 없이 바로 쓸 수 있어요. 작업 내용은 지금 쓰는 기기의 브라우저에 저장돼요.</p>
+          <summary data-i18n="faq.q4">회원가입이 필요한가요?</summary>
+          <p data-i18n="faq.a4">배치는 가입 없이 바로 쓸 수 있어요. 작업 내용은 지금 쓰는 기기의 브라우저에 저장돼요.</p>
         </details>
       </div>
     </div>
   </section>
 </main>
 
-<footer class="footer"><span>방 만들기</span><span>시범 운영 중</span></footer>
+<footer class="footer"><span data-i18n="brand">방 만들기</span><span data-i18n="footer.pilot">시범 운영 중</span></footer>
 
 <script src="설정.js"></script>
+<script src="i18n.js"></script>
 <script>
   (function () {
     var CFG = window.ROOM_CONFIG || {};
     var pilot = document.getElementById("pilot");
-    if (CFG.pilotNotice) { pilot.textContent = CFG.pilotNotice; pilot.hidden = false; }
     var free = document.getElementById("faqPrice");
-    if (typeof CFG.freeRenders === "number" && CFG.freeRenders > 0) {
-      free.textContent = "처음 " + CFG.freeRenders + "회는 무료이고, 그다음부터 유료예요. 가격은 AI 렌더 페이지에서 확인할 수 있어요.";
+
+    // 한국어일 때는 설정.js 의 안내 문구를 그대로, 다른 언어일 때는 번역 사전의 문구를 보여 줌
+    function fill() {
+      if (CFG.pilotNotice) {
+        if (I18N.lang === "ko") pilot.textContent = CFG.pilotNotice; else pilot.textContent = I18N.t("pilot");
+        pilot.hidden = false;
+      }
+      // 무료 횟수가 있으면 '처음 N회는 무료…' 문구, 없으면 기본 문구
+      free.setAttribute("data-i18n", (typeof CFG.freeRenders === "number" && CFG.freeRenders > 0) ? "faq.a2free" : "faq.a2");
+      free.textContent = I18N.t(free.getAttribute("data-i18n"));
     }
+    fill();
+    I18N.onChange(fill);
   })();
 </script>
 </body>

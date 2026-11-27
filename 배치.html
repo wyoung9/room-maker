@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>방 만들기 · 배치</title>
+<title data-i18n="title.layout">방 만들기 · 배치</title>
 <link rel="stylesheet" href="공통.css">
 <style>
   /* 넓은 화면: [방 크기 + 가구 추가 | 도면] 두 칸, 그 아래에 나머지를 가로로 길게 */
@@ -53,7 +53,7 @@
   .autobar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 2px 4px 12px; }
   .autobar .hint { flex-basis: 100%; margin: 2px 0 0; font-size: 13px; }
   .autobar .hint.warn { color: var(--warn); }
-  .impbtn { width: 100%; margin: 4px 0 8px; }
+  .impbtn { width: 100%; margin: 4px 0 8px; height: auto; padding-top: 8px; padding-bottom: 8px; line-height: 1.35; text-align: center; }
 
   /* 가구 불러오기 창 */
   .imp-dlg { border: 1px solid var(--line); border-radius: 20px; padding: 20px; color: var(--text);
@@ -145,13 +145,13 @@
 </head>
 <body>
 <header class="top">
-  <a href="index.html" class="logo">방 만들기</a>
+  <a href="index.html" class="logo" data-i18n="brand">방 만들기</a>
   <div class="top-right">
     <nav>
-      <a href="배치.html" aria-current="page">배치</a>
-      <a href="렌더신청.html">AI 렌더</a>
+      <a href="배치.html" aria-current="page" data-i18n="nav.place">배치</a>
+      <a href="렌더신청.html" data-i18n="nav.render">AI 렌더</a>
     </nav>
-    <a href="렌더신청.html" class="btn primary top-cta">AI 렌더</a>
+    <a href="렌더신청.html" class="btn primary top-cta" data-i18n="nav.render">AI 렌더</a>
   </div>
 </header>
 
@@ -160,26 +160,26 @@
   <!-- 왼쪽 칸: 위에 방 크기, 아래에 가구 추가 -->
   <div class="side">
     <section>
-      <h2>1. 방 크기</h2>
+      <h2 data-i18n="l.s1">1. 방 크기</h2>
       <div class="row">
-        <label>가로 (cm)<input id="roomW" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
-        <label>세로 (cm)<input id="roomH" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
+        <label><span data-i18n="l.w">가로 (cm)</span><input id="roomW" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
+        <label><span data-i18n="l.h">세로 (cm)</span><input id="roomH" type="number" min="100" max="3000" step="5" inputmode="numeric"></label>
       </div>
       <p id="areaInfo" class="info"></p>
     </section>
 
     <section class="addcol">
-      <h2>2. 가구 추가</h2>
-      <button id="impOpen" class="btn small impbtn" type="button">📎 사진·링크로 가구 불러오기</button>
-      <p class="hint">누르면 방 가운데에 놓여요. (치수는 예시 값)</p>
+      <h2 data-i18n="l.s2">2. 가구 추가</h2>
+      <button id="impOpen" class="btn small impbtn" type="button" data-i18n="l.import">📎 사진·링크로 가구 불러오기</button>
+      <p class="hint" data-i18n="l.addhint">누르면 방 가운데에 놓여요. (치수는 예시 값)</p>
       <div id="presetList"></div>
       <details>
-        <summary>직접 입력하기</summary>
+        <summary data-i18n="l.manual">직접 입력하기</summary>
         <div class="custom">
-          <label class="full">이름<input id="cName" type="text" maxlength="20" placeholder="예: 서랍장"></label>
-          <label>가로 (cm)<input id="cW" type="number" min="5" step="5" value="80" inputmode="numeric"></label>
-          <label>세로 (cm)<input id="cH" type="number" min="5" step="5" value="40" inputmode="numeric"></label>
-          <button id="cAdd" class="btn small full" type="button">추가</button>
+          <label class="full"><span data-i18n="l.name">이름</span><input id="cName" type="text" maxlength="20" placeholder="예: 서랍장" data-i18n-attr="placeholder:l.nameph"></label>
+          <label><span data-i18n="l.w">가로 (cm)</span><input id="cW" type="number" min="5" step="5" value="80" inputmode="numeric"></label>
+          <label><span data-i18n="l.h">세로 (cm)</span><input id="cH" type="number" min="5" step="5" value="40" inputmode="numeric"></label>
+          <button id="cAdd" class="btn small full" type="button" data-i18n="l.add">추가</button>
         </div>
       </details>
     </section>
@@ -189,43 +189,43 @@
   <section class="stage">
     <!-- 자동 배치: 넣은 가구를 규칙에 따라 알아서 놓아 줌 (AI 없이 브라우저 안에서 계산) -->
     <div class="autobar">
-      <button id="autoBtn" class="btn primary small" type="button">✦ 자동 배치</button>
-      <button id="altBtn" class="btn small" type="button" disabled>다른 배치 보기</button>
-      <button id="undoAuto" class="btn ghost small" type="button" hidden>↺ 자동 배치 전으로</button>
+      <button id="autoBtn" class="btn primary small" type="button" data-i18n="a.auto">✦ 자동 배치</button>
+      <button id="altBtn" class="btn small" type="button" disabled data-i18n="a.alt">다른 배치 보기</button>
+      <button id="undoAuto" class="btn ghost small" type="button" hidden data-i18n="a.undo">↺ 자동 배치 전으로</button>
       <p id="autoMsg" class="hint" aria-live="polite">가구를 넣고 누르면 벽에 붙이고, 문 앞과 통로는 비워서 알아서 놓아 줘요.</p>
     </div>
     <!-- 표시 설명: 도면 바로 위 -->
     <div class="legend">
-      <span class="item"><span class="key" style="border:2px solid #C42A1E"></span>빨간 테두리: 다른 가구와 겹침</span>
-      <span class="item"><span class="key" style="border:2px dashed #e08600"></span>주황 점선: 방 밖으로 나감</span>
-      <span class="item note">문이 열리는 자리와 지나다닐 통로는 직접 확인해 주세요.</span>
+      <span class="item"><span class="key" style="border:2px solid #C42A1E"></span><span data-i18n="a.lg1">빨간 테두리: 다른 가구와 겹침</span></span>
+      <span class="item"><span class="key" style="border:2px dashed #e08600"></span><span data-i18n="a.lg2">주황 점선: 방 밖으로 나감</span></span>
+      <span class="item note" data-i18n="a.lg3">문이 열리는 자리와 지나다닐 통로는 직접 확인해 주세요.</span>
     </div>
-    <svg id="plan" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="방 배치도"></svg>
-    <p class="hint">가구를 끌어서 옮기세요(5cm 단위). 누르면 선택돼요. 컴퓨터에서는 방향키로 5cm씩, Delete 키로 삭제할 수 있어요.</p>
+    <svg id="plan" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="방 배치도" data-i18n-attr="aria-label:a.svg"></svg>
+    <p class="hint" data-i18n="a.drag">가구를 끌어서 옮기세요(5cm 단위). 누르면 선택돼요. 컴퓨터에서는 방향키로 5cm씩, Delete 키로 삭제할 수 있어요.</p>
   </section>
   </div>
 
   <!-- 아래 줄: 선택한 가구 · 저장 · 표시 설명 -->
   <aside class="panel">
     <section id="selPanel" hidden>
-      <h2>선택한 가구</h2>
-      <label>이름<input id="sName" type="text" maxlength="20"></label>
+      <h2 data-i18n="p.sel">선택한 가구</h2>
+      <label><span data-i18n="l.name">이름</span><input id="sName" type="text" maxlength="20"></label>
       <div class="row" style="margin-top:8px">
-        <label>가로 (cm)<input id="sW" type="number" min="5" step="5" inputmode="numeric"></label>
-        <label>세로 (cm)<input id="sH" type="number" min="5" step="5" inputmode="numeric"></label>
+        <label><span data-i18n="l.w">가로 (cm)</span><input id="sW" type="number" min="5" step="5" inputmode="numeric"></label>
+        <label><span data-i18n="l.h">세로 (cm)</span><input id="sH" type="number" min="5" step="5" inputmode="numeric"></label>
       </div>
       <div class="btnrow">
-        <button id="sRot" class="btn small" type="button">↻ 90° 회전</button>
-        <button id="sDel" class="btn small danger" type="button">삭제</button>
+        <button id="sRot" class="btn small" type="button" data-i18n="p.rot">↻ 90° 회전</button>
+        <button id="sDel" class="btn small danger" type="button" data-i18n="p.del">삭제</button>
       </div>
     </section>
 
     <section class="actions">
-      <h2>3. 저장하고 AI 렌더</h2>
-      <button id="rdOpen" class="btn primary" type="button">✦ AI 렌더 만들기</button>
-      <button id="savePng" class="btn" type="button">배치 그림 저장 (PNG)</button>
-      <button id="clearAll" class="btn ghost small" type="button">가구 모두 지우기</button>
-      <p class="hint" style="margin:0">작업 내용은 이 기기의 브라우저에 자동 저장돼요.</p>
+      <h2 data-i18n="p.s3">3. 저장하고 AI 렌더</h2>
+      <button id="rdOpen" class="btn primary" type="button" data-i18n="p.render">✦ AI 렌더 만들기</button>
+      <button id="savePng" class="btn" type="button" data-i18n="p.png">배치 그림 저장 (PNG)</button>
+      <button id="clearAll" class="btn ghost small" type="button" data-i18n="p.clear">가구 모두 지우기</button>
+      <p class="hint" style="margin:0" data-i18n="p.saved">작업 내용은 이 기기의 브라우저에 자동 저장돼요.</p>
     </section>
 
   </aside>
@@ -234,97 +234,102 @@
 <!-- 가구 불러오기: 사진·링크를 붙이고, 한 줄에 가구 하나씩 이름·종류·치수를 확인하는 표 -->
 <dialog id="importDlg" class="imp-dlg" aria-labelledby="impTitle">
   <div class="imp-head">
-    <h2 id="impTitle">사진·링크로 가구 불러오기</h2>
-    <button id="impClose" class="btn ghost small" type="button" aria-label="닫기">✕ 닫기</button>
+    <h2 id="impTitle" data-i18n="i.title">사진·링크로 가구 불러오기</h2>
+    <button id="impClose" class="btn ghost small" type="button" aria-label="닫기" data-i18n="i.close" data-i18n-attr="aria-label:i.closeAria">✕ 닫기</button>
   </div>
-  <p class="notice">사진을 올리고 <b>「✦ AI로 읽기」</b>를 누르면 AI가 사진에 적힌 치수를 읽어서 아래 표를 채워 줘요. <b>AI가 틀릴 수 있으니 사진과 비교해서 꼭 확인해 주세요.</b> 「AI로 읽기」를 누른 사진만 서버를 거쳐 OpenAI(AI 회사)로 보내지고, 이 서버에는 저장하지 않아요. 링크는 아직 AI가 읽지 못해서 직접 적어 주세요.</p>
+  <p class="notice" data-i18n-html="i.notice">사진을 올리고 <b>「✦ AI로 읽기」</b>를 누르면 AI가 사진에 적힌 치수를 읽어서 아래 표를 채워 줘요. <b>AI가 틀릴 수 있으니 사진과 비교해서 꼭 확인해 주세요.</b> 「AI로 읽기」를 누른 사진만 서버를 거쳐 OpenAI(AI 회사)로 보내지고, 이 서버에는 저장하지 않아요. 링크는 아직 AI가 읽지 못해서 직접 적어 주세요.</p>
 
   <div id="impDrop" class="imp-drop">
-    <label class="btn small">📷 사진 올리기<input id="impFile" type="file" accept="image/*" multiple hidden></label>
-    <span class="hint">또는 사진을 여기로 끌어다 놓거나, 복사한 사진을 붙여넣기(Ctrl+V)</span>
+    <label class="btn small"><span data-i18n="i.upload">📷 사진 올리기</span><input id="impFile" type="file" accept="image/*" multiple hidden></label>
+    <span class="hint" data-i18n="i.drophint">또는 사진을 여기로 끌어다 놓거나, 복사한 사진을 붙여넣기(Ctrl+V)</span>
   </div>
   <div class="imp-link">
-    <input id="impUrl" type="text" inputmode="url" placeholder="쇼핑몰 상품 주소 붙여넣기 (https://…)" aria-label="상품 주소">
-    <button id="impUrlAdd" class="btn small" type="button">링크 추가</button>
+    <input id="impUrl" type="text" inputmode="url" placeholder="쇼핑몰 상품 주소 붙여넣기 (https://…)" aria-label="상품 주소" data-i18n-attr="placeholder:i.urlph;aria-label:i.urlAria">
+    <button id="impUrlAdd" class="btn small" type="button" data-i18n="i.urlAdd">링크 추가</button>
   </div>
   <div class="imp-tools">
-    <button id="impAiAll" class="btn small" type="button" disabled>✦ 사진 모두 AI로 읽기</button>
-    <span class="hint">사진마다 AI가 가구 이름·종류·치수를 읽어서 표를 채워요.</span>
+    <button id="impAiAll" class="btn small" type="button" disabled data-i18n="i.aiAll">✦ 사진 모두 AI로 읽기</button>
+    <span class="hint" data-i18n="i.aiHint">사진마다 AI가 가구 이름·종류·치수를 읽어서 표를 채워요.</span>
   </div>
   <div id="impCode" class="imp-code" hidden>
-    <label>이용 코드<input id="impCodeInput" type="text" autocomplete="off" placeholder="시범 참여자에게 알려 드린 코드"></label>
+    <label><span data-i18n="i.code">이용 코드</span><input id="impCodeInput" type="text" autocomplete="off" placeholder="시범 참여자에게 알려 드린 코드" data-i18n-attr="placeholder:i.codeph"></label>
   </div>
   <p id="impMsg" class="hint" aria-live="polite"></p>
 
   <div id="impRows" class="imp-rows"></div>
 
   <div class="imp-foot">
-    <button id="impAdd" class="btn small" type="button" disabled>방에 넣기</button>
-    <button id="impAddAuto" class="btn primary small" type="button" disabled>방에 넣고 자동 배치</button>
+    <button id="impAdd" class="btn small" type="button" disabled data-i18n="i.addRoom">방에 넣기</button>
+    <button id="impAddAuto" class="btn primary small" type="button" disabled data-i18n="i.addAuto">방에 넣고 자동 배치</button>
   </div>
 </dialog>
 
 <!-- AI 렌더: 지금 배치한 도면(+방 사진)으로 AI가 분위기 이미지 1장을 만듦 -->
 <dialog id="renderDlg" class="imp-dlg" aria-labelledby="rdTitle">
   <div class="imp-head">
-    <h2 id="rdTitle">✦ AI 렌더 만들기</h2>
-    <button id="rdClose" class="btn ghost small" type="button" aria-label="닫기">✕ 닫기</button>
+    <h2 id="rdTitle" data-i18n="d.title">✦ AI 렌더 만들기</h2>
+    <button id="rdClose" class="btn ghost small" type="button" aria-label="닫기" data-i18n="i.close" data-i18n-attr="aria-label:i.closeAria">✕ 닫기</button>
   </div>
-  <p class="notice">지금 배치한 도면으로 AI가 <b>완성된 방 분위기 이미지 1장</b>을 만들어 줘요. AI가 그린 <b>참고용 시안</b>이라 가구 위치·크기·색이 도면과 조금 다를 수 있고 실제 제품과도 달라요. 도면과 방 사진은 만들기 위해 서버를 거쳐 OpenAI(AI 회사)로 보내지고, 이 서버에는 저장하지 않아요.</p>
+  <p class="notice" data-i18n-html="d.notice">지금 배치한 도면으로 AI가 <b>완성된 방 분위기 이미지 1장</b>을 만들어 줘요. AI가 그린 <b>참고용 시안</b>이라 가구 위치·크기·색이 도면과 조금 다를 수 있고 실제 제품과도 달라요. 도면과 방 사진은 만들기 위해 서버를 거쳐 OpenAI(AI 회사)로 보내지고, 이 서버에는 저장하지 않아요.</p>
 
   <div id="rdQuota" class="rd-quota" aria-live="polite">무료 렌더 남은 횟수를 확인하는 중…</div>
 
-  <h3 class="rd-h">분위기</h3>
-  <div class="rd-chips" role="radiogroup" aria-label="분위기">
-    <label><input type="radio" name="rdStyle" value="modern" checked><span>모던 미니멀</span></label>
-    <label><input type="radio" name="rdStyle" value="nordic"><span>북유럽 우드</span></label>
-    <label><input type="radio" name="rdStyle" value="warm"><span>따뜻한 빈티지</span></label>
-    <label><input type="radio" name="rdStyle" value="hotel"><span>화이트 호텔식</span></label>
-    <label><input type="radio" name="rdStyle" value="natural"><span>내추럴 베이지</span></label>
-    <label><input type="radio" name="rdStyle" value="custom"><span>직접 쓰기</span></label>
+  <h3 class="rd-h" data-i18n="d.mood">분위기</h3>
+  <div class="rd-chips" role="radiogroup" aria-label="분위기" data-i18n-attr="aria-label:d.mood">
+    <label><input type="radio" name="rdStyle" value="modern" checked><span data-i18n="d.s.modern">모던 미니멀</span></label>
+    <label><input type="radio" name="rdStyle" value="nordic"><span data-i18n="d.s.nordic">북유럽 우드</span></label>
+    <label><input type="radio" name="rdStyle" value="warm"><span data-i18n="d.s.warm">따뜻한 빈티지</span></label>
+    <label><input type="radio" name="rdStyle" value="hotel"><span data-i18n="d.s.hotel">화이트 호텔식</span></label>
+    <label><input type="radio" name="rdStyle" value="natural"><span data-i18n="d.s.natural">내추럴 베이지</span></label>
+    <label><input type="radio" name="rdStyle" value="custom"><span data-i18n="d.s.custom">직접 쓰기</span></label>
   </div>
   <div id="rdCustom" class="rd-custom" hidden>
-    <label>원하는 분위기 (2~40자)<input id="rdStyleText" type="text" maxlength="40" placeholder="예: 차분한 우드톤, 따뜻한 조명"></label>
+    <label><span data-i18n="d.customLabel">원하는 분위기 (2~40자)</span><input id="rdStyleText" type="text" maxlength="40" placeholder="예: 차분한 우드톤, 따뜻한 조명" data-i18n-attr="placeholder:d.customPh"></label>
   </div>
 
-  <h3 class="rd-h">방 사진 <small>(선택)</small></h3>
+  <h3 class="rd-h" data-i18n-html="d.photoH">방 사진 <small>(선택)</small></h3>
   <div class="rd-photo">
-    <label class="btn small">📷 방 사진 올리기<input id="rdFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>
-    <span id="rdPhotoInfo" class="hint">올리면 그 방의 벽·바닥·창문 느낌을 반영해요. 안 올려도 돼요.</span>
+    <label class="btn small"><span data-i18n="d.photoBtn">📷 방 사진 올리기</span><input id="rdFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>
+    <span id="rdPhotoInfo" class="hint" data-i18n="d.photoHint">올리면 그 방의 벽·바닥·창문 느낌을 반영해요. 안 올려도 돼요.</span>
     <div id="rdThumb" class="rd-thumb" hidden>
-      <img id="rdThumbImg" alt="올린 방 사진">
-      <button id="rdThumbDel" class="btn small danger" type="button">사진 빼기</button>
+      <img id="rdThumbImg" alt="올린 방 사진" data-i18n-attr="alt:d.photoAlt">
+      <button id="rdThumbDel" class="btn small danger" type="button" data-i18n="d.photoDel">사진 빼기</button>
     </div>
   </div>
 
   <p id="rdMsg" class="hint rd-msg" aria-live="polite"></p>
   <div class="imp-foot">
-    <button id="rdGo" class="btn primary" type="button" disabled>✦ 렌더 만들기</button>
+    <button id="rdGo" class="btn primary" type="button" disabled data-i18n="d.go">✦ 렌더 만들기</button>
   </div>
 
-  <div id="rdPaid" class="notice rd-paid" hidden>
+  <div id="rdPaid" class="notice rd-paid" hidden data-i18n-html="d.paid">
     무료 렌더를 모두 사용했어요. 유료 이용은 <b>준비 중</b>이에요. <a href="렌더신청.html">유료 이용 알림 받기 →</a>
   </div>
 
   <div id="rdResult" class="rd-result" hidden>
-    <img id="rdImg" alt="AI가 만든 방 분위기 이미지">
+    <img id="rdImg" alt="AI가 만든 방 분위기 이미지" data-i18n-attr="alt:d.resultAlt">
     <div class="rd-result-bar">
-      <a id="rdSave" class="btn small" download="방만들기_AI렌더.jpg">이미지 저장</a>
-      <span class="hint">AI가 그린 참고용 시안이에요. 마음에 안 들면 분위기를 바꿔 다시 만들 수 있어요. (다시 만들면 무료 횟수가 1회 줄어요.)</span>
+      <a id="rdSave" class="btn small" download="방만들기_AI렌더.jpg" data-i18n="d.save">이미지 저장</a>
+      <span class="hint" data-i18n="d.resultHint">AI가 그린 참고용 시안이에요. 마음에 안 들면 분위기를 바꿔 다시 만들 수 있어요. (다시 만들면 무료 횟수가 1회 줄어요.)</span>
     </div>
   </div>
 </dialog>
 
 <script src="설정.js"></script>
+<script src="i18n.js"></script>
 <script>
 (function () {
   "use strict";
   var CFG = window.ROOM_CONFIG || {};
+  var t = I18N.t;                                 // 번역 함수: t("키", {값}) — 글자는 i18n.js 에 있어요
+  // 가구 이름 표시: 설정.js 의 한국어 이름(싱글 침대 등)은 고른 언어로, 직접 쓴 이름은 그대로
+  function dispName(it) { return I18N.name(it.name); }
   var STORE_KEY = "roommaker.layout.v1";
   var SAVE_COUNT_KEY = "roommaker.saveCount";
   var SNAP = 5;
   var MARGIN = 45;
   var NS = "http://www.w3.org/2000/svg";
+  var FONT = "Malgun Gothic, Apple SD Gothic Neo, Hiragino Sans, Yu Gothic, Meiryo, PingFang SC, Microsoft YaHei, sans-serif";   // 한·일·중 글자가 모두 보이도록
 
   var COLORS = {
     furniture: { fill: "#C7CFAE", stroke: "#141414" },
@@ -417,9 +422,9 @@
     el("rect", { x: vx, y: vy, width: vw, height: vh, fill: "#ffffff" }, target);
 
     if (forExport) {
-      var t = el("text", { x: vx + MARGIN, y: vy + fs * 1.4, "font-size": fs * 1.1, fill: "#2b2724", "font-weight": "700",
-        "font-family": "Malgun Gothic, Apple SD Gothic Neo, sans-serif" }, target);
-      t.textContent = "방 만들기 배치도 · " + W + " × " + H + " cm";
+      var title = el("text", { x: vx + MARGIN, y: vy + fs * 1.4, "font-size": fs * 1.1, fill: "#2b2724", "font-weight": "700",
+        "font-family": FONT }, target);
+      title.textContent = t("p.export", { w: W, h: H });
     }
 
     // 바닥 + 50cm 격자
@@ -430,7 +435,7 @@
     el("rect", { x: 0, y: 0, width: W, height: H, fill: "none", stroke: "#141414", "stroke-width": 6 }, target);
 
     // 치수 글자
-    var lbl = { "font-size": fs, fill: "#6f675f", "text-anchor": "middle", "font-family": "Malgun Gothic, Apple SD Gothic Neo, sans-serif" };
+    var lbl = { "font-size": fs, fill: "#6f675f", "text-anchor": "middle", "font-family": FONT };
     var tw = el("text", Object.assign({ x: W / 2, y: -fs * 0.8 }, lbl), target); tw.textContent = W + " cm";
     var th = el("text", Object.assign({ x: -fs * 0.8, y: H / 2, transform: "rotate(-90 " + (-fs * 0.8) + " " + (H / 2) + ")" }, lbl), target);
     th.textContent = H + " cm";
@@ -457,17 +462,17 @@
       // 이름과 치수 (가구가 충분히 클 때만)
       if (it.type === "furniture") {
         var f = Math.max(8, Math.min(fs, it.w / 6, it.h / 3));
-        var base = { "text-anchor": "middle", fill: "#2b2724", "font-family": "Malgun Gothic, Apple SD Gothic Neo, sans-serif", "pointer-events": "none" };
+        var base = { "text-anchor": "middle", fill: "#2b2724", "font-family": FONT, "pointer-events": "none" };
         var n1 = el("text", Object.assign({ x: it.x + it.w / 2, y: it.y + it.h / 2 - f * 0.1, "font-size": f, "font-weight": "600" }, base), g);
-        n1.textContent = it.name;
+        n1.textContent = dispName(it);
         if (it.h >= f * 2.6) {
           var n2 = el("text", Object.assign({ x: it.x + it.w / 2, y: it.y + it.h / 2 + f * 1.05, "font-size": f * 0.8, fill: "#6f675f" }, base), g);
           n2.textContent = it.w + "×" + it.h;
         }
       } else {
         var lab = el("text", { x: it.x + it.w / 2, y: it.y + it.h + fs * 0.9, "font-size": fs * 0.8, fill: c.stroke, "text-anchor": "middle",
-          "font-family": "Malgun Gothic, Apple SD Gothic Neo, sans-serif", "pointer-events": "none" }, g);
-        lab.textContent = it.name;
+          "font-family": FONT, "pointer-events": "none" }, g);
+        lab.textContent = dispName(it);
       }
     });
   }
@@ -487,13 +492,13 @@
     var ratio = used / (state.room.w * state.room.h) * 100;
     var checks = checkAll(), bad = 0;
     for (var k in checks) if (checks[k].overlap || checks[k].outside) bad++;
-    areaInfo.innerHTML = "면적 <b>" + m2.toFixed(1) + "㎡</b> (약 " + pyeong.toFixed(1) + "평) · 가구가 차지하는 비율 <b>" + ratio.toFixed(0) + "%</b>" +
-      (bad ? "<br><span style='color:#C42A1E'>확인이 필요한 가구 " + bad + "개</span>" : "");
+    areaInfo.innerHTML = t("l.area", { m2: m2.toFixed(1), py: pyeong.toFixed(1), ratio: ratio.toFixed(0) }) +
+      (bad ? "<br><span style='color:#C42A1E'>" + t("l.check", { n: bad }) + "</span>" : "");
 
     var it = byId(selectedId);
     selPanel.hidden = !it;
     if (it) {
-      if (document.activeElement !== sName) sName.value = it.name;
+      if (document.activeElement !== sName) sName.value = dispName(it);
       if (document.activeElement !== sW) sW.value = it.w;
       if (document.activeElement !== sH) sH.value = it.h;
     }
@@ -529,16 +534,6 @@
   }
   // 가구 버튼: 설정.js 의 group 이름별로 묶어서 2열로 보여 줌
   var presetList = document.getElementById("presetList");
-  var groups = {}, groupOrder = [];
-  function groupBox(name) {
-    if (!groups[name]) {
-      var box = document.createElement("div"); box.className = "group";
-      var h = document.createElement("h3"); h.textContent = name; box.appendChild(h);
-      var grid = document.createElement("div"); grid.className = "grid2"; box.appendChild(grid);
-      groups[name] = grid; groupOrder.push(box);
-    }
-    return groups[name];
-  }
   function makeBtn(label, size, color, extraClass, onClick) {
     var b = document.createElement("button");
     b.type = "button"; b.className = "fbtn" + (extraClass ? " " + extraClass : "");
@@ -546,22 +541,37 @@
     if (color) { var d = document.createElement("span"); d.className = "dot"; d.style.background = color; nm.appendChild(d); }
     nm.appendChild(document.createTextNode(label)); b.appendChild(nm);
     var sz = document.createElement("span"); sz.className = "sz"; sz.textContent = size; b.appendChild(sz);
-    b.setAttribute("aria-label", label + " 추가, " + size);
+    b.setAttribute("aria-label", t("l.addaria", { name: label.replace(/^\+ /, ""), size: size }));
     b.addEventListener("click", onClick);
     return b;
   }
-  (CFG.furniture || []).forEach(function (f) {
-    groupBox(f.group || "기타").appendChild(makeBtn(f.name, f.w + "×" + f.h, f.color, "", function () {
-      addItem(f.name, f.w, f.h, "furniture", f.color);
-    }));
-  });
-  (CFG.openings || []).forEach(function (f) {
-    groupBox("문·창문").classList.add("pair");
-    groupBox("문·창문").appendChild(makeBtn("+ " + f.name, "폭 " + f.w + "cm", null, "opening", function () {
-      addItem(f.name, f.w, f.h, f.type === "window" ? "window" : "door");
-    }));
-  });
-  groupOrder.forEach(function (box) { presetList.appendChild(box); });
+  // 언어를 바꾸면 버튼 이름도 바뀌어야 해서, 목록을 처음부터 다시 만들 수 있게 함수로 둠
+  function buildPresets() {
+    presetList.textContent = "";
+    var groups = {}, groupOrder = [];
+    function groupBox(name) {
+      if (!groups[name]) {
+        var box = document.createElement("div"); box.className = "group";
+        var h = document.createElement("h3"); h.textContent = I18N.group(name); box.appendChild(h);
+        var grid = document.createElement("div"); grid.className = "grid2"; box.appendChild(grid);
+        groups[name] = grid; groupOrder.push(box);
+      }
+      return groups[name];
+    }
+    (CFG.furniture || []).forEach(function (f) {
+      groupBox(f.group || "기타").appendChild(makeBtn(I18N.name(f.name), f.w + "×" + f.h, f.color, "", function () {
+        addItem(f.name, f.w, f.h, "furniture", f.color);   // 이름은 한국어 원본으로 저장하고, 화면에서만 번역
+      }));
+    });
+    (CFG.openings || []).forEach(function (f) {
+      groupBox("문·창문").classList.add("pair");
+      groupBox("문·창문").appendChild(makeBtn("+ " + I18N.name(f.name), t("l.openw", { w: f.w }), null, "opening", function () {
+        addItem(f.name, f.w, f.h, f.type === "window" ? "window" : "door");
+      }));
+    });
+    groupOrder.forEach(function (box) { presetList.appendChild(box); });
+  }
+  buildPresets();
   document.getElementById("cAdd").addEventListener("click", function () {
     var name = document.getElementById("cName").value.trim() || "가구";
     var w = num(document.getElementById("cW").value, 5, 80), h = num(document.getElementById("cH").value, 5, 40);
@@ -592,7 +602,7 @@
   document.getElementById("sDel").addEventListener("click", removeSel);
   document.getElementById("clearAll").addEventListener("click", function () {
     if (!state.items.length) return;
-    if (confirm("가구를 모두 지울까요? 되돌릴 수 없어요.")) { state.items = []; selectedId = null; commit(); }
+    if (confirm(t("p.confirmClear"))) { state.items = []; selectedId = null; commit(); }
   });
 
   // ---------- 자동 배치 (AI 없이 규칙으로 계산) ----------
@@ -609,13 +619,13 @@
 
   function kindOf(it) {                          // 고른 종류가 있으면 그것, 없으면 이름으로 짐작
     if (it.kind && KIND_ORDER.hasOwnProperty(it.kind)) return it.kind;
-    var n = it.name || "";
-    if (/침대|베드|bed/i.test(n)) return "bed";
-    if (/책상|데스크|desk|테이블/i.test(n)) return "desk";
-    if (/의자|체어|chair|스툴/i.test(n)) return "chair";
-    if (/옷장|장롱|수납|서랍|책장|선반|행거|붙박이/.test(n)) return "storage";
-    if (/소파|쇼파|sofa/i.test(n)) return "sofa";
-    if (/냉장고|세탁기|건조기/.test(n)) return "fridge";
+    var n = it.name || "";              // 한국어 외에 영어·일본어·중국어 이름도 알아봄
+    if (/침대|베드|bed|ベッド|床(?!头)/i.test(n)) return "bed";
+    if (/책상|데스크|desk|테이블|table|机|テーブル|桌/i.test(n)) return "desk";
+    if (/의자|체어|chair|스툴|stool|椅|イス|スツール/i.test(n)) return "chair";
+    if (/옷장|장롱|수납|서랍|책장|선반|행거|붙박이|wardrobe|closet|dresser|drawer|shelf|shelves|bookcase|cabinet|ワードローブ|クローゼット|チェスト|引き出し|棚|衣柜|柜|抽屉|书架/i.test(n)) return "storage";
+    if (/소파|쇼파|sofa|couch|ソファ|沙发/i.test(n)) return "sofa";
+    if (/냉장고|세탁기|건조기|fridge|refrigerator|washer|washing machine|dryer|冷蔵庫|洗濯機|冰箱|洗衣机/i.test(n)) return "fridge";
     return "misc";
   }
   function mulberry32(a) {                       // 「다른 배치 보기」용 난수 (같은 번호면 같은 결과)
@@ -804,11 +814,15 @@
 
   var autoBtn = document.getElementById("autoBtn"), altBtn = document.getElementById("altBtn");
   var undoAuto = document.getElementById("undoAuto"), autoMsg = document.getElementById("autoMsg");
-  function setAutoMsg(text, warn) { autoMsg.textContent = text; autoMsg.className = "hint" + (warn ? " warn" : ""); }
+  // 안내 문구는 '글자'가 아니라 '글자를 만드는 방법'(함수 또는 [키, 값])으로 기억해 두고, 언어가 바뀌면 다시 만들어 보여 줌
+  function msgText(m) { return typeof m === "function" ? m() : Array.isArray(m) ? t(m[0], m[1]) : (m || ""); }
+  var autoMsgState = { m: ["a.hint"], warn: false };
+  function paintAuto() { autoMsg.textContent = msgText(autoMsgState.m); autoMsg.className = "hint" + (autoMsgState.warn ? " warn" : ""); }
+  function setAutoMsg(m, warn) { autoMsgState = { m: m, warn: !!warn }; paintAuto(); }
 
   function applyLayout(seed) {
     var furn = state.items.filter(function (it) { return it.type === "furniture"; });
-    if (!furn.length) { setAutoMsg("먼저 왼쪽에서 가구를 추가해 주세요.", true); return; }
+    if (!furn.length) { setAutoMsg(["a.none"], true); return; }
     var r = computeLayout(seed);
     if (seed) {                                   // 「다른 배치 보기」: 지금과 다른 결과가 나올 때까지 몇 번 더 시도
       var now = layoutKey({ result: furn.reduce(function (m, it) { m[it.id] = it; return m; }, {}) });
@@ -823,10 +837,13 @@
     selectedId = null;
     commit();
     var placedN = furn.length - r.failed.length;
-    var text = "가구 " + placedN + "개를 자동으로 배치했어요.";
-    if (r.failed.length) text += " 자리가 부족한 가구: " + r.failed.map(function (it) { return it.name; }).join(", ") + " (방 밖에 두었어요)";
-    if (r.tight) text += " 문 앞 통로가 좁을 수 있어요.";
-    setAutoMsg(text, r.failed.length > 0);
+    var failedItems = r.failed, tight = r.tight;
+    setAutoMsg(function () {
+      var text = t("a.done", { n: placedN });
+      if (failedItems.length) text += t("a.failed", { list: failedItems.map(dispName).join(", ") });
+      if (tight) text += t("a.tight");
+      return text;
+    }, failedItems.length > 0);
     altBtn.disabled = false;
     undoAuto.hidden = !autoBackup;
   }
@@ -841,16 +858,13 @@
     autoBackup.forEach(function (b) { var it = byId(b.id); if (it) { it.x = b.x; it.y = b.y; it.w = b.w; it.h = b.h; } });
     autoBackup = null; undoAuto.hidden = true;
     selectedId = null; commit();
-    setAutoMsg("자동 배치 전으로 되돌렸어요.");
+    setAutoMsg(["a.undone"]);
   });
 
   // ---------- 가구 불러오기 (사진·링크 첨부 + 확인 표) ----------
   // 지금은 치수를 자동으로 읽지 않고, 사진·링크를 옆에 두고 사람이 적는 표입니다.
   // (3단계에서 서버+AI가 이 표의 이름·종류·치수를 대신 채워 줄 자리)
-  var KIND_CHOICES = [
-    ["", "종류: 이름 보고 자동"], ["bed", "침대"], ["desk", "책상"], ["chair", "의자"],
-    ["storage", "수납 (옷장·서랍·책장)"], ["sofa", "소파"], ["fridge", "냉장고·세탁기"], ["misc", "기타"]
-  ];
+  var KIND_CHOICES = ["", "bed", "desk", "chair", "storage", "sofa", "fridge", "misc"];   // 글자는 i18n.js 의 i.kind.* (빈 값은 i.kind.auto)
   var IMP_MAX_ROWS = 12, IMP_MAX_MB = 10;
   var impRows = [], impSeq = 1;
   var impDlg = document.getElementById("importDlg"), impBox = document.getElementById("impRows");
@@ -858,9 +872,11 @@
   var impAdd = document.getElementById("impAdd"), impAddAuto = document.getElementById("impAddAuto");
   var impAiAll = document.getElementById("impAiAll");
   var AI_URL = "/api/read-furniture";
-  var AI_CONF = { high: "확실", medium: "애매함 · 확인 필요", low: "불확실 · 꼭 확인" };
+  function confText(c) { return t("i.conf." + (c === "high" || c === "medium" ? c : "low")); }
 
-  function impSay(text, warn) { impMsg.textContent = text || ""; impMsg.className = "hint" + (warn ? " warn" : ""); }
+  var impMsgState = { m: "", warn: false };
+  function paintImp() { impMsg.textContent = msgText(impMsgState.m); impMsg.className = "hint" + (impMsgState.warn ? " warn" : ""); }
+  function impSay(m, warn) { impMsgState = { m: m, warn: !!warn }; paintImp(); }
   function impLabeled(cls, text, input) {
     var l = document.createElement("label"); l.className = cls;
     l.appendChild(document.createTextNode(text)); l.appendChild(input); return l;
@@ -874,16 +890,16 @@
     var a = document.createElement("a");
     a.href = r.url; a.target = "_blank"; a.rel = "noopener noreferrer";
     if (r.type === "image") {
-      var im = document.createElement("img"); im.src = r.url; im.alt = r.label; a.appendChild(im); a.title = "크게 보기";
+      var im = document.createElement("img"); im.src = r.url; im.alt = r.label; a.appendChild(im); a.title = t("i.big");
     } else {
-      a.textContent = "🔗 상품 페이지 열기 ↗";
+      a.textContent = t("i.openLink");
     }
     src.appendChild(a);
     var where = document.createElement("span"); where.className = "where"; where.textContent = r.label; src.appendChild(where);
     if (r.type === "image" && r.file && !r.shared) {          // 사진 줄에만 'AI로 읽기' 버튼
       var aiBtn = document.createElement("button");
       aiBtn.type = "button"; aiBtn.className = "btn small ai-btn";
-      aiBtn.textContent = ai.busy ? "읽는 중…" : ai.done ? "↻ 다시 읽기" : "✦ AI로 읽기";
+      aiBtn.textContent = ai.busy ? t("i.aiBusyBtn") : ai.done ? t("i.aiAgain") : t("i.aiRead");
       aiBtn.disabled = !!ai.busy;
       aiBtn.addEventListener("click", function () { aiReadRow(r); });
       src.appendChild(aiBtn);
@@ -892,36 +908,36 @@
 
     var f = document.createElement("div"); f.className = "imp-fields";
     function touch() { r.bad = false; row.classList.remove("bad"); }
-    var nm = document.createElement("input"); nm.type = "text"; nm.maxLength = 20; nm.placeholder = "예: 침대"; nm.value = r.name;
+    var nm = document.createElement("input"); nm.type = "text"; nm.maxLength = 20; nm.placeholder = t("i.nameph2"); nm.value = r.name;
     nm.addEventListener("input", function () { r.name = nm.value; });
-    var kd = document.createElement("select"); kd.setAttribute("aria-label", "가구 종류");
-    KIND_CHOICES.forEach(function (k) { var o = document.createElement("option"); o.value = k[0]; o.textContent = k[1]; kd.appendChild(o); });
+    var kd = document.createElement("select"); kd.setAttribute("aria-label", t("i.kindAria"));
+    KIND_CHOICES.forEach(function (k) { var o = document.createElement("option"); o.value = k; o.textContent = t(k ? "i.kind." + k : "i.kind.auto"); kd.appendChild(o); });
     kd.value = r.kind; kd.addEventListener("change", function () { r.kind = kd.value; });
     function num(key) {
       var i = document.createElement("input"); i.type = "number"; i.min = "5"; i.step = "5"; i.inputMode = "numeric"; i.value = r[key];
       i.addEventListener("input", function () { r[key] = i.value; touch(); }); return i;
     }
-    var del = document.createElement("button"); del.type = "button"; del.className = "btn small danger del"; del.textContent = "삭제";
+    var del = document.createElement("button"); del.type = "button"; del.className = "btn small danger del"; del.textContent = t("p.del");
     del.addEventListener("click", function () {
       impRows = impRows.filter(function (x) { return x !== r; });
       impRelease(r.url); renderImp();
     });
-    f.appendChild(impLabeled("nm", "이름", nm));
-    f.appendChild(impLabeled("kd", "종류", kd));
-    f.appendChild(impLabeled("w", "가로 (cm)", num("w")));
-    f.appendChild(impLabeled("h", "세로 (cm)", num("h")));
+    f.appendChild(impLabeled("nm", t("l.name"), nm));
+    f.appendChild(impLabeled("kd", t("i.type"), kd));
+    f.appendChild(impLabeled("w", t("l.w"), num("w")));
+    f.appendChild(impLabeled("h", t("l.h"), num("h")));
     f.appendChild(del);
     if (ai.busy || ai.error || ai.done) {                      // AI 결과·오류 안내 (AI가 쓴 글은 textContent 로만 넣음)
       var note = document.createElement("div");
       note.className = "ai-note" + (ai.error ? " err" : "");
-      if (ai.busy) note.textContent = "✦ AI가 사진을 읽는 중이에요… (10~30초 걸릴 수 있어요)";
-      else if (ai.error) note.textContent = ai.error;
+      if (ai.busy) note.textContent = t("i.aiBusy");
+      else if (ai.error) note.textContent = msgText(ai.error);     // 오류도 '글자를 만드는 방법'으로 들고 있다가 지금 언어로 보여 줌
       else {
-        var head = "✦ AI가 읽음 · " + (AI_CONF[ai.confidence] || AI_CONF.low) +
-          (ai.height ? " · 높이 " + ai.height + "cm" : "") +
-          (ai.missing ? " · 못 읽은 칸은 직접 적어 주세요" : "") + " · 사진과 비교해서 확인해 주세요";
+        var head = t("i.aiHead", { conf: confText(ai.confidence) }) +
+          (ai.height ? t("i.aiHeight", { h: ai.height }) : "") +
+          (ai.missing ? t("i.aiMissing") : "") + t("i.aiCompare");
         note.appendChild(document.createTextNode(head));
-        if (ai.evidence) { var ev = document.createElement("span"); ev.className = "ev"; ev.textContent = "근거: " + ai.evidence; note.appendChild(ev); }
+        if (ai.evidence) { var ev = document.createElement("span"); ev.className = "ev"; ev.textContent = t("i.evidence", { text: ai.evidence }); note.appendChild(ev); }
       }
       f.appendChild(note);
     }
@@ -932,7 +948,7 @@
     impBox.textContent = "";
     if (!impRows.length) {
       var e = document.createElement("div"); e.className = "imp-empty";
-      e.textContent = "사진을 올리거나 링크를 추가하면, 여기에 가구 한 줄씩 나와요.";
+      e.textContent = t("i.empty");
       impBox.appendChild(e);
     }
     impRows.forEach(function (r) { impBox.appendChild(impRowEl(r)); });
@@ -942,28 +958,28 @@
   function impAddFiles(files) {
     var added = 0, skipped = [];
     Array.prototype.forEach.call(files, function (file) {
-      var nameText = file.name || "붙여넣은 사진";
-      if (!/^image\//.test(file.type)) { skipped.push(nameText + " (사진 파일이 아니에요)"); return; }
-      if (file.size > IMP_MAX_MB * 1024 * 1024) { skipped.push(nameText + " (" + IMP_MAX_MB + "MB가 넘어요)"); return; }
-      if (impRows.length >= IMP_MAX_ROWS) { skipped.push(nameText + " (한 번에 " + IMP_MAX_ROWS + "개까지예요)"); return; }
+      var nameText = file.name || t("i.pasted");
+      if (!/^image\//.test(file.type)) { skipped.push(t("i.skipNotImg", { name: nameText })); return; }
+      if (file.size > IMP_MAX_MB * 1024 * 1024) { skipped.push(t("i.skipBig", { name: nameText, mb: IMP_MAX_MB })); return; }
+      if (impRows.length >= IMP_MAX_ROWS) { skipped.push(t("i.skipMax", { name: nameText, n: IMP_MAX_ROWS })); return; }
       impRows.push({ id: impSeq++, type: "image", url: URL.createObjectURL(file), file: file, label: nameText, name: "", kind: "", w: "", h: "", ai: {} });
       added++;
     });
     renderImp();
-    if (skipped.length) impSay("넣지 못한 파일: " + skipped.join(", "), true);
-    else if (added) impSay("사진 " + added + "장을 추가했어요. 사진을 보면서 이름과 치수를 적어 주세요.");
+    if (skipped.length) impSay(function () { return t("i.skipped", { list: skipped.join(", ") }); }, true);
+    else if (added) impSay(["i.photosAdded", { n: added }]);
   }
   function impAddLink() {
     var input = document.getElementById("impUrl"), v = input.value.trim(), u;
     if (!v) return;
     if (!/^[a-z][a-z0-9+.-]*:/i.test(v)) v = "https://" + v;
-    try { u = new URL(v); } catch (e) { impSay("주소 모양이 아니에요. 상품 주소를 그대로 붙여 넣어 주세요.", true); return; }
-    if (u.protocol !== "http:" && u.protocol !== "https:") { impSay("http:// 또는 https:// 로 시작하는 주소만 넣을 수 있어요.", true); return; }
-    if (impRows.length >= IMP_MAX_ROWS) { impSay("한 번에 " + IMP_MAX_ROWS + "개까지 넣을 수 있어요.", true); return; }
+    try { u = new URL(v); } catch (e) { impSay(["i.badUrl"], true); return; }
+    if (u.protocol !== "http:" && u.protocol !== "https:") { impSay(["i.badProto"], true); return; }
+    if (impRows.length >= IMP_MAX_ROWS) { impSay(["i.maxRows", { n: IMP_MAX_ROWS }], true); return; }
     impRows.push({ id: impSeq++, type: "link", url: u.href, label: u.hostname, name: "", kind: "", w: "", h: "" });
     input.value = "";
     renderImp();
-    impSay("링크를 추가했어요. 「상품 페이지 열기」로 치수를 확인해서 적어 주세요.");
+    impSay(["i.linkAdded"]);
   }
   function impSubmit(auto) {
     var bad = 0;
@@ -972,7 +988,7 @@
       r.bad = !(r.w !== "" && r.h !== "" && isFinite(w) && w >= 5 && isFinite(h) && h >= 5);
       if (r.bad) bad++;
     });
-    if (bad) { renderImp(); impSay("가로·세로(cm)를 적지 않은 가구가 " + bad + "개 있어요. 빨간 테두리 줄을 채워 주세요. (5 이상)", true); return; }
+    if (bad) { renderImp(); impSay(["i.badSize", { n: bad }], true); return; }
     var n = impRows.length;
     var urls = {};
     impRows.forEach(function (r) {
@@ -983,7 +999,7 @@
     impRows = []; renderImp(); impSay("");
     impDlg.close();
     if (auto) autoBtn.click();
-    else setAutoMsg("가구 " + n + "개를 방에 넣었어요. 「자동 배치」를 눌러 보세요.");
+    else setAutoMsg(["a.added", { n: n }]);
   }
   // ---------- AI로 읽기 (사진 → 이름·종류·치수) ----------
   function impRelease(url) {                      // 같은 사진을 쓰는 줄이 하나도 없을 때만 미리보기 정리
@@ -1022,22 +1038,31 @@
   function aiCode() { try { return sessionStorage.getItem("roommaker.accessCode") || ""; } catch (e) { return ""; } }
   function aiCall(image) {
     return fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ images: [image], accessCode: aiCode() }) })
+      body: JSON.stringify({ images: [image], accessCode: aiCode(), lang: I18N.lang }) })     // lang: AI가 이름·근거를 이 언어로 쓰게 함
       .then(function (res) {
         return res.json().catch(function () { return {}; }).then(function (body) { return { status: res.status, body: body || {} }; });
       });
   }
+  // 서버가 돌려준 오류 → 화면에 보일 글(을 만드는 방법). 한국어 외 언어에서는 서버의 한국어 문장 대신 번역 사전의 글을 씀.
+  function serverErr(body, fallbackKey) {
+    var code = body && body.error;
+    if (code && I18N.has("e." + code)) {
+      if (I18N.lang === "ko" && body.message) return body.message;
+      return ["e." + code];
+    }
+    return [fallbackKey];
+  }
   function aiErrorText(status, body) {
-    if (body.error === "ai_not_configured" || body.error === "ai_disabled") return "AI 읽기를 지금은 쓸 수 없어요. 직접 적어 주세요.";
-    if (status === 404) return "이 화면에서는 AI 읽기를 쓸 수 없어요. (배포된 사이트나 「사이트_열기.bat」으로 연 화면에서 써 주세요.)";
-    if (status === 413) return "사진이 너무 커요. 더 작은 사진으로 해 주세요.";
-    return body.message || "AI 읽기에 실패했어요. 잠시 뒤에 다시 해 보세요.";
+    if (body.error === "ai_not_configured" || body.error === "ai_disabled") return ["i.err.off"];
+    if (status === 404) return ["i.err.404"];
+    if (status === 413) return ["i.err.413"];
+    return serverErr(body, "i.err.fail");
   }
   // 결과를 표에 채움. 한 사진에서 가구가 여러 개 읽히면 줄을 더 만듦. 새로 만든 줄 수를 돌려줌.
   function aiApply(r, body) {
     var items = Array.isArray(body.items) ? body.items : [];
     if (!items.length) {
-      r.ai = { error: "사진에서 가구 치수를 찾지 못했어요." + (body.notes ? " (" + body.notes + ")" : "") + " 치수가 적힌 부분이 보이는 사진으로 해 보거나 직접 적어 주세요." };
+      r.ai = { error: function () { return t("i.noItems") + (body.notes ? " (" + body.notes + ")" : "") + t("i.noItems2"); } };
       return 0;
     }
     impRows = impRows.filter(function (x) { return x.parent !== r.id; });     // 다시 읽는 경우: 이 사진에서 전에 만든 추가 줄은 지우고 새로 만듦
@@ -1063,7 +1088,7 @@
       var image = await aiPrepare(r.file);
       var out = await aiCall(image);
       if (out.status === 401) {
-        r.ai = { error: "이용 코드가 필요해요. 위 칸에 코드를 넣은 뒤 다시 눌러 주세요.", fatal: true };
+        r.ai = { error: ["i.codeNeed"], fatal: true };
         document.getElementById("impCode").hidden = false; document.getElementById("impCodeInput").focus();
       } else if (out.status !== 200) {
         r.ai = { error: aiErrorText(out.status, out.body), fatal: out.status === 503 || out.status === 404 || out.status === 429 };
@@ -1072,17 +1097,17 @@
       }
     } catch (e) {
       var m = e && e.message;
-      r.ai = { error: m === "bad_image" ? "이 사진은 열 수 없어요. JPG·PNG 사진으로 해 주세요."
-                    : m === "too_big" ? "사진이 너무 커요. 더 작은 사진으로 해 주세요."
-                    : "연결에 실패했어요. 인터넷을 확인하고 다시 눌러 주세요." };
+      r.ai = { error: m === "bad_image" ? ["i.err.badImg"]
+                    : m === "too_big" ? ["i.err.413"]
+                    : ["i.err.conn"] };
     }
     if (added || r.ai.done) renderImp(); else impRefreshRow(r);   // 읽기에 성공하면 줄 수가 바뀔 수 있으니 전체를 다시 그림
   }
   async function aiReadAll() {
     var todo = impRows.filter(function (r) { return r.type === "image" && r.file && !r.shared && !(r.ai && (r.ai.done || r.ai.busy)); });
-    if (!todo.length) { impSay("AI로 읽을 사진이 없어요. (이미 읽은 사진은 줄마다 「다시 읽기」를 누르세요.)", true); return; }
+    if (!todo.length) { impSay(["i.readNone"], true); return; }
     impAiAll.disabled = true;
-    impSay("사진 " + todo.length + "장을 AI가 읽는 중이에요…");
+    impSay(["i.readingN", { n: todo.length }]);
     var next = 0, stop = false;
     async function worker() {
       while (!stop && next < todo.length) {
@@ -1094,7 +1119,7 @@
     await Promise.all([worker(), worker()]);                     // 동시에 2장씩만 (서버·AI가 바빠지지 않게)
     var ok = todo.filter(function (r) { return r.ai && r.ai.done; }).length;
     var bad = todo.filter(function (r) { return r.ai && r.ai.error; }).length;
-    impSay("AI 읽기 끝: " + ok + "장 성공" + (bad ? ", " + bad + "장은 안내를 확인해 주세요" : "") + ". 사진과 비교해서 치수를 확인한 뒤 방에 넣어 주세요.", bad > 0);
+    impSay(bad ? ["i.readDoneBad", { ok: ok, bad: bad }] : ["i.readDone", { ok: ok }], bad > 0);
     renderImp();
   }
   impAiAll.addEventListener("click", aiReadAll);
@@ -1193,16 +1218,16 @@
       ctx.drawImage(img, 0, 0, pw, ph);
       try {
         var a = document.createElement("a");
-        a.download = "방만들기_배치도_" + state.room.w + "x" + state.room.h + ".png";
+        a.download = t("p.fileplan", { w: state.room.w, h: state.room.h });
         a.href = canvas.toDataURL("image/png");
         document.body.appendChild(a); a.click(); a.remove();
         var n = Number(load(SAVE_COUNT_KEY)) || 0;
         save(SAVE_COUNT_KEY, String(n + 1));
       } catch (e) {
-        alert("이 브라우저에서는 그림 저장이 막혀 있어요. 크롬에서 다시 시도하거나 화면을 캡처해 주세요.");
+        alert(t("p.pngBlocked"));
       }
     };
-    img.onerror = function () { alert("그림을 만들지 못했어요. 크롬에서 다시 시도해 주세요."); };
+    img.onerror = function () { alert(t("p.pngFail")); };
     img.src = data;
   });
 
@@ -1214,33 +1239,42 @@
   var rdResult = document.getElementById("rdResult"), rdImg = document.getElementById("rdImg"), rdSave = document.getElementById("rdSave");
   var rdPhoto = null, rdBusy = false, rdUsable = false;
 
-  function rdSay(text, warn) { rdMsg.textContent = text || ""; rdMsg.className = "hint rd-msg" + (warn ? " warn" : ""); }
+  var rdMsgState = { m: "", warn: false };
+  function paintRd() { rdMsg.textContent = msgText(rdMsgState.m); rdMsg.className = "hint rd-msg" + (rdMsgState.warn ? " warn" : ""); }
+  function rdSay(m, warn) { rdMsgState = { m: m, warn: !!warn }; paintRd(); }
   function rdUpdateGo() { rdGo.disabled = rdBusy || !rdUsable; }
-  function rdApplyQuota(info) {                    // 무료 남은 횟수에 따라 화면을 바꿈
-    rdPaid.hidden = true; rdQuota.className = "rd-quota";
-    if (!info || !info.enabled) {
-      rdUsable = false; rdQuota.className = "rd-quota warn";
-      rdQuota.textContent = "AI 렌더를 지금은 쓸 수 없어요. (서버에 AI 키가 아직 설정되지 않았거나 잠시 꺼져 있어요.)";
-    } else if (info.remaining > 0) {
-      rdUsable = true;
-      rdQuota.textContent = "무료 렌더 " + info.remaining + "회 남았어요 (총 " + info.free + "회). 만들 때마다 1회씩 줄어요.";
-    } else {
-      rdUsable = false; rdQuota.className = "rd-quota warn"; rdPaid.hidden = false;
-      rdQuota.textContent = "무료 렌더 " + info.free + "회를 모두 사용했어요.";
-    }
+  // 남은 횟수 안내도 '상태'로 기억해 두고, 언어가 바뀌면 다시 그림
+  //   kind: checking(확인 중) · ok(남음) · out(다 씀) · off(못 씀) · 404(이 화면에서는 못 씀) · conn(연결 실패)
+  var rdQuotaState = { kind: "checking", info: null };
+  function paintQuota() {
+    var k = rdQuotaState.kind, info = rdQuotaState.info || {};
+    rdPaid.hidden = k !== "out";
+    rdQuota.className = "rd-quota" + (k === "checking" || k === "ok" ? "" : " warn");
+    rdQuota.textContent = k === "checking" ? t("d.checking")
+      : k === "ok" ? t("d.remain", { r: info.remaining, f: info.free })
+      : k === "out" ? t("d.used", { f: info.free })
+      : t("d." + k);
+  }
+  function rdApplyQuota(info, kind) {              // 무료 남은 횟수에 따라 화면을 바꿈
+    if (kind) rdQuotaState = { kind: kind, info: info };
+    else if (!info || !info.enabled) rdQuotaState = { kind: "off", info: null };
+    else if (info.remaining > 0) rdQuotaState = { kind: "ok", info: info };
+    else rdQuotaState = { kind: "out", info: info };
+    rdUsable = rdQuotaState.kind === "ok";
+    paintQuota();
     rdUpdateGo();
   }
   async function rdRefreshQuota() {
     rdUsable = false; rdUpdateGo();
-    rdQuota.className = "rd-quota"; rdQuota.textContent = "무료 렌더 남은 횟수를 확인하는 중…";
+    rdQuotaState = { kind: "checking", info: null }; paintQuota(); rdPaid.hidden = true;
     try {
       var res = await fetch(RENDER_URL);
       var info = await res.json().catch(function () { return null; });
       if (res.status === 200) rdApplyQuota(info);
-      else if (res.status === 404) { rdApplyQuota(null); rdQuota.textContent = "이 화면에서는 AI 렌더를 쓸 수 없어요. (배포된 사이트나 「사이트_열기.bat」으로 연 화면에서 써 주세요.)"; }
+      else if (res.status === 404) rdApplyQuota(null, "404");
       else rdApplyQuota(null);
     } catch (e) {
-      rdApplyQuota(null); rdQuota.textContent = "연결에 실패했어요. 인터넷을 확인하고 창을 다시 열어 주세요.";
+      rdApplyQuota(null, "conn");
     }
   }
 
@@ -1271,20 +1305,20 @@
     var room = state.room;
     var inRoom = function (it) { return it.x < room.w && it.y < room.h && it.x + it.w > 0 && it.y + it.h > 0; };
     var furniture = state.items.filter(function (it) { return it.type === "furniture" && inRoom(it); });
-    if (!furniture.length) { rdSay("방 안에 놓은 가구가 없어요. 가구를 방 안에 놓은 뒤에 만들어 주세요.", true); return; }
+    if (!furniture.length) { rdSay(["d.noFurn"], true); return; }
     var skipped = state.items.filter(function (it) { return it.type === "furniture" && !inRoom(it); }).length;
     var items = state.items.filter(function (it) { return it.type !== "furniture" || inRoom(it); }).slice(0, 30)
-      .map(function (it) { return { type: it.type, name: it.name, kind: it.kind || kindOf(it), w: it.w, h: it.h, x: it.x, y: it.y }; });
+      .map(function (it) { return { type: it.type, name: dispName(it), kind: it.kind || kindOf(it), w: it.w, h: it.h, x: it.x, y: it.y }; });
     var style = (document.querySelector('input[name="rdStyle"]:checked') || {}).value || "modern";
     var styleText = document.getElementById("rdStyleText").value.trim();
-    if (style === "custom" && !/^[\p{L}\p{N} ,.\-]{2,40}$/u.test(styleText)) { rdSay("분위기 글은 2~40자의 글자·숫자·쉼표만 쓸 수 있어요.", true); return; }
+    if (style === "custom" && !/^[\p{L}\p{N} ,.\-]{2,40}$/u.test(styleText)) { rdSay(["d.badStyle"], true); return; }
 
     rdBusy = true; rdUpdateGo(); rdResult.hidden = true;
     var started = Date.now();
     var tick = setInterval(function () {
-      rdSay("만드는 중이에요… " + Math.round((Date.now() - started) / 1000) + "초 (보통 30초~2분 걸려요. 창을 닫지 마세요.)");
+      rdSay(["d.makingS", { s: Math.round((Date.now() - started) / 1000) }]);
     }, 1000);
-    rdSay("만드는 중이에요… (보통 30초~2분 걸려요. 창을 닫지 마세요.)");
+    rdSay(["d.making"]);
     var ctrl = new AbortController(), timer = setTimeout(function () { ctrl.abort(); }, 190000);
     try {
       var body = { layout: await planToJpeg(1280), room: { w: room.w, h: room.h }, items: items, style: style, styleText: styleText };
@@ -1295,19 +1329,18 @@
         var src = "data:" + (data.image.mime || "image/jpeg") + ";base64," + data.image.data;
         rdImg.src = src; rdSave.href = src; rdResult.hidden = false;
         rdApplyQuota({ enabled: true, free: data.free, remaining: data.remaining });
-        rdSay("완성! 아래 이미지를 확인하세요." + (skipped ? " (방 밖에 둔 가구 " + skipped + "개는 빼고 만들었어요.)" : ""));
+        rdSay(function () { return t("d.done") + (skipped ? t("d.skipped", { n: skipped }) : ""); });
         rdImg.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else if (res.status === 402) {
-        rdApplyQuota({ enabled: true, free: data.free || 0, remaining: 0 }); rdSay(data.message || "무료 횟수를 모두 사용했어요.", true);
+        rdApplyQuota({ enabled: true, free: data.free || 0, remaining: 0 }); rdSay(["e.free_limit"], true);
       } else if (res.status === 413) {
-        rdSay("사진이 너무 커요. 더 작은 방 사진으로 해 주세요.", true);
+        rdSay(["d.big"], true);
       } else {
-        rdSay(data.message || "렌더를 만들지 못했어요. 잠시 뒤에 다시 해 보세요.", true);
+        rdSay(serverErr(data, "d.fail"), true);
         if (res.status === 503) rdRefreshQuota();
       }
     } catch (e) {
-      rdSay(e && e.name === "AbortError" ? "시간이 너무 오래 걸려서 멈췄어요. 잠시 뒤에 다시 해 보세요."
-                                        : "연결에 실패했어요. 인터넷을 확인하고 다시 눌러 주세요.", true);
+      rdSay(e && e.name === "AbortError" ? ["d.abort"] : ["i.err.conn"], true);
     } finally {
       clearInterval(tick); clearTimeout(timer); rdBusy = false; rdUpdateGo();
     }
@@ -1335,12 +1368,24 @@
   document.getElementById("rdFile").addEventListener("change", async function (e) {
     var f = e.target.files[0]; e.target.value = "";
     if (!f) return;
-    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { rdSay("방 사진은 JPG·PNG·WEBP 파일만 올릴 수 있어요.", true); return; }
-    if (f.size > 20 * 1024 * 1024) { rdSay("사진이 너무 커요(20MB 넘음). 더 작은 사진으로 해 주세요.", true); return; }
-    try { rdPhoto = await aiPrepare(f); rdShowPhoto(); rdSay("방 사진을 넣었어요. 렌더에 이 방의 느낌이 반영돼요."); }
-    catch (err) { rdPhoto = null; rdShowPhoto(); rdSay("이 사진은 열 수 없어요. 다른 사진으로 해 주세요.", true); }
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { rdSay(["d.photoType"], true); return; }
+    if (f.size > 20 * 1024 * 1024) { rdSay(["d.photoBig"], true); return; }
+    try { rdPhoto = await aiPrepare(f); rdShowPhoto(); rdSay(["d.photoOk"]); }
+    catch (err) { rdPhoto = null; rdShowPhoto(); rdSay(["d.photoBad"], true); }
   });
   document.getElementById("rdThumbDel").addEventListener("click", function () { rdPhoto = null; rdShowPhoto(); rdSay(""); });
+
+  // ---------- 언어를 바꾸면, 코드가 만든 글자(가구 버튼·도면 속 이름·안내 문구)도 새 언어로 다시 그림 ----------
+  function relang() {
+    buildPresets();
+    render();                                   // 도면 속 가구 이름 + 면적 안내 + 선택한 가구 이름칸
+    renderImp();                                // 가구 불러오기 표
+    paintAuto(); paintImp(); paintRd(); paintQuota();
+    rdSave.setAttribute("download", t("p.filerender"));
+  }
+  I18N.onChange(relang);
+  paintAuto();
+  rdSave.setAttribute("download", t("p.filerender"));
 
   render();
 })();

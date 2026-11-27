@@ -26,7 +26,7 @@
   --red: #D93025;
   --cream: #F4F4F6;
 
-  --font-sans: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-sans: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Hiragino Sans", "Yu Gothic", "Meiryo", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --font-serif: var(--font-sans);
 }
 
@@ -45,6 +45,10 @@ body {
 }
 a { color: inherit; }
 h1, h2, h3 { letter-spacing: -0.03em; }
+/* 일본어·중국어는 띄어쓰기가 없어서, 한글처럼 '단어 단위'로 끊으면 줄이 넘쳐요. 글자 사이에서 줄을 바꾸게 함 */
+html[lang="ja"] body, html[lang="zh"] body { word-break: normal; line-break: strict; }
+html[lang="ja"] body, html[lang="zh"] body { letter-spacing: 0; }
+html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3, html[lang="zh"] h1, html[lang="zh"] h2, html[lang="zh"] h3 { letter-spacing: 0; }
 
 /* ---------- 위쪽 메뉴: 얇게, 오른쪽 끝에 검정 알약 버튼 ---------- */
 .top {
@@ -61,8 +65,33 @@ h1, h2, h3 { letter-spacing: -0.03em; }
 .top nav a { text-decoration: none; font-size: 15px; font-weight: 500; padding: 6px 0; border-bottom: 1.5px solid transparent; }
 .top nav a:hover { border-bottom-color: var(--line); }
 .top nav a[aria-current="page"] { border-bottom-color: var(--text); font-weight: 700; }
-.top-cta { min-height: 44px !important; padding: 0 22px !important; font-size: 14px !important; }
+.top-cta { min-height: 44px !important; padding: 0 22px !important; font-size: 14px !important; white-space: nowrap; }
 @media (max-width: 480px) { .top-cta { display: none !important; } }
+
+/* ---------- 언어 전환 버튼 (오른쪽 위) ---------- */
+.lang { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: #fff; flex: 0 0 auto; }
+.lang button {
+  border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 600; color: var(--muted);
+  padding: 5px 11px; min-height: 30px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+}
+.lang button:hover { color: var(--text); background: var(--soft); }
+.lang button[aria-pressed="true"] { background: var(--text); color: #fff; }
+.lang .short { display: none; }
+@media (max-width: 760px) {
+  .lang .full { display: none; }
+  .lang .short { display: inline; }
+  .lang button { padding: 5px 8px; min-width: 32px; }
+}
+/* 좁은 화면: 윗줄 = 로고 + 언어 버튼, 아랫줄 = 메뉴 (영어처럼 글자가 긴 언어에서도 안 꺾이게) */
+@media (max-width: 560px) {
+  .top { flex-wrap: wrap; gap: 0 8px; padding-top: 10px; padding-bottom: 4px; }
+  .top-right { display: contents; }
+  .top-cta { display: none !important; }
+  .logo { white-space: nowrap; font-size: 18px; }
+  .lang { order: 2; margin-left: auto; }
+  .top nav { order: 3; flex: 1 0 100%; gap: 18px; }
+  .top nav a { font-size: 14px; white-space: nowrap; padding: 4px 0; }
+}
 
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
 
